@@ -1,0 +1,320 @@
+/*
+    *  ----------------------------------------------------------------------------------------  *
+    *  -----  _layout-header.scss  --  /src/styles/components/layout/_layout-header.scss  -----  *
+    *  ----------------------------------------------------------------------------------------  *
+ */
+
+
+@use '../../base/variables' as var;
+@use '../../base/mixins' as mix;
+
+
+.layout__header {
+    min-width: 100%;
+    display: flex;
+}
+
+
+/*
+    ---------------------------
+    -----  Layout Header  -----
+    ---------------------------
+*/
+
+.header__container,
+.footer__header {
+
+    width: 100vw;
+    min-height: 30rem;
+
+    position: relative;
+    z-index: 100;
+    padding: 2rem;
+
+    display: grid;
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+
+    //  -----  Background Gradiente Header  -----
+    background-color: var.$bg-white;
+    background-image: var.$bg-grid-pattern-header;
+    background-size: var.$bg-grid-size-48x48;
+    background-repeat: repeat;
+
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+
+    border-radius: 0 0 20px 20px;
+
+    @include mix.desktop {
+        display: grid;
+        grid-template-columns: 1fr 3fr 1fr;
+        column-gap: 2rem;
+        padding: 5rem 5rem 5rem 5rem;
+    }
+}
+
+
+
+/* 
+    -----------------------------------------------------------------
+    -----  Contenedor de los Logos y Banners de jQuery y Cursos -----
+    -----------------------------------------------------------------  
+*/
+
+.header__container-icons-logos,
+.footer__container-icons-logos {
+
+    width: 80%;
+    position: relative;
+
+    display: grid;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+    @include mix.mobile {
+        width: 40rem;
+        height: 6rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-right: 2rem;
+    }
+
+    @include mix.desktop {
+        width: 25rem;
+        height: 20rem;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 3rem;
+    }
+}
+
+
+/*
+    --------------------------------------------------------------------
+    -----  Contenedor de los Icons y Logos de jQuery y jQuery UI -----
+    --------------------------------------------------------------------
+*/
+
+.container-icons-logos__jquery,
+.container-icons-logos__jquery-ui {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding-top: 2rem;
+}
+
+
+/*
+    ------------------------------------------------
+    -----  Icons y Logos de jQuery y jQuery UI -----
+    ------------------------------------------------
+*/
+
+/*  -----  Containers icon y logo jQuery y jQuery UI  -----   */
+.jquery__icon-logo,
+.jquery-ui__icon-logo {
+    display: inline-flex;
+    gap: 2rem;
+}
+
+/*  -----  Logos jQuery y jQuery UI  -----  */
+.jquery-logo,
+.jquery-ui-logo {
+
+    width: 10rem;
+    height: auto;
+    mix-blend-mode: multiply;
+    background: white;
+    transition: all 300ms ease-in-out;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    @include mix.tablet {
+        width: 12rem;
+        height: auto;
+    }
+
+
+}
+
+/*  -----  Icons jQuery, jQuery UI y GitHub  -----  */
+.jquery-icon,
+.jquery-ui-icon,
+.github-icon {
+
+    width: 2rem;
+    height: auto;
+    transition: all 300ms ease-in-out;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    @include mix.tablet {
+        width: 3rem;
+        height: auto;
+    }
+}
+
+.github-icon {
+    margin-right: 1.5rem;
+}
+
+
+/*
+    --------------------------------------------------------
+    -----  Contenedor de los Logos de cursos de jQuery -----
+    --------------------------------------------------------
+*/
+
+.container-logos__cursos {
+    width: auto;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+
+}
+
+@include mix.desktop {
+    .container-logos__cursos--last {
+        margin-top: 5rem;
+    }
+}
+
+.cursos__logos {
+    width: 6rem;
+    height: 6rem;
+    mix-blend-mode: multiply;
+    transition: all 300ms ease-in-out;
+    border-radius: 10px;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+
+.cursos__logos--escuela-it-icon {
+    width: 3rem;
+    height: auto;
+}
+
+.cursos__logos--escuela-it {
+    width: 10rem;
+    height: auto;
+}
+
+
+/*
+    ----------------------------------------------
+    -----  Contenedor del Título del Header  -----
+    ----------------------------------------------
+*/
+
+.header__container-title,
+.footer__container-title {
+    position: relative;
+    width: 100%;
+    max-width: 102.4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 30px;
+    text-align: center;
+}
+
+.container__title-main--first,
+.container__title-page,
+.container__title-main--last {
+    width: 100%;
+    min-height: 3rem;
+    padding: 1rem;
+    border-radius: 0 15px 50px 15px;
+    box-shadow: 10px 10px 10px rgb(209, 220, 235);
+}
+
+.container__title-main--first {
+    background: var.$bg-title-main-first;
+}
+
+.container__title-page {
+    background: var.$bg-title-page;
+}
+
+.container__title-main--last {
+    background: var.$bg-title-main-last;
+}
+
+
+/*  -----  Título del Header  -----  */
+.header__title-main,
+.header__title-page,
+.header__subtitle-main,
+.footer__title-main,
+.footer__title-page,
+.footer__subtitle-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    -webkit-text-stroke: 0.5px black;
+}
+
+.header__title-main,
+.footer__title-main {
+    
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var.$color-header-title;
+
+    @include mix.tablet {
+        font-size: 2.8rem;
+    }
+
+    @include mix.desktop {
+        font-size: 3rem;
+    }
+}
+
+.header__title-page,
+.footer__title-page {
+    
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var.$color-header-page;
+
+    @include mix.tablet {
+        font-size: 2.6rem;
+    }
+    
+    @include mix.desktop {
+        font-size: 2.8rem;
+    }
+}
+
+.header__subtitle-main,
+.footer__subtitle-main {
+    
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var.$color-header-subtitle;
+
+    @include mix.tablet {
+        font-size: 2.8rem;
+    }
+
+    @include mix.desktop {
+        font-size: 3rem;
+    }
+}

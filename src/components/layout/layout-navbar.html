@@ -1,0 +1,145 @@
+<!--  
+    *  --------------------------------------------------------------------------------  *
+    *  -----  /layout-navbar.html  --  /src/components/layout/layout-navbar.html  -----  *
+    *  --------------------------------------------------------------------------------  *
+-->
+
+
+
+<!--
+    ------------------------------
+    ----------  NAVBAR  ----------  
+    ------------------------------
+-->
+
+<div class="navbar__container" title="Arrrastrame!!!">
+
+    <!--
+        --------------------------------------  
+        -----  Título del menú (navbar)  -----
+        --------------------------------------  
+    -->
+    <header class="navbar__title navbar__title--first">
+
+        <a
+            class="navbar__brand-link"
+            href="https://jquery.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            <img
+                class="navbar-jquery-icon"
+                src="../../../assets/img/logos/jquery/jquery-icon-64x64.svg"
+                alt="Logo jQuery"
+                width="64"
+                height="64"
+                loading="lazy"
+            >
+        </a>
+
+        <div class="navbar__title-text">
+            <span class="navbar__title-badge">Menú SPA</span>
+            <h3>Navigation</h3>
+        </div>
+
+        <a
+            class="navbar__brand-link"
+            href="https://jqueryui.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            <img
+                class="navbar-jquery-ui-icon"
+                src="../../../assets/img/logos/jquery-ui/jquery-ui-icon.svg"
+                alt="Logo jQuery UI"
+                loading="lazy"
+                width="68"
+                height="59"
+            >
+        </a>
+
+    </header>
+
+    <nav class="navbar__nav" aria-label="Navegación principal">
+
+        <!--  -----  Sección Home  -----  -->
+        <section class="navbar__section">
+            <p class="navbar__section-label">
+                <span class="navbar__section-dot" aria-hidden="true"></span>
+                Inicio
+            </p>
+
+            <ul class="navbar__list navbar__list--solo">
+                <li class="navbar__item navbar__item--home">
+                    <a href="#" data-id="home" data-route="route-home">
+                        <span class="navbar__link-icon" aria-hidden="true">⌂</span>
+                        <span class="navbar__link-text">Home</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+
+        <!--  -----  Sección Clase 18  -----  -->
+        <section class="navbar__section">
+            <p class="navbar__section-label">
+                <span class="navbar__section-dot" aria-hidden="true"></span>
+                Clase 18 · Stack web
+            </p>
+
+            <ul class="navbar__list navbar__list--stack">
+
+                <li class="navbar__item navbar__item--html">
+                    <a href="#" data-id="htmlPage" data-route="route-html-page">
+                        <span class="navbar__link-icon" aria-hidden="true">&lt;/&gt;</span>
+                        <span class="navbar__link-text">HTML5</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--css">
+                    <a href="#" data-id="cssPage" data-route="route-css-page">
+                        <span class="navbar__link-icon" aria-hidden="true">#</span>
+                        <span class="navbar__link-text">CSS3</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--js">
+                    <a href="#" data-id="javascriptPage" data-route="route-javascript-page">
+                        <span class="navbar__link-icon" aria-hidden="true">JS</span>
+                        <span class="navbar__link-text">JavaScript ES6+</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--jquery">
+                    <a href="#" data-id="jqueryPage" data-route="route-jquery-page">
+                        <span class="navbar__link-icon" aria-hidden="true">$</span>
+                        <span class="navbar__link-text">jQuery</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--jquery-ui">
+                    <a href="#" data-id="jqueryUiPage" data-route="route-jquery-ui-page">
+                        <span class="navbar__link-icon" aria-hidden="true">UI</span>
+                        <span class="navbar__link-text">jQuery UI</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--react">
+                    <a href="#" data-id="reactPage" data-route="route-react-page">
+                        <span class="navbar__link-icon" aria-hidden="true">⚛</span>
+                        <span class="navbar__link-text">React</span>
+                    </a>
+                </li>
+
+                <li class="navbar__item navbar__item--astro">
+                    <a href="#" data-id="astroPage" data-route="route-astro-page">
+                        <span class="navbar__link-icon" aria-hidden="true">A</span>
+                        <span class="navbar__link-text">Astro</span>
+                    </a>
+                </li>
+
+            </ul>
+        </section>
+
+    </nav>
+
+</div>

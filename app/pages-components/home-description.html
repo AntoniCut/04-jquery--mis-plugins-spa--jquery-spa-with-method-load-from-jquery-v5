@@ -1,0 +1,453 @@
+<!--
+    *  ------------------------------------------------------------------  *
+    *  -----  /home-description.html  --  /src/pages-components/  -----  *
+    *  ------------------------------------------------------------------  *
+-->
+
+<div class="home-page">
+
+    <!--  -----  Hero  -----  -->
+    <div class="home-page__hero">
+        <div class="home-page__hero-badge">
+            <span class="home-page__hero-tag" aria-hidden="true">SPA</span>
+            <h3 class="home-page__hero-title">jquery-spa-with-method-load-from-jquery</h3>
+            <p class="home-page__hero-subtitle">Plugin jQuery para SPAs con método <code>.load()</code> — v5</p>
+        </div>
+    </div>
+
+    <!--  -----  Intro  -----  -->
+    <section class="home-page__intro">
+        <p class="home-page__intro-text">
+            <strong>jquery-spa-with-method-load-from-jquery</strong> es un plugin jQuery diseñado para crear
+            aplicaciones de una sola página (<strong>SPA</strong>) sin frameworks. Carga fragmentos HTML
+            dinámicamente mediante el método <code>jQuery.load()</code>, inyectándolos en contenedores del DOM
+            definidos por rutas configuradas en un manifiesto ligero.
+        </p>
+        <p class="home-page__intro-text">
+            La <strong>versión 5</strong> extiende el motor SPA con lazy loading de módulos de ruta mediante
+            <code>import()</code>, integración con <strong>jQuery UI</strong> (draggable, tooltip, themes),
+            soporte nativo para la <strong>View Transitions API</strong>,
+            reescritura automática de URLs en HTML inyectado, metadatos dinámicos por ruta, navegación con
+            <strong>History API</strong>, caché de módulos, eventos personalizados y manejo robusto de errores
+            para desacoplar el loader visual de la lógica de navegación.
+        </p>
+    </section>
+
+    <!--  -----  Features  -----  -->
+    <section class="home-page__features">
+
+        <h3 class="home-page__features-title">Características Principales</h3>
+
+        <div class="home-page__features-grid">
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔌</span>
+                <h4 class="home-page__feature-title">Plugin jQuery — <code>$.fn.spaWithMethodLoadFromJQuery</code>
+                </h4>
+                <p class="home-page__feature-text">
+                    Se registra como método del prototipo jQuery e inicializa la SPA sobre el contenedor
+                    raíz (p. ej. <code>$('#layout').spaWithMethodLoadFromJQuery(options)</code>).
+                    Devuelve <code>this</code> para encadenamiento. Se exporta envuelto en un módulo ES6
+                    (<code>spaWithMethodLoadFromJQueryPlugins()</code>) para integrarse con el bundler del proyecto.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🚀</span>
+                <h4 class="home-page__feature-title">Lazy Loading de Rutas</h4>
+                <p class="home-page__feature-text">
+                    Los módulos de ruta se importan dinámicamente con <code>import()</code> solo cuando
+                    el usuario navega a esa ruta. Un manifiesto ligero (<code>routeManifest</code>) registra
+                    cada ruta con <code>id</code>, <code>path</code> y <code>file</code>, sin importar
+                    módulos en el arranque. Los módulos ya cargados se guardan en un <code>Map</code> interno.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🎬</span>
+                <h4 class="home-page__feature-title">View Transitions API</h4>
+                <p class="home-page__feature-text">
+                    Cuando el navegador soporta <code>document.startViewTransition()</code>, el plugin
+                    envuelve automáticamente el renderizado de la nueva ruta en una transición nativa,
+                    logrando animaciones fluidas entre páginas sin configuración adicional.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">📋</span>
+                <h4 class="home-page__feature-title">Route Manifest</h4>
+                <p class="home-page__feature-text">
+                    El <code>routeManifest</code> es un array de entradas
+                    <code>&#123; id, path, file &#125;</code>. El plugin resuelve la ruta activa
+                    comparando <code>window.location.pathname</code> normalizado con cada <code>path</code>,
+                    y carga el módulo correspondiente bajo demanda.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔃</span>
+                <h4 class="home-page__feature-title">Inyección con jQuery <code>.load()</code></h4>
+                <p class="home-page__feature-text">
+                    Cada ruta define un objeto <code>components</code> donde la clave es el selector CSS
+                    del contenedor (p. ej. <code>#layoutMain</code>) y el valor es la URL del fragmento HTML.
+                    El plugin usa <code>$(selector).load(url)</code> para inyectar cada fragmento de forma
+                    secuencial. Si un componente no tiene URL, oculta su contenedor con <code>.hide()</code>.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🎨</span>
+                <h4 class="home-page__feature-title">CSS y JS por Ruta</h4>
+                <p class="home-page__feature-text">
+                    Cada ruta puede declarar <code>styles</code> (array de <code>&#123; href &#125;</code>)
+                    y <code>scripts</code> (array de
+                    <code>&#123; src, type?, isModule?, exportFunctionName? &#125;</code>).
+                    Los CSS se precargan con <code>&lt;link rel="preload"&gt;</code> antes de aplicarse.
+                    Los scripts clásicos usan <code>$.getScript()</code>; los módulos ES6 usan <code>import()</code>
+                    dinámico con ejecución opcional de <code>exportFunctionName</code>.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">⚡</span>
+                <h4 class="home-page__feature-title">Caché y Eventos Personalizados</h4>
+                <p class="home-page__feature-text">
+                    Los módulos de ruta se cachean en un <code>Map</code> interno para evitar
+                    importaciones redundantes. El plugin emite eventos <code>spa:route-loaded</code>,
+                    <code>spa:first-route-loaded</code> y <code>spa:route-load-error</code> para
+                    desacoplar el loader visual de la navegación SPA.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔗</span>
+                <h4 class="home-page__feature-title">Reescritura de URLs en HTML</h4>
+                <p class="home-page__feature-text">
+                    Al inyectar fragmentos HTML, el plugin reescribe automáticamente las rutas
+                    relativas de <code>src</code>, <code>href</code>, <code>poster</code> y
+                    <code>srcset</code> respecto a la URL del fragmento origen, evitando enlaces
+                    rotos cuando los componentes referencian assets en su propio directorio.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🧭</span>
+                <h4 class="home-page__feature-title">Navegación con History API</h4>
+                <p class="home-page__feature-text">
+                    Intercepta clics en <code>a[data-id]</code> y <code>a[data-route]</code>.
+                    Con <code>data-id</code> resuelve la ruta en el manifest; con <code>data-route</code>
+                    importa directamente el módulo por nombre de archivo. Actualiza la URL con
+                    <code>history.pushState()</code> guardando <code>routeFile</code> y <code>favicon</code>
+                    en el state. El evento <code>popstate</code> restaura la vista usando primero
+                    <code>routeFile</code> del historial (más rápido, usa caché).
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">📐</span>
+                <h4 class="home-page__feature-title">Normalización de Rutas y Base</h4>
+                <p class="home-page__feature-text">
+                    Funciones internas <code>normalize()</code> y <code>buildPathname()</code> eliminan
+                    la <code>base</code> configurada y los slashes sobrantes para comparar rutas de forma
+                    fiable. Evita <code>pushState</code> duplicados cuando la URL solo difiere en la barra
+                    final (<code>/base/</code> vs <code>/base</code>).
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🏷️</span>
+                <h4 class="home-page__feature-title">Metadatos Dinámicos por Ruta</h4>
+                <p class="home-page__feature-text">
+                    Cada ruta puede definir <code>pageTitle</code>, <code>headerTitle</code> y
+                    <code>favicon</code>. El plugin actualiza <code>&lt;title&gt;</code>,
+                    <code>#headerTitle</code> / <code>#footerTitle</code> y el favicon al navegar.
+                    El favicon solo se reasigna cuando el archivo cambia realmente, evitando parpadeos
+                    en navegación atrás/adelante.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🚫</span>
+                <h4 class="home-page__feature-title">Ruta 404 Integrada</h4>
+                <p class="home-page__feature-text">
+                    Si la URL no coincide con ninguna entrada del manifest, el plugin carga
+                    automáticamente la ruta <code>404NotFoundPage</code> (también reconoce paths
+                    <code>404</code>, <code>404-not-found</code> o ids con <code>404</code>).
+                    Funciona en carga inicial, clics internos y <code>popstate</code>. Emite
+                    <code>spa:route-load-error</code> si no hay 404 configurada.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🛡️</span>
+                <h4 class="home-page__feature-title">Manejo de Errores</h4>
+                <p class="home-page__feature-text">
+                    Los fallos al cargar componentes, importar módulos o renderizar rutas disparan
+                    <code>spa:route-load-error</code> con <code>detail.source</code> y
+                    <code>detail.message</code>. En la carga inicial también emite
+                    <code>spa:first-route-loaded</code> como fallback para no bloquear el loader.
+                    Los errores 404 en <code>.load()</code> muestran un mensaje en el contenedor afectado.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">⏳</span>
+                <h4 class="home-page__feature-title">Loader Inicial Desacoplado</h4>
+                <p class="home-page__feature-text">
+                    El efecto <code>effect-loading-page.js</code> escucha
+                    <code>spa:first-route-loaded</code> y <code>spa:route-load-error</code>
+                    para ocultar el loader cuando la primera ruta SPA termina (éxito o error),
+                    con timeout de fallback de 6 segundos, manteniendo la UX fluida desde el arranque.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🧩</span>
+                <h4 class="home-page__feature-title">jQuery UI — Carga Bajo Demanda (<code>libs</code>)</h4>
+                <p class="home-page__feature-text">
+                    Cada ruta puede declarar <code>libs: [&#123; name: 'tooltip' &#125;, ...]</code>.
+                    Tras renderizar el DOM, el plugin invoca <code>settings.libLoader(name)</code>
+                    para importar módulos de jQuery UI solo cuando la ruta los necesita (datepicker,
+                    dialog, draggable, sortable, etc.), optimizando el peso inicial.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">✋</span>
+                <h4 class="home-page__feature-title">Elementos Draggable</h4>
+                <p class="home-page__feature-text">
+                    Tras cargar las libs de la ruta, <code>enableDraggables()</code> busca elementos
+                    con clase <code>.draggable</code> y aplica <code>.draggable(&#123; scroll: false &#125;)</code>
+                    de jQuery UI. La opción global <code>draggable: true</code> en la configuración del
+                    plugin habilita esta funcionalidad en el proyecto.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">☰</span>
+                <h4 class="home-page__feature-title">Navbar Interactivo (<code>actionsNavbar</code>)</h4>
+                <p class="home-page__feature-text">
+                    Inicializa el menú principal (<code>.navbar__container</code>) y el menú de themes
+                    (<code>#linksThemesContainer</code>) con animaciones <code>slideUp</code> /
+                    <code>slideDown</code> de jQuery. Cierra menús al hacer clic fuera y garantiza
+                    que solo uno esté abierto a la vez. Protegido con <code>try/catch</code> si la vista
+                    no incluye navbar.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🎭</span>
+                <h4 class="home-page__feature-title">Themes jQuery UI Dinámicos</h4>
+                <p class="home-page__feature-text">
+                    <code>changeThemesJQueryUI()</code> enlaza los links del panel de themes
+                    (<code>data-theme</code>) para cambiar el <code>href</code> de
+                    <code>#theme</code> en tiempo real. Activa la clase <code>.active</code> en el
+                    theme seleccionado e inicializa <code>.tooltip()</code> en el contenedor de themes.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">📜</span>
+                <h4 class="home-page__feature-title">Scripts con Verificación HEAD</h4>
+                <p class="home-page__feature-text">
+                    Antes de cargar un script clásico, el plugin verifica su existencia con
+                    <code>$.ajax({ type: 'HEAD' })</code>. Elimina scripts previos marcados con
+                    <code>data-page-script="true"</code> al cambiar de ruta. Soporta
+                    <code>type: 'module'</code> e <code>isModule: true</code> de forma equivalente.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔄</span>
+                <h4 class="home-page__feature-title">Gestión de Estilos por Página</h4>
+                <p class="home-page__feature-text">
+                    Al navegar, elimina hojas de estilo anteriores con
+                    <code>link[data-page-style="true"]</code> e inserta las nuevas de
+                    <code>route.styles</code> mediante preload + stylesheet, reduciendo parpadeos
+                    (FOUC) durante el cambio de vista.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔁</span>
+                <h4 class="home-page__feature-title">Origen de Navegación (<code>source</code>)</h4>
+                <p class="home-page__feature-text">
+                    <code>loadContent(route, source)</code> distingue <code>'init'</code>,
+                    <code>'click'</code> y <code>'popstate'</code>. Solo en clics internos ejecuta
+                    <code>pushState</code>; en carga inicial usa <code>replaceState</code> externo
+                    y en <code>popstate</code> respeta el historial ya actualizado por el navegador.
+                </p>
+            </article>
+
+        </div>
+    </section>
+
+    <!--  -----  Integración jQuery UI  -----  -->
+    <section class="home-page__features">
+
+        <h3 class="home-page__features-title">Integración jQuery UI</h3>
+
+        <div class="home-page__features-grid">
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">⚙️</span>
+                <h4 class="home-page__feature-title">Opciones del Plugin</h4>
+                <p class="home-page__feature-text">
+                    Configuración vía <code>$.extend()</code>: <code>routeManifest</code>,
+                    <code>routeModulesBase</code>, <code>base</code>, <code>draggable</code> y
+                    <code>libLoader</code>. El archivo <code>spa.js</code> del proyecto pasa el manifest,
+                    la base del deploy y el cargador de módulos jQuery UI al inicializar el plugin.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">💡</span>
+                <h4 class="home-page__feature-title">Tooltips en Navbar</h4>
+                <p class="home-page__feature-text">
+                    Las rutas que cargan la lib <code>tooltip</code> pueden usar
+                    <code>.tooltip()</code> de jQuery UI en el panel de themes y en elementos
+                    del layout, activándose tras la carga bajo demanda del widget correspondiente.
+                </p>
+            </article>
+
+        </div>
+    </section>
+
+    <!--  -----  Opciones de Configuración  -----  -->
+    <section class="home-page__tags-section">
+
+        <h3 class="home-page__tags-title">Opciones de Configuración</h3>
+
+        <ul class="home-page__tags">
+            <li class="home-page__tag">routeManifest</li>
+            <li class="home-page__tag">routeModulesBase</li>
+            <li class="home-page__tag">base</li>
+            <li class="home-page__tag">draggable</li>
+            <li class="home-page__tag">libLoader</li>
+            <li class="home-page__tag">id</li>
+            <li class="home-page__tag">path</li>
+            <li class="home-page__tag">file</li>
+            <li class="home-page__tag">components</li>
+            <li class="home-page__tag">libs[ ]</li>
+            <li class="home-page__tag">url</li>
+            <li class="home-page__tag">data-id</li>
+            <li class="home-page__tag">data-route</li>
+            <li class="home-page__tag">routeFile</li>
+            <li class="home-page__tag">styles[ ]</li>
+            <li class="home-page__tag">scripts[ ]</li>
+            <li class="home-page__tag">type</li>
+            <li class="home-page__tag">isModule</li>
+            <li class="home-page__tag">exportFunctionName</li>
+            <li class="home-page__tag">pageTitle</li>
+            <li class="home-page__tag">headerTitle</li>
+            <li class="home-page__tag">favicon</li>
+        </ul>
+
+    </section>
+
+    <!--  -----  Eventos Personalizados  -----  -->
+    <section class="home-page__tags-section">
+
+        <h3 class="home-page__tags-title">Eventos Personalizados</h3>
+
+        <ul class="home-page__tags home-page__tags--events">
+            <li class="home-page__tag">spa:route-loaded</li>
+            <li class="home-page__tag">spa:first-route-loaded</li>
+            <li class="home-page__tag">spa:route-load-error</li>
+        </ul>
+
+    </section>
+
+    <!--  -----  Pipeline de Desarrollo  -----  -->
+    <section class="home-page__features">
+
+        <h3 class="home-page__features-title">Pipeline de Desarrollo</h3>
+
+        <section class="home-page__intro home-page__intro--pipeline">
+            <p class="home-page__intro-text">
+                El proyecto separa el código fuente (<code>src/</code>) del artefacto servible
+                (<code>app/</code>) y del build de producción minificado (<code>dist/</code>).
+                <strong>Gulp</strong> orquesta la copia, compilación SCSS y
+                minificación; los servidores Express añaden fallback SPA, live reload y
+                soporte PHP en desarrollo.
+            </p>
+        </section>
+
+        <div class="home-page__features-grid">
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">📁</span>
+                <h4 class="home-page__feature-title">Gulp — src → app</h4>
+                <p class="home-page__feature-text">
+                    La tarea <code>copyAll</code> copia componentes, páginas, rutas, plugins,
+                    scripts y efectos desde <code>src/</code> a <code>app/</code>, y compila
+                    <code>globals.scss</code> y los SCSS de cada página a CSS con sourcemaps.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">👀</span>
+                <h4 class="home-page__feature-title">Watch en Tiempo Real</h4>
+                <p class="home-page__feature-text">
+                    <code>gulp dev</code> ejecuta <code>copyAll</code> y observa cambios en
+                    <code>src/</code>. Al modificar SCSS, recompila estilos y copia los
+                    cambios a <code>app/</code>. Soporta polling vía
+                    <code>CHOKIDAR_USEPOLLING</code> para entornos Linux con límites de inotify.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🌐</span>
+                <h4 class="home-page__feature-title">Dev Server + BrowserSync</h4>
+                <p class="home-page__feature-text">
+                    <code>pnpm dev</code> lanza Gulp watch y un servidor Express con fallback
+                    SPA, archivos estáticos bajo la base del proyecto, soporte
+                    <code>php-cgi</code> y proxy BrowserSync con live reload en
+                    <code>app/</code> e <code>index.html</code> (puerto configurable con
+                    <code>DEV_SERVER_PORT</code>).
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">📦</span>
+                <h4 class="home-page__feature-title">Build de Producción</h4>
+                <p class="home-page__feature-text">
+                    <code>pnpm build</code> limpia <code>dist/</code> y <code>app/</code>,
+                    regenera <code>app/</code> desde <code>src/</code> y minifica HTML, CSS y JS
+                    con <code>htmlmin</code>, <code>clean-css</code> y <code>terser</code>
+                    hacia <code>dist/</code>, listo para despliegue.
+                </p>
+            </article>
+
+            <article class="home-page__feature">
+                <span class="home-page__feature-icon" aria-hidden="true">🔍</span>
+                <h4 class="home-page__feature-title">Preview Server</h4>
+                <p class="home-page__feature-text">
+                    <code>pnpm preview</code> sirve el contenido de <code>dist/</code> con
+                    Express, fallback SPA y la misma base de rutas que en desarrollo. Permite
+                    validar el build minificado antes de publicar (puerto
+                    <code>PREVIEW_SERVER_PORT</code>, por defecto 4173).
+                </p>
+            </article>
+
+        </div>
+
+    </section>
+
+    <!--  -----  Scripts npm  -----  -->
+    <section class="home-page__tags-section">
+
+        <h3 class="home-page__tags-title">Scripts pnpm</h3>
+
+        <ul class="home-page__tags home-page__tags--scripts">
+            <li class="home-page__tag">pnpm dev</li>
+            <li class="home-page__tag">pnpm dev:watch</li>
+            <li class="home-page__tag">pnpm serve:dev</li>
+            <li class="home-page__tag">pnpm stop:dev</li>
+            <li class="home-page__tag">pnpm build</li>
+            <li class="home-page__tag">pnpm preview</li>
+        </ul>
+
+    </section>
+
+</div>

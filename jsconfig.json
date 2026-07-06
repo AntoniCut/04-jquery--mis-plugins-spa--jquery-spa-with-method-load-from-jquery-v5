@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "module": "ESNext",
+        "target": "ES2022",
+        "lib": [
+            "ES2022",
+            "DOM"
+        ],
+        "moduleResolution": "bundler"
+    },
+    "include": [
+        "types",
+        "src",
+        "src/libs/jquery/core/types/global.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

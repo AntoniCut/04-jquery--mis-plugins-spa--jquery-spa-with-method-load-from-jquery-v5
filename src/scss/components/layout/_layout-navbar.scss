@@ -1,0 +1,324 @@
+/*
+    *  ----------------------------------------------------------------------------------------  *
+    *  -----  _layout-navbar.scss  --  /src/styles/components/layout/_layout-navbar.scss  -----  *
+    *  ----------------------------------------------------------------------------------------  *
+*/
+
+
+@use '../../base/variables' as var;
+@use '../../base/mixins' as mix;
+
+
+/*  
+    ---------------------------
+    -----  Layout Navbar  -----
+    ---------------------------
+*/
+
+.layout__navbar {
+    
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    
+    z-index: 1000;
+   
+}
+
+
+/*  
+    ----------------------------
+    -----  Menú principal  -----  
+    ----------------------------
+*/
+
+.navbar__container {
+    
+    position: fixed;
+    
+    width: min(100%, 72rem);
+    max-height: 90dvh;
+    
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    padding: 1.25rem;
+    
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+    
+    background-color: rgba(255, 255, 255, 0.92);
+    background-image:
+        linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+        linear-gradient(to right, rgba(229, 231, 235, 0.7) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(229, 231, 235, 0.7) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px, 32px 32px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.25rem;
+    box-shadow:
+        0 20px 45px rgba(3, 106, 173, 0.18),
+        0 4px 12px rgba(15, 23, 42, 0.08);
+
+    @include mix.tablet {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding: 1.75rem 2rem;
+    }
+}
+
+
+/*
+    --------------------------------------
+    -----  Título del menú (navbar)  -----
+    --------------------------------------
+*/
+
+.navbar__title {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    
+    border-radius: 1rem;
+    background: var.$bg-title-layout-main;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(100, 215, 127, 0.35);
+}
+
+.navbar__title--first {
+    margin-top: 0;
+}
+
+.navbar__brand-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.55);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(3, 106, 173, 0.15);
+    }
+}
+
+.navbar-jquery-icon,
+.navbar-jquery-ui-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: block;
+}
+
+.navbar__title-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 8rem;
+}
+
+.navbar__title-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var.$color-primary;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(3, 106, 173, 0.2);
+}
+
+.navbar__title h3,
+.navbar-themes-jquery-ui__title h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var.$color-primary;
+    text-shadow: none;
+}
+
+
+/*
+    ---------------------------------
+    -----  Navegación y secciones  -----
+    ---------------------------------
+*/
+
+.navbar__nav {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    @include mix.tablet {
+        flex: 1;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+}
+
+.navbar__section {
+    flex: 1 1 16rem;
+    min-width: min(100%, 16rem);
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.navbar__section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    padding: 0 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.navbar__section-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var.$color-primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+
+/*
+    ---------------------------------------------
+    -----  Lista e Items del menú (navbar)  -----
+    ---------------------------------------------
+*/
+
+.navbar__list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: transparent;
+}
+
+
+.navbar__item {
+    width: 100%;
+    padding: 0;
+}
+
+.navbar__item a {
+    
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.75rem;
+    
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    
+    cursor: pointer;
+    transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        border-color 220ms ease,
+        background 220ms ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        border-radius: 0.75rem 0 0 0.75rem;
+        background: var(--navbar-accent, var.$color-primary);
+        opacity: 0.85;
+        transition: width 220ms ease;
+    }
+
+    &:hover {
+        transform: translateX(4px);
+        border-color: rgba(59, 130, 246, 0.45);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+        background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+
+        &::before {
+            width: 6px;
+        }
+    }
+}
+
+.navbar__link-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #fff;
+    background: var(--navbar-accent, var.$color-primary);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.navbar__link-text {
+    flex: 1;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.navbar__item--home { --navbar-accent: #036aad; }
+.navbar__item--html { --navbar-accent: #e44d26; }
+.navbar__item--css { --navbar-accent: #264de4; }
+.navbar__item--js { --navbar-accent: #f7df1e; color: #1e293b; }
+.navbar__item--js a { color: #1e293b; }
+.navbar__item--js .navbar__link-icon { color: #1e293b; }
+.navbar__item--jquery { --navbar-accent: #0769ad; }
+.navbar__item--jquery-ui { --navbar-accent: #ff9900; }
+.navbar__item--react { --navbar-accent: #61dafb; }
+.navbar__item--react .navbar__link-icon { color: #0f172a; }
+.navbar__item--astro { --navbar-accent: #bc52ee; }

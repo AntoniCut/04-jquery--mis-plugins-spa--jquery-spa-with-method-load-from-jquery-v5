@@ -1,0 +1,53 @@
+{
+  "name": "jquery-spa-with-method-load-from-jquery-v5",
+  "version": "1.0.0",
+  "description": "Proyecto jQuery SPA con método load desde jQuery - v4",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n watch,serve -c yellow,cyan \"pnpm run dev:watch\" \"pnpm run serve:dev\"",
+    "dev:watch": "gulp dev",
+    "serve:dev": "node server/dev-server.js",
+    "stop:dev": "node server/stop-dev-server.js",
+    "server": "pnpm run serve:dev",
+    "code-highlight": "node generate-markdown-shiki.js",
+    "build": "gulp build",
+    "preview": "node server/preview-server.js --open",
+    "add:ts-nocheck": "cross-env NODE_ENV=development node addTsNoCheck.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jquery spa with method load from jquery v5",
+    "jquery",
+    "jqueryui"
+    ],
+  "author": "Antonio Francisco Cutillas García",
+  "license": "ISC",
+  "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228",
+  "devDependencies": {
+    "@types/gulp": "^4.0.18",
+    "@types/jquery": "^4.0.0",
+    "@types/jqueryui": "^1.12.24",
+    "browser-sync": "^3.0.3",
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "del": "^8.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "gulp": "^5.0.1",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-plumber": "^1.2.1",
+    "gulp-sass": "^6.0.1",
+    "gulp-terser": "^2.1.0",
+    "sass": "^1.97.3",
+    "sharp": "^0.34.5"
+  },
+  "dependencies": {
+    "jquery": "^4.0.0",
+    "jquery-ui": "^1.14.2",
+    "markdown-it": "^14.2.0",
+    "markdown-it-shiki": "^0.9.0",
+    "shiki": "^4.1.0"
+  }
+}
