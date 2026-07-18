@@ -10,14 +10,25 @@ import gulp from 'gulp';
 import gulpSass from 'gulp-sass';
 import * as dartSass from 'sass';
 import { exec } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { deleteAsync } from 'del';
 import terser from 'gulp-terser';
 import cleanCSS from 'gulp-clean-css';
-import htmlmin from 'gulp-htmlmin';
 import { Transform } from 'stream';
 import plumber from 'gulp-plumber';
 import fs from 'fs';
 import path from 'node:path';
+
+
+
+/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
+const require = createRequire(import.meta.url);
+
+/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
+const htmlMinifierRequire = createRequire(require.resolve('gulp-htmlmin/package.json'));
+
+/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
+const { minify: minifyHtmlString } = htmlMinifierRequire('html-minifier');
 
 import { generateMarkdownShiki } from './generate-markdown-shiki.js';
 
@@ -196,6 +207,44 @@ const validateFiles = (taskName) => new Transform({
         if (file.stat?.isDirectory?.()) return cb(null, file);
         if (file.isNull()) console.warn(`[${taskName}] Archivo vacío: ${rel}`);
         if (file.isStream()) console.warn(`[${taskName}] Stream no soportado: ${rel}`);
+        cb(null, file);
+    },
+});
+
+
+/**
+ * --------------------------------
+ * -----  `safeHtmlmin()`  -----
+ * --------------------------------
+ * - Minifica HTML archivo a archivo. Si uno falla (p. ej. `<>` sin escapar),
+ *   se copia sin minificar y el resto del build continúa hacia dist/.
+ * @param {string} taskName
+ * @returns {Transform}
+ */
+const safeHtmlmin = (taskName = 'safeHtmlmin') => new Transform({
+
+    objectMode: true,
+
+    transform(file, _enc, cb) {
+        if (file.isNull() || file.stat?.isDirectory?.())
+            return cb(null, file);
+
+        if (!file.isBuffer())
+            return cb(null, file);
+
+        const rel = path.relative(process.cwd(), file.path || '');
+
+        try {
+            const out = minifyHtmlString(file.contents.toString('utf8'), {
+                collapseWhitespace: true,
+                removeComments: true,
+            });
+            file.contents = Buffer.from(out);
+        } catch (err) {
+            console.error(`[${taskName}] HTML inválido, se copia sin minificar: ${rel}`);
+            console.error(`  → ${err.message.split('\n')[0]}`);
+        }
+
         cb(null, file);
     },
 });
@@ -602,7 +651,7 @@ export const minifyRootIndex = () =>
     
     src('index.html', { allowEmpty: true })
         .pipe(safePipe())
-        .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
+        .pipe(safeHtmlmin('minifyRootIndex'))
         .pipe(validateFiles('minifyRootIndex'))
         .pipe(dest(paths.distRoot));
 
@@ -615,7 +664,7 @@ export const minifyHtml = () =>
         ? Promise.resolve()
         : src(paths.app.html, { base: '.', allowEmpty: true })
             .pipe(safePipe())
-            .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
+            .pipe(safeHtmlmin('minifyHtml'))
             .pipe(validateFiles('minifyHtml'))
             .pipe(dest(paths.distRoot));
 

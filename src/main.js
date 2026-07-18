@@ -23,6 +23,7 @@ export { base };
 
 
 if (typeof window !== 'undefined') {
+    
     loadJQueryCoreByImport()
 
     .then(() => {
