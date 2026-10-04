@@ -9,7 +9,12 @@
 export const base = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
 
 
-/** - `path para las rutas de la SPA` */
+/** 
+ * ------------------------
+ * -----  `paths {}`  -----
+ * ------------------------
+ * - `path para las rutas de la SPA` 
+ */
 export const paths = {
     favicon: `${base}/assets/favicon`,
     layoutHeader: `${base}/app/components/layout/layout-header.html`,

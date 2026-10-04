@@ -25,7 +25,7 @@ const {
 } = paths;
 
 
-/** @type {import('../../types/index.js').Route} */
+/** @type {Route} - `Ruta de la página 404 Not Found` */
 export const route404NotFoundPage = {
         id: '404NotFoundPage',
         favicon: `${favicon}/jquery-icon.svg`,

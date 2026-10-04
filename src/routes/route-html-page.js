@@ -26,7 +26,7 @@ const {
 } = paths;
 
 
-/** @type {import('../../types/index.js').Route} */
+/** @type {Route} - `Ruta de la página HTML` */
 export const routeHtmlPage = {
         id: 'htmlPage',
         favicon: `${favicon}/html-icon.svg`,

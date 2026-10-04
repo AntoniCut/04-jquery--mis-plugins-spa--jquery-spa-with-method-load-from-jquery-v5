@@ -14,12 +14,14 @@ declare global {
     interface JQuery {
         
         /**
+         * ----------------------------------------------------
+         * -----  plugin `spaWithMethodLoadFromJQuery()`  -----
+         * ----------------------------------------------------
          * - `Plugin SPA` personalizado que usa el método `load()`.
-         * @param options - Objeto de configuración para la SPA.
-         * @returns {JQuery}
+         * @param {ConfigOptionsSPA} options - `Objeto de configuración para la SPA`.
+         * @returns {JQuery} - `Retorna el objeto jQuery para encadenamiento`.
          */
-        
-        spaWithMethodLoadFromJQuery(options: object): JQuery;
+        spaWithMethodLoadFromJQuery(options: ConfigOptionsSPA): JQuery;
 
     }
 

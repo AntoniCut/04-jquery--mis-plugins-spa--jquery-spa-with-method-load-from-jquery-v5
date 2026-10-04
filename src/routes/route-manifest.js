@@ -6,11 +6,14 @@
 
 
 /**
+ * -------------------------------
+ * -----  `RouteManifest[]`  -----
+ * -------------------------------
  * - Manifiesto ligero de rutas: solo id, path y nombre de archivo (sin imports).
  * - Se usa para lazy loading: el módulo de cada ruta se importa dinámicamente bajo demanda.
  * - IMPORTANTE: `path` aquí DEBE coincidir exactamente con `route.path` de cada módulo,
  *   de lo contrario el pushState del plugin escribiría una URL distinta a la del manifest.
- * @type {import('../../types/index.js').RouteManifest[]}
+ * @type {RouteManifest[]} - `Manifiesto ligero de rutas: solo id, path y nombre de archivo (sin imports)`
  */
 export const routeManifest = [
 
