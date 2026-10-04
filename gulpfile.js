@@ -1,7 +1,7 @@
 /*
-    *  --------------------------------------------  *
-    *  -----  /gulpfile.js  --  /gulpfile.js  -----  *
-    *  --------------------------------------------  *
+    *  -------------------------------------------  *
+    *  -----  gulpfile.js  --  /gulpfile.js  -----  *
+    *  -------------------------------------------  *
 */
 
 
@@ -10,25 +10,16 @@ import gulp from 'gulp';
 import gulpSass from 'gulp-sass';
 import * as dartSass from 'sass';
 import { exec } from 'node:child_process';
-import { createRequire } from 'node:module';
 import { deleteAsync } from 'del';
 import terser from 'gulp-terser';
 import cleanCSS from 'gulp-clean-css';
+import htmlmin from 'gulp-htmlmin';
 import { Transform } from 'stream';
 import plumber from 'gulp-plumber';
 import fs from 'fs';
 import path from 'node:path';
 
-
-
-/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
-const require = createRequire(import.meta.url);
-
-/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
-const htmlMinifierRequire = createRequire(require.resolve('gulp-htmlmin/package.json'));
-
-/** - `Minifier de gulp-htmlmin` (pnpm nested); minificado por archivo sin abortar el stream. */
-const { minify: minifyHtmlString } = htmlMinifierRequire('html-minifier');
+import sharp from 'sharp';
 
 import { generateMarkdownShiki } from './generate-markdown-shiki.js';
 
@@ -84,6 +75,7 @@ const paths = {
     root: {
         assetsDir: path.join('assets'),
         assets: path.posix.join('assets', '**/*'),
+        claseImagesPng: path.posix.join('assets', 'img', 'clase-*', '*.png'),
     },
 
     src: {
@@ -122,7 +114,7 @@ const paths = {
         spa: path.posix.join('src', 'spa', '**/*'),
 
         servicesDir: path.join('src', 'services'),
-        services: path.posix.join('src', 'services', '**/*.php'),
+        services: path.posix.join('src', 'services', '**/*.{php,js,json,sql,html}'),
 
         scriptsDir: path.join('src', 'scripts'),
         scripts: path.posix.join('src', 'scripts', '**/*.js'),
@@ -212,44 +204,6 @@ const validateFiles = (taskName) => new Transform({
 });
 
 
-/**
- * --------------------------------
- * -----  `safeHtmlmin()`  -----
- * --------------------------------
- * - Minifica HTML archivo a archivo. Si uno falla (p. ej. `<>` sin escapar),
- *   se copia sin minificar y el resto del build continúa hacia dist/.
- * @param {string} taskName
- * @returns {Transform}
- */
-const safeHtmlmin = (taskName = 'safeHtmlmin') => new Transform({
-
-    objectMode: true,
-
-    transform(file, _enc, cb) {
-        if (file.isNull() || file.stat?.isDirectory?.())
-            return cb(null, file);
-
-        if (!file.isBuffer())
-            return cb(null, file);
-
-        const rel = path.relative(process.cwd(), file.path || '');
-
-        try {
-            const out = minifyHtmlString(file.contents.toString('utf8'), {
-                collapseWhitespace: true,
-                removeComments: true,
-            });
-            file.contents = Buffer.from(out);
-        } catch (err) {
-            console.error(`[${taskName}] HTML inválido, se copia sin minificar: ${rel}`);
-            console.error(`  → ${err.message.split('\n')[0]}`);
-        }
-
-        cb(null, file);
-    },
-});
-
-
 
 /**
  * ---------------------------
@@ -293,13 +247,39 @@ export const cleanApp = () => deleteAsync(['app']);
 
 
 /**
+ * --------------------------------------
+ * -----  `cleanMarkdownShiki()`  -----
+ * --------------------------------------
+ * - Elimina src/markdown-shiki/.
+ * - Esa carpeta la regenera generateShiki a partir
+ *   de las rutas; si no se limpia, quedan HTML
+ *   huérfanos de ejercicios borrados.
+ */
+
+export const cleanMarkdownShiki = () => deleteAsync([paths.src.markdownShikiDir]);
+
+
+
+/**
+ * ---------------------------
+ * -----  `resetDev()`  ------
+ * ---------------------------
+ * - Vacía app/ y src/markdown-shiki/ para que
+ *   copyAll no deje archivos que ya no existen en src/.
+ */
+
+export const resetDev = parallel(cleanApp, cleanMarkdownShiki);
+
+
+
+/**
  * -----------------------
  * -----  `clean()`  -----
  * -----------------------
- * - Elimina en paralelo dist/ y app/.
+ * - Elimina en paralelo dist/, app/ y markdown-shiki.
  */
 
-export const clean = parallel(cleanDist, cleanApp);
+export const clean = parallel(cleanDist, cleanApp, cleanMarkdownShiki);
 
 
 
@@ -371,6 +351,172 @@ const createCopyTask = (name, opts) => {
     return fn;
 
 };
+
+
+
+/*
+    ------------------------------------------
+    -----  🖼  --  IMAGENES  PNG → AVIF  -----
+    ------------------------------------------
+    Recorre assets/img/clase-* y, por cada PNG
+    de captura, genera 2 AVIF (max 280x247 y
+    560x494) sin recortar. El PNG queda de
+    fallback.
+*/
+
+
+/**
+ * @typedef {Object} ImageAvifSize
+ * @property {number} width  — Ancho de salida.
+ * @property {number} height — Alto de salida.
+ */
+
+
+/** @type {ImageAvifSize[]} */
+const AVIF_VARIANTS = [
+    { width: 280, height: 247 },
+    { width: 560, height: 494 },
+];
+
+
+/**
+ * -------------------------------------
+ * -----  `listClasePngSources()`  -----
+ * -------------------------------------
+ * - Lista los PNG de captura en assets/img/clase-*.
+ * @return {string[]}
+ */
+const listClasePngSources = () => {
+    const imgRoot = path.join('assets', 'img');
+
+    if (!fs.existsSync(imgRoot)) {
+        return [];
+    }
+
+    const classDirs = fs.readdirSync(imgRoot, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory() && entry.name.startsWith('clase-'));
+
+    /** @type {string[]} */
+    const files = [];
+
+    for (const classDir of classDirs) {
+        const dirPath = path.join(imgRoot, classDir.name);
+        const names = fs.readdirSync(dirPath);
+
+        for (const name of names) {
+            if (!name.toLowerCase().endsWith('.png')) {
+                continue;
+            }
+
+            const base = name.slice(0, -4);
+
+            if (/-280x247$/.test(base) || /-560x494$/.test(base)) {
+                continue;
+            }
+
+            files.push(path.join(dirPath, name));
+        }
+    }
+
+    return files;
+};
+
+
+/**
+ * --------------------------------------
+ * -----  `getImageStem(fileName)`  -----
+ * --------------------------------------
+ * - Quita la extension y el sufijo -AnchoAlto del PNG.
+ * @param {string} fileName - Nombre del archivo PNG.
+ * @return {string}
+ */
+const getImageStem = (fileName) => {
+    const base = fileName.replace(/\.png$/i, '');
+    const stripped = base.replace(/-\d+x\d+$/, '');
+
+    return stripped || base;
+};
+
+
+/**
+ * -------------------------------------------------------
+ * -----  `shouldWriteAvif(inputPath, outputPath)`  -----
+ * -------------------------------------------------------
+ * - Regenera el AVIF si no existe o el PNG es mas nuevo.
+ * @param {string} inputPath - PNG de origen.
+ * @param {string} outputPath - AVIF de salida.
+ * @return {boolean}
+ */
+const shouldWriteAvif = (inputPath, outputPath) => {
+    if (!fs.existsSync(outputPath)) {
+        return true;
+    }
+
+    const inputStat = fs.statSync(inputPath);
+    const outputStat = fs.statSync(outputPath);
+
+    return inputStat.mtimeMs > outputStat.mtimeMs;
+};
+
+
+/**
+ * --------------------------------------------------------------------
+ * -----  `writeAvifImage(inputPath, outputPath, width, height)`  -----
+ * --------------------------------------------------------------------
+ * - Encaja el PNG completo en el recuadro, sin recortar, y lo escribe como AVIF.
+ * @param {string} inputPath - PNG de origen.
+ * @param {string} outputPath - Ruta del AVIF de salida.
+ * @param {number} width - Ancho de salida.
+ * @param {number} height - Alto de salida.
+ * @return {Promise<void>}
+ */
+const writeAvifImage = async (inputPath, outputPath, width, height) => {
+    await sharp(inputPath)
+        .resize(width, height, {
+            fit: 'inside',
+            withoutEnlargement: true,
+        })
+        .avif({ quality: 55 })
+        .toFile(outputPath);
+};
+
+
+/**
+ * --------------------------------
+ * -----  `convertImages()`  -----
+ * --------------------------------
+ * - Genera 2 AVIF por cada PNG de captura en clase-*.
+ * @return {Promise<void>}
+ */
+export const convertImages = async () => {
+    const sources = listClasePngSources();
+
+    if (sources.length === 0) {
+        console.log('ℹ️  No hay PNG en assets/img/clase-*');
+        return;
+    }
+
+    for (const inputPath of sources) {
+        const destDir = path.dirname(inputPath);
+        const stem = getImageStem(path.basename(inputPath));
+
+        for (const size of AVIF_VARIANTS) {
+            const avifPath = path.join(
+                destDir,
+                `${stem}-${size.width}x${size.height}.avif`
+            );
+
+            if (!shouldWriteAvif(inputPath, avifPath)) {
+                continue;
+            }
+
+            await writeAvifImage(inputPath, avifPath, size.width, size.height);
+            console.log(`✅  ${avifPath}`);
+        }
+    }
+};
+
+convertImages.displayName = 'convertImages';
 
 
 
@@ -498,7 +644,14 @@ const phpMinifyTransform = () => new Transform({
 */
 
 
-/** Compila src/scss/globals.scss → app/css/globals.css. */
+/**
+ * - `true` incrusta el mapa en el CSS (Base64, cientos de KB).
+ * - `'.'` escribe un `archivo.css.map` junto al CSS compilado.
+ */
+const CSS_SOURCEMAPS = '.';
+
+
+/** Compila src/scss/globals.scss → app/css/globals.css + globals.css.map. */
 export const css = () =>
     
     !fs.existsSync(paths.src.scssGlobals)
@@ -507,11 +660,11 @@ export const css = () =>
             .pipe(safePipe())
             .pipe(sass().on('error', sass.logError))
             .pipe(validateFiles('css'))
-            .pipe(dest(path.posix.join(paths.appRoot, 'css'), { sourcemaps: true }));
+            .pipe(dest(path.posix.join(paths.appRoot, 'css'), { sourcemaps: CSS_SOURCEMAPS }));
 
 
 
-/** Compila src/scss/pages/*.scss → app/css/pages/*.css. */
+/** Compila src/scss/pages/*.scss → app/css/pages/*.css + *.css.map. */
 export const cssPages = () =>
     
     !existsDir(paths.src.scssPagesDir)
@@ -520,7 +673,7 @@ export const cssPages = () =>
             .pipe(safePipe())
             .pipe(sass().on('error', sass.logError))
             .pipe(validateFiles('cssPages'))
-            .pipe(dest(path.posix.join(paths.appRoot, 'css', 'pages'), { sourcemaps: true }));
+            .pipe(dest(path.posix.join(paths.appRoot, 'css', 'pages'), { sourcemaps: CSS_SOURCEMAPS }));
 
 
 
@@ -579,10 +732,23 @@ const buildSources = parallel(
 //  generateShiki genera el HTML de Shiki desde los fuentes; copyMarkdownShiki
 //  copia el HTML recién generado a app/markdown-shiki/.
 const copyAll = series(
+    convertImages,
     buildSources,
     generateShiki,
     copyMarkdownShiki,
 );
+
+
+
+/**
+ * -----------------------------
+ * -----  `refresh()`  ---------
+ * -----------------------------
+ * - Resetea destinos y vuelve a copiar/compilar
+ *   src/ → app/ sin quedar a la escucha.
+ */
+
+export const refresh = series(resetDev, copyAll);
 
 
 
@@ -615,6 +781,7 @@ const watchTask = () => {
         [paths.src.scripts, copyScripts],
         [paths.src.main, copyMain],
         [paths.src.scssAll, series(styles, generateShiki, copyMarkdownShiki)],
+        [paths.root.claseImagesPng, convertImages],
     ];
 
     for (const [glob, task] of watchers) {
@@ -626,9 +793,15 @@ const watchTask = () => {
 watchTask.displayName = 'watch';
 
 
+/** Solo observa src/. El reset y la copia inicial van en `refresh` / `dev`. */
+export const watchSrc = () => watchTask();
 
-/** Genera app/ y queda escuchando cambios. El servidor se levanta con `pnpm run server`. */
-export const dev = series(copyAll, watchTask);
+watchSrc.displayName = 'watchSrc';
+
+
+
+/** Resetea destinos, genera app/ y queda escuchando cambios. El servidor se levanta con `pnpm run server`. */
+export const dev = series(resetDev, copyAll, watchTask);
 
 
 
@@ -651,7 +824,7 @@ export const minifyRootIndex = () =>
     
     src('index.html', { allowEmpty: true })
         .pipe(safePipe())
-        .pipe(safeHtmlmin('minifyRootIndex'))
+        .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
         .pipe(validateFiles('minifyRootIndex'))
         .pipe(dest(paths.distRoot));
 
@@ -664,7 +837,7 @@ export const minifyHtml = () =>
         ? Promise.resolve()
         : src(paths.app.html, { base: '.', allowEmpty: true })
             .pipe(safePipe())
-            .pipe(safeHtmlmin('minifyHtml'))
+            .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
             .pipe(validateFiles('minifyHtml'))
             .pipe(dest(paths.distRoot));
 
@@ -761,12 +934,12 @@ export function addTsNoCheck(cb) {
  * -----  🚀  --  BUILD  -----
  * ---------------------------
  * Build de producción: clean → copy/compile → minify.
- * 1. Limpia dist/ y app/.
+ * 1. Limpia dist/, app/ y markdown-shiki.
  * 2. Copia y compila src/ → app/.
  * 3. Minifica app/ → dist/.
  */
 export const build = series(
-    parallel(cleanDist, cleanApp),
+    parallel(cleanDist, cleanApp, cleanMarkdownShiki),
     copyAll,
     parallel(minifyAllJs, minifyAllCss, minifyRootIndex, minifyHtml, minifyServices, copyStaticAssetsToDist, copyRootAssetsToDist),
 );
