@@ -9,6 +9,9 @@ pnpm-lock.yaml
 # Carpeta de distribución / compilados
 dist/
 
+# Deploy local (IP y rutas del VPS)
+deploy.sh
+
 
 # Sistema y editor (opcional, recomendable)
 .DS_Store
