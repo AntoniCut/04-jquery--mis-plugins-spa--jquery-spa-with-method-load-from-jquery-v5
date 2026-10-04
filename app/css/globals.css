@@ -1617,20 +1617,58 @@ input[type=submit]:hover {
 .layout__main {
   flex: 1;
   width: 100%;
+  min-width: 0;
   display: flex;
   justify-content: center;
 }
 
 .main__container {
   width: 100%;
+  min-width: 0;
   max-width: 102.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 5rem;
-  padding: 5rem 1rem;
+  padding: 5rem 2rem;
   margin-bottom: 10rem;
+}
+@media (min-width: 480px) {
+  .main__container {
+    padding-inline: 2.4rem;
+  }
+}
+@media (min-width: 768px) {
+  .main__container {
+    padding-inline: 3rem;
+  }
+}
+
+/*
+    En pantallas estrechas un <code> largo (p. ej. $.fn.spaWithMethodLoadFromJQuery)
+    fija el min-content de la tarjeta. .layout centra ese bloque y overflow-x: hidden
+    recorta el lado izquierdo. min-width: 0 deja encoger la columna; overflow-wrap
+    parte el identificador dentro del hueco.
+*/
+.main__container > *,
+.main__container :is([class$=-page], .home-demo),
+.main__container [class*=__features-grid],
+.main__container [class*=__features-grid] > *,
+.main__container [class*=__features-grid] > * > *,
+.main__container [class*=__intro],
+.main__container [class*=__hero] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.main__container :is(code,
+[class*=__hero-title],
+[class*=__hero-subtitle],
+[class*=__feature-title],
+[class*=__feature-text],
+[class*=__intro-text]) {
+  overflow-wrap: anywhere;
 }
 
 .main__title {
