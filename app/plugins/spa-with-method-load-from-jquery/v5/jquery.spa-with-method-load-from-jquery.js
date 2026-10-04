@@ -41,17 +41,16 @@
  *     - Reescritura de URLs en HTML inyectado para evitar roturas en la SPA.
  *     - Funciones auxiliares para manejo de rutas, módulos y metadatos.
  */
-
 export const spaWithMethodLoadFromJQueryPlugins = () => {
 
 
     /*
-        *  ---------------------------------------------------------------------------
-        *  -----  Función Anónima Autoejecutable que Encapsula el plugin jQuery  -----
-        *  ---------------------------------------------------------------------------
+        *  ---------------------------------------------------------------------------  *
+        *  -----  Función Anónima Autoejecutable que Encapsula el plugin jQuery  -----  *
+        *  ---------------------------------------------------------------------------  *
     */
-
-    
+   
+            
     (($) => {
 
 
@@ -59,9 +58,7 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
          * ------------------------------------------------
          * -----  `$.fn.spaWithMethodLoadFromJQuery`  -----
          * ------------------------------------------------
-         * 
          * - Plugin SPA que añade funcionalidad al prototipo de jQuery.
-         * 
          * @param {ConfigOptionsSPA} options - `Opciones de configuración de la SPA`
          * @returns {JQuery} - `Retorna el objeto jQuery para encadenamiento`
          */
@@ -70,30 +67,40 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
 
 
             /*
-                -------------------------------------------------------------------------
-                -----  Configuración por defecto (solo lo estrictamente necesario)  -----
-                -------------------------------------------------------------------------
+                *  -------------------------------------------------------------------------  *
+                *  -----  Configuración por defecto (solo lo estrictamente necesario)  -----  *
+                *  -------------------------------------------------------------------------  *
             */
 
 
             /**
-             * @type {ConfigOptionsSPA} - `Objeto de configuración final del plugin SPA`
-             * @description
-             * Se crea combinando:
-             *   - Los valores por defecto
-             *   - Las opciones proporcionadas por el usuario (`options`)
+             * ----------------------------------
+             * -----  `defaultSettings {}`  -----
+             * ----------------------------------
+             * - Valores por defecto del plugin SPA.
+             * @type {ConfigOptionsSPA}
              */
+            const defaultSettings = {
+                /** @type {RouteManifest[]} */
+                routeManifest: [],
+                routeModulesBase: '',
+                base: '',
+                draggable: false,
+                /** @type {((name: string) => Promise<void>)|null} */
+                libLoader: null,
+            };
 
+
+            /**
+             * ---------------------------
+             * -----  `settings {}`  -----
+             * ---------------------------
+             * - Combina `defaultSettings` con las opciones del usuario (`options`).
+             * @type {ConfigOptionsSPA} - `Objeto de configuración final del plugin SPA`
+             */
             const settings = $.extend(
-                {
-                    /** @type {RouteManifest[]} */
-                    routeManifest: [],
-                    routeModulesBase: '',
-                    base: '',
-                    draggable: false,
-                    /** @type {((name: string) => Promise<void>)|null} */
-                    libLoader: null,
-                },
+                {},
+                defaultSettings,
                 options
             );
 
