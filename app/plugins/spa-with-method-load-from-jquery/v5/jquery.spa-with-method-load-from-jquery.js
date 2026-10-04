@@ -5,18 +5,6 @@
 */
 
 
-//*  -----  Referencias de tipos  -----
-
-/// <reference path="../../../../types/config-options-spa.d.js" />
-/// <reference path="../../../../types/route-manifest.d.js" />
-/// <reference path="../../../../types/route-components.d.js" />
-/// <reference path="../../../../types/route-script.d.js" />
-/// <reference path="../../../../types/route-style.d.js" />
-/// <reference path="../../../../types/route-lib.d.js" />
-/// <reference path="../../../../types/route.d.js" />
-
-
-
 /**
  *  ----------------------------------------------------
  *  -----  `spaWithMethodLoadFromJQueryPlugins()`  -----

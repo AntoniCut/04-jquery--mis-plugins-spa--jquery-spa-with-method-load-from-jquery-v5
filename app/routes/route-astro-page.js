@@ -26,7 +26,7 @@ const {
 } = paths;
 
 
-/** @type {import('../../types/index.js').Route} */
+/** @type {Route} - `Ruta de la página Astro` */
 export const routeAstroPage = {
         id: 'astroPage',
         favicon: `${favicon}/astro-official.svg`,

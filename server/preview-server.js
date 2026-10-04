@@ -5,39 +5,54 @@
 */
 
 
+//  -----  cargar las variables de entorno  -----
 import 'dotenv/config';
 
+//  -----  servidor http  -----
 import express from 'express';
+
+//  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
+
+//  -----  comprobar el build en disco  -----
 import fs from 'node:fs';
+
+//  -----  unir rutas  -----
 import path from 'node:path';
 
 
-/** - Prefijo URL que usa el base href del proyecto. */
+/** - `prefijo URL del base href` */
 const DEV_ROUTE_BASE = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
 
-/** - Puerto público para previsualizar el build de producción. */
+/** - `puerto público del preview` */
 const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 4173);
 
-/** - Raíz del build de producción. */
+/** - `raíz del build de producción` */
 const DIST_ROOT = path.join(process.cwd(), 'dist');
 
-/** - Archivo de entrada de la SPA compilada. */
+/** - `index compilado de la SPA` */
 const DIST_INDEX_FILE = path.join(DIST_ROOT, 'index.html');
 
 
-//  -----  Verificación de existencia del build de producción  -----
+//  -----  si no hay build, no arrancar  -----
 if (!fs.existsSync(DIST_ROOT) || !fs.existsSync(DIST_INDEX_FILE)) {
+
+    //  -----  pedir el build antes del preview  -----
     console.error('No existe un build de producción en dist/. Ejecuta `pnpm run build` antes de `pnpm run preview`.');
+
+    //  -----  salir con error  -----
     process.exit(1);
+
 }
 
 
-/** -----  `Instancia de la aplicación Express`  ----- */
+/** - `aplicación Express` */
 const app = express();
 
-/** -----  `Desactiva el encabezado X-Powered-By`  ----- */
+
+//  -----  ocultar la cabecera X-Powered-By  -----
 app.disable('x-powered-by');
+
 
 
 /**
@@ -45,20 +60,23 @@ app.disable('x-powered-by');
  * -----  `redirectRootToBase(req, res, next)`  -----
  * --------------------------------------------------
  * - Redirige la raíz del servidor a la base pública de la SPA.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
+ * @param {import('express').Request} req - Petición entrante.
+ * @param {import('express').Response} res - Respuesta HTTP.
+ * @param {import('express').NextFunction} next - Siguiente middleware.
  */
-
 const redirectRootToBase = (req, res, next) => {
-    
-    //  -----  Redirige la raíz y /index.html a la base de la SPA  -----
+
+    //  -----  si piden la raíz, index.html o la base sin barra, ir a la base  -----
     if (req.path === '/' || req.path === '/index.html' || req.path === DEV_ROUTE_BASE) {
+
+        //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
+
+        //  -----  no seguir con la cadena  -----
         return;
     }
 
-    //  -----  Continúa con el siguiente middleware para otras rutas  -----
+    //  -----  dejar pasar el resto de rutas  -----
     next();
 
 };
@@ -69,45 +87,56 @@ const redirectRootToBase = (req, res, next) => {
  * ------------------------------------------------
  * -----  `serveSpaFallback(req, res, next)`  -----
  * ------------------------------------------------
- * Hace fallback a index.html para rutas internas del build de la SPA.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
+ * - Sirve el index compilado cuando la ruta interna no es un archivo.
+ * @param {import('express').Request} req - Petición entrante.
+ * @param {import('express').Response} res - Respuesta HTTP.
+ * @param {import('express').NextFunction} next - Siguiente middleware.
  */
-
 const serveSpaFallback = (req, res, next) => {
-    
-    //  -----  Solo procesar rutas que comiencen con el prefijo de la SPA  -----
+
+    //  -----  si la ruta no es de la SPA, seguir  -----
     if (!req.path.startsWith(DEV_ROUTE_BASE)) {
+
+        //  -----  pasar al siguiente middleware  -----
         next();
+
+        //  -----  no servir el index  -----
         return;
     }
 
-    /** - Calcula la ruta relativa dentro de la SPA */
+    /** - `ruta dentro de la SPA, sin la base` */
     const relativePath = req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '');
 
-    //  -----  Si la ruta relativa es vacía, servir el archivo de entrada de la SPA  -----
+    //  -----  si piden la base, servir el index compilado  -----
     if (relativePath === '') {
+
+        //  -----  enviar el index de dist  -----
         res.sendFile(DIST_INDEX_FILE);
+
+        //  -----  no seguir  -----
         return;
     }
 
-    /** - Calcula la ruta absoluta del archivo solicitado dentro del build */
+    /** - `archivo pedido, resuelto dentro de dist` */
     const requestedPath = path.join(DIST_ROOT, relativePath);
 
-    /** - Verifica si la ruta tiene una extensión de archivo */
+    /** - `si la ruta trae extensión de archivo` */
     const hasFileExtension = path.extname(relativePath) !== '';
-    
-    /** - Verifica si el archivo solicitado existe */
+
+    /** - `si ese archivo existe en dist` */
     const fileExists = fs.existsSync(requestedPath);
 
-    //  -----  Si la ruta no tiene extensión y el archivo no existe, hacer fallback a index.html  -----
+    //  -----  si no es un archivo y no existe, servir el index  -----
     if (!hasFileExtension && !fileExists) {
+
+        //  -----  enviar el index de dist  -----
         res.sendFile(DIST_INDEX_FILE);
+
+        //  -----  no seguir  -----
         return;
     }
 
-    //  -----  Si la ruta tiene extensión o el archivo existe, continuar con el siguiente middleware (servir estático o 404)  -----
+    //  -----  dejar que el estático o el 404 resuelvan el resto  -----
     next();
 
 };
@@ -115,136 +144,259 @@ const serveSpaFallback = (req, res, next) => {
 
 
 /**
- * ----------------------------------------------------
+ * ---------------------------------------------------
  * -----  `makePhpHandler(rootDir, serverPort)`  -----
- * ----------------------------------------------------
- * - Ejecuta archivos .php via php-cgi y devuelve la respuesta CGI al cliente.
- * @param {string} rootDir    - Directorio raíz donde resolver los archivos PHP.
- * @param {number} serverPort - Puerto del servidor (para SERVER_PORT CGI).
- * @returns {import('express').RequestHandler}
+ * ---------------------------------------------------
+ * - Ejecuta los .php del build con php-cgi y devuelve la respuesta CGI.
+ * @param {string} rootDir - Directorio donde se resuelven los PHP.
+ * @param {number} serverPort - Puerto que php-cgi ve como SERVER_PORT.
+ * @return {import('express').RequestHandler} - Middleware de PHP.
  */
+const makePhpHandler = (rootDir, serverPort) => {
 
-const makePhpHandler = (rootDir, serverPort) => (req, res, next) => {
+    /**
+     * -----------------------------------------
+     * -----  `handlePhp(req, res, next)`  -----
+     * -----------------------------------------
+     * @param {import('express').Request} req - Petición entrante.
+     * @param {import('express').Response} res - Respuesta HTTP.
+     * @param {import('express').NextFunction} next - Siguiente middleware.
+     */
+    const handlePhp = (req, res, next) => {
 
-    //  -----  Solo procesar peticiones a archivos .php  -----
-    if (!req.path.endsWith('.php')) {
-        next();
-        return;
-    }
+        //  -----  si no es un php, seguir  -----
+        if (!req.path.endsWith('.php')) {
 
-    //  -----  Calcula la ruta relativa dentro del prefijo de la SPA  -----
-    const relativePath = req.path.startsWith(DEV_ROUTE_BASE)
-        ? req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '')
-        : req.path.replace(/^\//, '');
+            //  -----  pasar al siguiente middleware  -----
+            next();
 
-    const phpFile = path.join(rootDir, relativePath);
-
-    //  -----  Si el archivo PHP no existe, pasar al siguiente middleware  -----
-    if (!fs.existsSync(phpFile)) {
-        next();
-        return;
-    }
-
-    //  -----  Extrae el query string de la URL original  -----
-    const queryString = req.originalUrl.includes('?')
-        ? req.originalUrl.split('?')[1]
-        : '';
-
-    //  -----  Variables de entorno CGI requeridas por php-cgi  -----
-    const cgiEnv = {
-        ...process.env,
-        REDIRECT_STATUS:   '200',
-        SCRIPT_FILENAME:   phpFile,
-        SCRIPT_NAME:       req.path,
-        REQUEST_METHOD:    req.method,
-        QUERY_STRING:      queryString,
-        CONTENT_TYPE:      req.headers['content-type']   ?? '',
-        CONTENT_LENGTH:    req.headers['content-length'] ?? '0',
-        SERVER_NAME:       'localhost',
-        SERVER_PORT:       String(serverPort),
-        SERVER_PROTOCOL:   'HTTP/1.1',
-        GATEWAY_INTERFACE: 'CGI/1.1',
-        HTTP_HOST:         req.headers['host'] ?? 'localhost',
-        DOCUMENT_ROOT:     rootDir,
-    };
-
-    const php = spawn('php-cgi', [], { env: cgiEnv });
-
-    let stdout = Buffer.alloc(0);
-    let stderr  = '';
-
-    php.stdout.on('data', (chunk) => {
-        stdout = Buffer.concat([stdout, chunk]);
-    });
-
-    php.stderr.on('data', (chunk) => {
-        stderr += chunk.toString();
-    });
-
-    php.on('close', () => {
-
-        if (stderr) console.error(`[php-cgi] ${stderr.trim()}`);
-
-        //  -----  Busca el separador de headers CGI (CRLF o LF doble)  -----
-        let sepIndex = stdout.indexOf('\r\n\r\n');
-        let sepLen   = 4;
-
-        if (sepIndex === -1) {
-            sepIndex = stdout.indexOf('\n\n');
-            sepLen   = 2;
-        }
-
-        if (sepIndex === -1) {
-            res.status(500).send('Error: PHP no devolvió una respuesta CGI válida.');
+            //  -----  no ejecutar php  -----
             return;
         }
 
-        const headersRaw = stdout.slice(0, sepIndex).toString();
-        const body       = stdout.slice(sepIndex + sepLen);
+        /** - `ruta del php dentro de la base, o desde la raíz` */
+        const relativePath = req.path.startsWith(DEV_ROUTE_BASE)
+            ? req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '')
+            : req.path.replace(/^\//, '');
 
-        //  -----  Aplica los headers devueltos por PHP  -----
-        for (const line of headersRaw.split(/\r?\n/)) {
-            const colonIndex = line.indexOf(':');
-            if (colonIndex === -1) continue;
-            const name  = line.slice(0, colonIndex).trim();
-            const value = line.slice(colonIndex + 1).trim();
-            if (name.toLowerCase() === 'status') {
-                res.status(parseInt(value, 10));
-            } else {
-                res.setHeader(name, value);
-            }
+        /** - `archivo php en disco` */
+        const phpFile = path.join(rootDir, relativePath);
+
+        //  -----  si el php no existe, seguir  -----
+        if (!fs.existsSync(phpFile)) {
+
+            //  -----  pasar al siguiente middleware  -----
+            next();
+
+            //  -----  no ejecutar php  -----
+            return;
         }
 
-        res.send(body);
+        /** - `query string de la url original` */
+        const queryString = req.originalUrl.includes('?')
+            ? req.originalUrl.split('?')[1]
+            : '';
 
-    });
+        /**
+         * -------------------------
+         * -----  `cgiEnv {}`  -----
+         * -------------------------
+         * - Variables CGI que recibe php-cgi.
+         */
+        const cgiEnv = {
 
-    php.on('error', () => {
-        res.status(500).send('Error interno: php-cgi no está disponible. Instálalo con: sudo apt install php-cgi');
-    });
+            /** - `entorno del proceso` */
+            ...process.env,
 
-    //  -----  Si la petición tiene body (POST), lo escribe en stdin de php-cgi  -----
-    req.pipe(php.stdin);
+            /** - `estado interno que exige php-cgi` */
+            REDIRECT_STATUS: '200',
+
+            /** - `ruta absoluta del script` */
+            SCRIPT_FILENAME: phpFile,
+
+            /** - `ruta pública del script` */
+            SCRIPT_NAME: req.path,
+
+            /** - `método HTTP` */
+            REQUEST_METHOD: req.method,
+
+            /** - `parámetros de la query` */
+            QUERY_STRING: queryString,
+
+            /** - `tipo del cuerpo` */
+            CONTENT_TYPE: req.headers['content-type'] ?? '',
+
+            /** - `longitud del cuerpo` */
+            CONTENT_LENGTH: req.headers['content-length'] ?? '0',
+
+            /** - `nombre del servidor` */
+            SERVER_NAME: 'localhost',
+
+            /** - `puerto público` */
+            SERVER_PORT: String(serverPort),
+
+            /** - `protocolo HTTP` */
+            SERVER_PROTOCOL: 'HTTP/1.1',
+
+            /** - `interfaz CGI` */
+            GATEWAY_INTERFACE: 'CGI/1.1',
+
+            /** - `cabecera Host` */
+            HTTP_HOST: req.headers['host'] ?? 'localhost',
+
+            /** - `raíz de documentos` */
+            DOCUMENT_ROOT: rootDir,
+
+        };
+
+        /** - `proceso php-cgi` */
+        const php = spawn('php-cgi', [], { env: cgiEnv });
+
+        /** - `salida estándar acumulada` */
+        let stdout = Buffer.alloc(0);
+
+        /** - `salida de error acumulada` */
+        let stderr = '';
+
+        //  -----  acumular la salida estándar de php  -----
+        php.stdout.on('data', (
+            /** @type {Buffer} - `trozo de la salida de php` */
+            chunk
+        ) => {
+
+            //  -----  añadir el trozo al buffer  -----
+            stdout = Buffer.concat([stdout, chunk]);
+
+        });
+
+        //  -----  acumular la salida de error de php  -----
+        php.stderr.on('data', (
+            /** @type {Buffer} - `trozo del error de php` */
+            chunk
+        ) => {
+
+            //  -----  añadir el texto de error  -----
+            stderr += chunk.toString();
+
+        });
+
+        //  -----  responder cuando php termina  -----
+        php.on('close', () => {
+
+            //  -----  si php escribió en stderr, mostrarlo  -----
+            if (stderr) 
+                //  -----  escribir el error de php  -----
+                console.error(`[php-cgi] ${stderr.trim()}`);
+
+            /** @type {number} - `posición del separador de cabeceras` */
+            let sepIndex = stdout.indexOf('\r\n\r\n');
+
+            /** - `longitud del separador CRLF` */
+            let sepLen = 4;
+
+            //  -----  si no hay CRLF, buscar dos saltos de línea  -----
+            if (sepIndex === -1) {
+
+                //  -----  usar el separador LF  -----
+                sepIndex = stdout.indexOf('\n\n');
+
+                //  -----  el separador LF ocupa dos caracteres  -----
+                sepLen = 2;
+            }
+
+            //  -----  si no hay separador, la respuesta CGI no es válida  -----
+            if (sepIndex === -1) {
+
+                //  -----  responder 500  -----
+                res.status(500).send('Error: PHP no devolvió una respuesta CGI válida.');
+
+                //  -----  no enviar un cuerpo a medias  -----
+                return;
+            }
+
+            /** - `cabeceras CGI en texto` */
+            const headersRaw = stdout.subarray(0, sepIndex).toString();
+
+            /** - `cuerpo de la respuesta` */
+            const body = stdout.subarray(sepIndex + sepLen);
+
+            //  -----  copiar cada cabecera que devolvió php  -----
+            for (const line of headersRaw.split(/\r?\n/)) {
+
+                /** - `posición de los dos puntos` */
+                const colonIndex = line.indexOf(':');
+
+                //  -----  si la línea no es una cabecera, saltarla  -----
+                if (colonIndex === -1)
+                    //  -----  pasar a la siguiente línea  -----
+                    continue;
+
+                /** - `nombre de la cabecera` */
+                const name = line.slice(0, colonIndex).trim();
+
+                /** - `valor de la cabecera` */
+                const value = line.slice(colonIndex + 1).trim();
+
+                //  -----  si php manda Status, usarlo como código HTTP  -----
+                if (name.toLowerCase() === 'status')
+                    //  -----  fijar el código de estado  -----
+                    res.status(parseInt(value, 10));
+
+                //  -----  el resto de cabeceras se copian tal cual  -----
+                else
+                    //  -----  copiar la cabecera  -----
+                    res.setHeader(name, value);
+                
+            }
+
+            //  -----  enviar el cuerpo  -----
+            res.send(body);
+
+        });
+
+        //  -----  si php-cgi no arranca, responder 500  -----
+        php.on('error', () => {
+
+            //  -----  avisar de que falta php-cgi  -----
+            res.status(500).send('Error interno: php-cgi no está disponible. Instálalo con: sudo apt install php-cgi');
+
+        });
+
+        //  -----  pasar el cuerpo de la petición a php  -----
+        req.pipe(php.stdin);
+
+    };
+
+    //  -----  devolver el middleware  -----
+    return handlePhp;
 
 };
 
 
 
-//  -----  Middleware para redirigir la raíz a la base de la SPA  -----
+//  -----  redirigir la raíz a la base de la SPA  -----
 app.use(redirectRootToBase);
 
-//  -----  Middleware para ejecutar archivos PHP via php-cgi  -----
+//  -----  ejecutar los php del build con php-cgi  -----
 app.use(makePhpHandler(DIST_ROOT, PREVIEW_SERVER_PORT));
 
-//  -----  Middleware para servir archivos estáticos desde la raíz del proyecto con el prefijo de ruta  -----
+//  -----  servir dist bajo la base, sin index automático  -----
 app.use(DEV_ROUTE_BASE, express.static(DIST_ROOT, { index: false }));
 
-//  -----  Middleware de fallback para rutas internas de la SPA  -----
+//  -----  caer en el index compilado en las rutas internas  -----
 app.use(serveSpaFallback);
 
-//  -----  Middleware para manejar rutas no encontradas (404)  -----
-app.use((req, res) => {
+//  -----  responder 404 al resto de rutas  -----
+app.use((
+    /** @type {import('express').Request} - `petición no resuelta` */
+    req,
+    /** @type {import('express').Response} - `respuesta 404` */
+    res
+) => {
+
+    //  -----  informar del método y la url  -----
     res.status(404).send(`Cannot ${req.method} ${req.originalUrl}`);
+
 });
 
 
@@ -253,33 +405,44 @@ app.use((req, res) => {
  * -----------------------------
  * -----  `previewServer`  -----
  * -----------------------------
- * - servidor de previsualización Express para el build de producción.
- * - Inicia el servidor Express en un puerto específico.
- * - Maneja el cierre ordenado del servidor.
+ * - `servidor de preview del build`
  */
 const previewServer = app.listen(PREVIEW_SERVER_PORT, '127.0.0.1', () => {
-    
+
+    //  -----  separar el aviso en consola  -----
     console.log('\n');
+
+    //  -----  mostrar la url del preview  -----
     console.log(`Preview disponible en http://localhost:${PREVIEW_SERVER_PORT}${DEV_ROUTE_BASE}/`);
+
+    //  -----  separar el aviso en consola  -----
     console.log('\n');
+
 });
 
 
 
 /**
- * ------------------------
- * -----  shutdown()  -----
- * ------------------------
- * - Maneja el cierre ordenado del servidor Express y BrowserSync.
- * - Escucha señales de terminación (SIGINT, SIGTERM) para realizar un shutdown limpio. 
+ * --------------------------
+ * -----  `shutdown()`  -----
+ * --------------------------
+ * - Cierra el servidor de preview.
  */
-
 const shutdown = () => {
-    previewServer.close(() => process.exit(0));
+
+    //  -----  cerrar Express y terminar el proceso  -----
+    previewServer.close(() => {
+
+        //  -----  salir cuando el servidor ya cerró  -----
+        process.exit(0);
+
+    });
+
 };
 
-//  -----  Manejo de señales para shutdown ordenado  -----
+
+//  -----  cerrar al recibir SIGINT  -----
 process.on('SIGINT', shutdown);
 
-//  -----  SIGTERM es común en entornos de contenedores para indicar terminación  -----
+//  -----  cerrar al recibir SIGTERM  -----
 process.on('SIGTERM', shutdown);

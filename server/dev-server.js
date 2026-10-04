@@ -1,34 +1,50 @@
 /*
     *  ------------------------------------------------------  *
     *  -----  dev-server.js  --  /server/dev-server.js  -----  *
-    * ------------------------------------------------------  *
+    *  ------------------------------------------------------  *
 */
 
 
+//  -----  cargar las variables de entorno  -----
 import 'dotenv/config';
 
+//  -----  recarga del navegador  -----
 import browserSync from 'browser-sync';
+
+//  -----  servidor http  -----
 import express from 'express';
+
+//  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
+
+//  -----  comprobar archivos en disco  -----
 import fs from 'node:fs';
+
+//  -----  probar si un puerto está libre  -----
 import net from 'node:net';
+
+//  -----  unir rutas  -----
 import path from 'node:path';
 
 
-
-/** - Prefijo URL que usa el base href del proyecto. */
+/** - `prefijo URL del base href` */
 const DEV_ROUTE_BASE = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
 
-/** - Puerto público del servidor de desarrollo. */
+/** - `puerto público de BrowserSync` */
 const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 3000);
 
-/** - Raíz real del proyecto. */
+/** - `raíz del proyecto` */
 const PROJECT_ROOT = process.cwd();
 
-/** - Entrada principal de la SPA. */
+/** - `entrada principal de la SPA` */
 const SPA_ENTRY_FILE = path.join(PROJECT_ROOT, 'index.html');
 
-/** - Archivos que deben disparar live reload. */
+/** 
+ * -------------------------------------
+ * -----  `BROWSER_SYNC_FILES []`  -----
+ * -------------------------------------
+ * - `archivos que disparan el live reload` 
+ */
 const BROWSER_SYNC_FILES = [
     'index.html',
     'app/**/*',
@@ -36,21 +52,31 @@ const BROWSER_SYNC_FILES = [
     '!app/**/*.map',
 ];
 
-/** - Opciones de watch compartidas con el entorno local. */
+
+/**
+ * --------------------------------
+ * -----  `WATCH_OPTIONS {}`  -----
+ * --------------------------------
+ * - `Opciones de sondeo para el watch de BrowserSync`
+ */
 const WATCH_OPTIONS = {
+
+    /** - `usar polling si CHOKIDAR_USEPOLLING es true` */
     usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
+
+    /** - `intervalo de polling en milisegundos` */
     interval: Number(process.env.CHOKIDAR_INTERVAL || 250),
+
 };
 
 
-
-/** -----  `Instancia de la aplicación Express`  ----- */
+/** - `aplicación Express` */
 const app = express();
 
-/** -----  `Instancia de BrowserSync`  ----- */
+/** - `instancia de BrowserSync` */
 const bs = browserSync.create();
 
-/** -----  `Desactiva el encabezado X-Powered-By`  ----- */
+//  -----  ocultar la cabecera X-Powered-By  -----
 app.disable('x-powered-by');
 
 
@@ -60,26 +86,35 @@ app.disable('x-powered-by');
  * -----  `redirectRootToBase(req, res, next)`  -----
  * --------------------------------------------------
  * - Redirige la raíz del servidor a la base pública de la SPA.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
+ * @param {import('express').Request} req - Petición entrante.
+ * @param {import('express').Response} res - Respuesta HTTP.
+ * @param {import('express').NextFunction} next - Siguiente middleware.
  */
-
 const redirectRootToBase = (req, res, next) => {
 
-    //  -----  Redirige la raíz y /index.html a la base de la SPA  -----
+    //  -----  si piden la raíz o index.html, ir a la base de la SPA  -----
     if (req.path === '/' || req.path === '/index.html') {
+
+        //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
+
+        //  -----  no seguir con la cadena  -----
         return;
     }
 
-    //  -----  Redirige la ruta base sin slash a la misma con slash  -----
+    //  -----  si piden la base sin barra, añadirla  -----
     if (req.path === DEV_ROUTE_BASE) {
+
+        //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
+
+        //  -----  no seguir con la cadena  -----
         return;
     }
 
+    //  -----  dejar pasar el resto de rutas  -----
     next();
+
 };
 
 
@@ -88,264 +123,440 @@ const redirectRootToBase = (req, res, next) => {
  * ------------------------------------------------
  * -----  `serveSpaFallback(req, res, next)`  -----
  * ------------------------------------------------
- * - Hace fallback a index.html para rutas internas de la SPA.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
+ * - Sirve index.html cuando la ruta interna de la SPA no es un archivo.
+ * @param {import('express').Request} req - Petición entrante.
+ * @param {import('express').Response} res - Respuesta HTTP.
+ * @param {import('express').NextFunction} next - Siguiente middleware.
  */
-
 const serveSpaFallback = (req, res, next) => {
-    
-    //  -----  Solo procesar rutas que comiencen con el prefijo de la SPA  -----
+
+    //  -----  si la ruta no es de la SPA, seguir  -----
     if (!req.path.startsWith(DEV_ROUTE_BASE)) {
+
+        //  -----  pasar al siguiente middleware  -----
         next();
+
+        //  -----  no servir el index  -----
         return;
     }
 
-    //  -----  Calcula la ruta relativa dentro de la SPA  -----
+    /** - `ruta dentro de la SPA, sin la base` */
     const relativePath = req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '');
 
-    //  -----  Si la ruta relativa es vacía, servir el archivo de entrada de la SPA  -----
+    //  -----  si piden la base, servir el index  -----
     if (relativePath === '') {
+
+        //  -----  enviar index.html  -----
         res.sendFile(SPA_ENTRY_FILE);
+
+        //  -----  no seguir  -----
         return;
+
     }
 
-    /** - Calcula la ruta absoluta del archivo solicitado dentro del proyecto */
+    /** - `archivo pedido, resuelto en el proyecto` */
     const requestedPath = path.join(PROJECT_ROOT, relativePath);
-    
-    /** - Verifica si la ruta tiene una extensión de archivo */
+
+    /** - `si la ruta trae extensión de archivo` */
     const hasFileExtension = path.extname(relativePath) !== '';
-    
-    /** - Verifica si el archivo solicitado existe */
+
+    /** - `si ese archivo existe en disco` */
     const fileExists = fs.existsSync(requestedPath);
 
-    //  -----  Si la ruta no tiene extensión y el archivo no existe, hacer fallback a index.html  -----
+    //  -----  si no es un archivo y no existe, servir el index  -----
     if (!hasFileExtension && !fileExists) {
+
+        //  -----  enviar index.html  -----
         res.sendFile(SPA_ENTRY_FILE);
+
+        //  -----  no seguir  -----
         return;
     }
 
-    //  -----  Si la ruta tiene extensión o el archivo existe, continuar con el siguiente middleware (servir estático o 404)  -----
+    //  -----  dejar que el estático o el 404 resuelvan el resto  -----
     next();
+
 };
 
 
 
 /**
- * ----------------------------------------------------
+ * ---------------------------------------------------
  * -----  `makePhpHandler(rootDir, serverPort)`  -----
- * ----------------------------------------------------
- * - Ejecuta archivos .php via php-cgi y devuelve la respuesta CGI al cliente.
- * @param {string} rootDir    - Directorio raíz donde resolver los archivos PHP.
- * @param {number} serverPort - Puerto del servidor (para SERVER_PORT CGI).
- * @returns {import('express').RequestHandler}
+ * ---------------------------------------------------
+ * - Ejecuta los .php con php-cgi y devuelve la respuesta CGI.
+ * @param {string} rootDir - Directorio donde se resuelven los PHP.
+ * @param {number} serverPort - Puerto que php-cgi ve como SERVER_PORT.
+ * @return {import('express').RequestHandler} - Middleware de PHP.
  */
+const makePhpHandler = (rootDir, serverPort) => {
 
-const makePhpHandler = (rootDir, serverPort) => (req, res, next) => {
+    /**
+     * @param {import('express').Request} req - Petición entrante.
+     * @param {import('express').Response} res - Respuesta HTTP.
+     * @param {import('express').NextFunction} next - Siguiente middleware.
+     */
+    const handlePhp = (req, res, next) => {
 
-    //  -----  Solo procesar peticiones a archivos .php  -----
-    if (!req.path.endsWith('.php')) {
-        next();
-        return;
-    }
+        //  -----  si no es un php, seguir  -----
+        if (!req.path.endsWith('.php')) {
 
-    //  -----  Calcula la ruta relativa dentro del prefijo de la SPA  -----
-    const relativePath = req.path.startsWith(DEV_ROUTE_BASE)
-        ? req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '')
-        : req.path.replace(/^\//, '');
+            //  -----  pasar al siguiente middleware  -----
+            next();
 
-    const phpFile = path.join(rootDir, relativePath);
-
-    //  -----  Si el archivo PHP no existe, pasar al siguiente middleware  -----
-    if (!fs.existsSync(phpFile)) {
-        next();
-        return;
-    }
-
-    //  -----  Extrae el query string de la URL original  -----
-    const queryString = req.originalUrl.includes('?')
-        ? req.originalUrl.split('?')[1]
-        : '';
-
-    //  -----  Variables de entorno CGI requeridas por php-cgi  -----
-    const cgiEnv = {
-        ...process.env,
-        REDIRECT_STATUS:   '200',
-        SCRIPT_FILENAME:   phpFile,
-        SCRIPT_NAME:       req.path,
-        REQUEST_METHOD:    req.method,
-        QUERY_STRING:      queryString,
-        CONTENT_TYPE:      req.headers['content-type']   ?? '',
-        CONTENT_LENGTH:    req.headers['content-length'] ?? '0',
-        SERVER_NAME:       'localhost',
-        SERVER_PORT:       String(serverPort),
-        SERVER_PROTOCOL:   'HTTP/1.1',
-        GATEWAY_INTERFACE: 'CGI/1.1',
-        HTTP_HOST:         req.headers['host'] ?? 'localhost',
-        DOCUMENT_ROOT:     rootDir,
-    };
-
-    const php = spawn('php-cgi', [], { env: cgiEnv });
-
-    let stdout = Buffer.alloc(0);
-    let stderr  = '';
-
-    php.stdout.on('data', (chunk) => {
-        stdout = Buffer.concat([stdout, chunk]);
-    });
-
-    php.stderr.on('data', (chunk) => {
-        stderr += chunk.toString();
-    });
-
-    php.on('close', () => {
-
-        if (stderr) console.error(`[php-cgi] ${stderr.trim()}`);
-
-        //  -----  Busca el separador de headers CGI (CRLF o LF doble)  -----
-        let sepIndex = stdout.indexOf('\r\n\r\n');
-        let sepLen   = 4;
-
-        if (sepIndex === -1) {
-            sepIndex = stdout.indexOf('\n\n');
-            sepLen   = 2;
-        }
-
-        if (sepIndex === -1) {
-            res.status(500).send('Error: PHP no devolvió una respuesta CGI válida.');
+            //  -----  no ejecutar php  -----
             return;
         }
 
-        const headersRaw = stdout.slice(0, sepIndex).toString();
-        const body       = stdout.slice(sepIndex + sepLen);
+        /** - `ruta del php dentro de la base, o desde la raíz` */
+        const relativePath = req.path.startsWith(DEV_ROUTE_BASE)
+            ? req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '')
+            : req.path.replace(/^\//, '');
 
-        //  -----  Aplica los headers devueltos por PHP  -----
-        for (const line of headersRaw.split(/\r?\n/)) {
-            const colonIndex = line.indexOf(':');
-            if (colonIndex === -1) continue;
-            const name  = line.slice(0, colonIndex).trim();
-            const value = line.slice(colonIndex + 1).trim();
-            if (name.toLowerCase() === 'status') {
-                res.status(parseInt(value, 10));
-            } else {
-                res.setHeader(name, value);
+        /** - `archivo php en disco` */
+        const phpFile = path.join(rootDir, relativePath);
+
+        //  -----  si el php no existe, seguir  -----
+        if (!fs.existsSync(phpFile)) {
+
+            //  -----  pasar al siguiente middleware  -----
+            next();
+
+            //  -----  no ejecutar php  -----
+            return;
+        }
+
+        /** - `query string de la url original` */
+        const queryString = req.originalUrl.includes('?')
+            ? req.originalUrl.split('?')[1]
+            : '';
+
+        /**
+         * -------------------------
+         * -----  `cgiEnv {}`  -----
+         * -------------------------
+         * - `Variables CGI que recibe php-cgi`
+         */
+        const cgiEnv = {
+
+            /** - `entorno del proceso` */
+            ...process.env,
+
+            /** - `estado interno que exige php-cgi` */
+            REDIRECT_STATUS: '200',
+
+            /** - `ruta absoluta del script` */
+            SCRIPT_FILENAME: phpFile,
+
+            /** - `ruta pública del script` */
+            SCRIPT_NAME: req.path,
+
+            /** - `método HTTP` */
+            REQUEST_METHOD: req.method,
+
+            /** - `parámetros de la query` */
+            QUERY_STRING: queryString,
+
+            /** - `tipo del cuerpo` */
+            CONTENT_TYPE: req.headers['content-type'] ?? '',
+
+            /** - `longitud del cuerpo` */
+            CONTENT_LENGTH: req.headers['content-length'] ?? '0',
+
+            /** - `nombre del servidor` */
+            SERVER_NAME: 'localhost',
+
+            /** - `puerto público` */
+            SERVER_PORT: String(serverPort),
+
+            /** - `protocolo HTTP` */
+            SERVER_PROTOCOL: 'HTTP/1.1',
+
+            /** - `interfaz CGI` */
+            GATEWAY_INTERFACE: 'CGI/1.1',
+
+            /** - `cabecera Host` */
+            HTTP_HOST: req.headers['host'] ?? 'localhost',
+
+            /** - `raíz de documentos` */
+            DOCUMENT_ROOT: rootDir,
+
+        };
+
+        /** - `proceso php-cgi` */
+        const php = spawn('php-cgi', [], { env: cgiEnv });
+
+        /** - `salida estándar acumulada` */
+        let stdout = Buffer.alloc(0);
+
+        /** - `salida de error acumulada` */
+        let stderr = '';
+
+        //  -----  acumular la salida estándar de php  -----
+        php.stdout.on('data', (
+            /** @type {Buffer} - `trozo de la salida de php` */
+            chunk
+        ) => {
+
+            //  -----  añadir el trozo al buffer  -----
+            stdout = Buffer.concat([stdout, chunk]);
+
+        });
+
+        //  -----  acumular la salida de error de php  -----
+        php.stderr.on('data', (
+            /** @type {Buffer} - `trozo del error de php` */
+            chunk
+        ) => {
+
+            //  -----  añadir el texto de error  -----
+            stderr += chunk.toString();
+
+        });
+
+        //  -----  responder cuando php termina  -----
+        php.on('close', () => {
+
+            //  -----  si php escribió en stderr, mostrarlo  -----
+            if (stderr)
+                //  -----  escribir el error de php  -----
+                console.error(`[php-cgi] ${stderr.trim()}`);
+
+            /** - `posición del separador de cabeceras` */
+            let sepIndex = stdout.indexOf('\r\n\r\n');
+
+            /** - `longitud del separador CRLF` */
+            let sepLen = 4;
+
+            //  -----  si no hay CRLF, buscar dos saltos de línea  -----
+            if (sepIndex === -1) {
+
+                //  -----  usar el separador LF  -----
+                sepIndex = stdout.indexOf('\n\n');
+
+                //  -----  el separador LF ocupa dos caracteres  -----
+                sepLen = 2;
             }
-        }
 
-        res.send(body);
+            //  -----  si no hay separador, la respuesta CGI no es válida  -----
+            if (sepIndex === -1) {
 
-    });
+                //  -----  responder 500  -----
+                res.status(500).send('Error: PHP no devolvió una respuesta CGI válida.');
 
-    php.on('error', () => {
-        res.status(500).send('Error interno: php-cgi no está disponible. Instálalo con: sudo apt install php-cgi');
-    });
-
-    //  -----  Si la petición tiene body (POST), lo escribe en stdin de php-cgi  -----
-    req.pipe(php.stdin);
-
-};
-
-
-
-/**
- * -------------------------------------------------
- * -----  `assertPortAvailable(port)`  -----
- * -------------------------------------------------
- * - Verifica que el puerto público solicitado para BrowserSync esté libre.
- * @param {number} port
- * @returns {Promise<void>}
- */
-
-const assertPortAvailable = (port) => new Promise((resolve, reject) => {
-
-    /** - Servidor temporal para comprobar disponibilidad del puerto */
-    const probeServer = net.createServer();
-
-    probeServer.unref();
-
-    probeServer.once('error', (error) => {
-
-        if (error.code === 'EADDRINUSE') {
-            reject(new Error(`El puerto público ${port} ya está en uso. Cierra la instancia anterior del servidor de desarrollo o cambia DEV_SERVER_PORT.`));
-            return;
-        }
-
-        reject(error);
-    });
-
-    probeServer.once('listening', () => {
-        probeServer.close((error) => {
-            if (error) {
-                reject(error);
+                //  -----  no enviar un cuerpo a medias  -----
                 return;
             }
 
-            resolve();
+            /** - `cabeceras CGI en texto` */
+            const headersRaw = stdout.subarray(0, sepIndex).toString();
+
+            /** - `cuerpo de la respuesta` */
+            const body = stdout.subarray(sepIndex + sepLen);
+
+            //  -----  copiar cada cabecera que devolvió php  -----
+            for (const line of headersRaw.split(/\r?\n/)) {
+
+                /** - `posición de los dos puntos` */
+                const colonIndex = line.indexOf(':');
+
+                //  -----  si la línea no es una cabecera, saltarla  -----
+                if (colonIndex === -1) {
+
+                    //  -----  pasar a la siguiente línea  -----
+                    continue;
+                }
+
+                /** - `nombre de la cabecera` */
+                const name = line.slice(0, colonIndex).trim();
+
+                /** - `valor de la cabecera` */
+                const value = line.slice(colonIndex + 1).trim();
+
+                //  -----  si php manda Status, usarlo como código HTTP  -----
+                if (name.toLowerCase() === 'status') {
+
+                    //  -----  fijar el código de estado  -----
+                    res.status(parseInt(value, 10));
+                }
+
+                //  -----  el resto de cabeceras se copian tal cual  -----
+                else
+                    //  -----  copiar la cabecera  -----
+                    res.setHeader(name, value);
+
+            }
+
+            //  -----  enviar el cuerpo  -----
+            res.send(body);
+
         });
+
+        //  -----  si php-cgi no arranca, responder 500  -----
+        php.on('error', () => {
+
+            //  -----  avisar de que falta php-cgi  -----
+            res.status(500).send('Error interno: php-cgi no está disponible. Instálalo con: sudo apt install php-cgi');
+        });
+
+        //  -----  pasar el cuerpo de la petición a php  -----
+        req.pipe(php.stdin);
+
+    };
+
+    //  -----  devolver el middleware  -----
+    return handlePhp;
+
+};
+
+
+
+/**
+ * -----------------------------------------
+ * -----  `assertPortAvailable(port)`  -----
+ * -----------------------------------------
+ * - Comprueba que el puerto público de BrowserSync está libre.
+ * @param {number} port - Puerto a probar.
+ * @return {Promise<void>} - `Termina cuando el puerto se pudo abrir y cerrar`.
+ */
+const assertPortAvailable = (port) => {
+
+    //  -----  probar el puerto con un servidor temporal  -----
+    return new Promise((resolve, reject) => {
+
+        /** - `servidor que solo comprueba el puerto` */
+        const probeServer = net.createServer();
+
+        //  -----  no mantener el proceso vivo por esta prueba  -----
+        probeServer.unref();
+
+        //  -----  rechazar si el puerto no se puede abrir  -----
+        probeServer.once('error', (
+            /** @type {NodeJS.ErrnoException} - `fallo al abrir el puerto` */
+            error
+        ) => {
+
+            //  -----  si el puerto está ocupado, explicarlo  -----
+            if (error.code === 'EADDRINUSE') {
+
+                //  -----  rechazar con un mensaje claro  -----
+                reject(new Error(`El puerto público ${port} ya está en uso. Cierra la instancia anterior del servidor de desarrollo o cambia DEV_SERVER_PORT.`));
+
+                //  -----  no rechazar otra vez  -----
+                return;
+            }
+
+            //  -----  rechazar cualquier otro fallo  -----
+            reject(error);
+
+        });
+
+
+        //  -----  cerrar la prueba cuando el puerto responde  -----
+        probeServer.once('listening', () => {
+
+            //  -----  soltar el puerto  -----
+            probeServer.close((error) => {
+
+                //  -----  si el cierre falla, rechazar  -----
+                if (error) {
+
+                    //  -----  propagar el fallo  -----
+                    reject(error);
+
+                    //  -----  no resolver  -----
+                    return;
+                }
+
+                //  -----  el puerto está libre  -----
+                resolve();
+
+            });
+
+        });
+
+        //  -----  intentar escuchar en el puerto  -----
+        probeServer.listen(port);
+
     });
 
-    probeServer.listen(port);
-});
+};
 
 
 
-//  -----  Middleware para redirigir la raíz a la base de la SPA  -----
+//  -----  redirigir la raíz a la base de la SPA  -----
 app.use(redirectRootToBase);
 
-//  -----  Middleware para ejecutar archivos PHP via php-cgi  -----
+//  -----  ejecutar los php con php-cgi  -----
 app.use(makePhpHandler(PROJECT_ROOT, DEV_SERVER_PORT));
 
-//  -----  Middleware para servir archivos estáticos desde la raíz del proyecto con el prefijo de ruta  -----
+//  -----  servir estáticos bajo la base, sin index automático  -----
 app.use(DEV_ROUTE_BASE, express.static(PROJECT_ROOT, { index: false }));
 
-//  -----  Middleware de fallback para rutas internas de la SPA  -----
+//  -----  caer en index.html en las rutas internas  -----
 app.use(serveSpaFallback);
 
-//  -----  Middleware para manejar rutas no encontradas (404)  -----
-app.use((req, res) => {
+//  -----  responder 404 al resto de rutas  -----
+app.use((
+    /** @type {import('express').Request} - `petición no resuelta` */
+    req,
+    /** @type {import('express').Response} - `respuesta 404` */
+    res
+) => {
+
+    //  -----  informar del método y la url  -----
     res.status(404).send(`Cannot ${req.method} ${req.originalUrl}`);
+
 });
 
 
-
-//  -----  Verificar que el puerto público esté disponible antes de iniciar el servidor  -----
+//  -----  comprobar que el puerto público está libre  -----
 try {
+
+    //  -----  reservar el puerto un instante y soltarlo  -----
     await assertPortAvailable(DEV_SERVER_PORT);
-} catch (error) {
+}
+
+//  -----  si el puerto no está libre, salir  -----
+catch (error) {
+
+    //  -----  escribir el motivo  -----
     console.error(error instanceof Error ? error.message : error);
+
+    //  -----  salir con error  -----
     process.exit(1);
 }
 
 
 
-/**
+/** 
  * ------------------------------
  * -----  `internalServer`  -----
  * ------------------------------
- * - servidor de desarrollo Express que sirve la SPA con soporte para rutas internas.
- * - Inicia el servidor Express en un puerto dinámico.
- * - Configura BrowserSync para proxy y live reload.
- * - Maneja el cierre ordenado del servidor y BrowserSync.
+ * - `servidor Express interno, en un puerto libre`
  */
-
 const internalServer = app.listen(0, '127.0.0.1', () => {
-    
-    /** - Dirección y puerto del servidor interno */
+
+    /** - `dirección real del servidor interno` */
     const address = internalServer.address();
 
-    //  -----  Validación de la dirección del servidor  -----
-    if (!address || typeof address === 'string') {
+    //  -----  si la dirección no es un puerto, abortar  -----
+    if (!address || typeof address === 'string')
+        //  -----  no se puede montar el proxy  -----
         throw new Error('No se pudo resolver el puerto interno del servidor Express.');
-    }
 
+    //  -----  separar el aviso en consola  -----
     console.log('\n');
+
+    //  -----  mostrar la dirección interna  -----
     console.log(`Servidor de desarrollo Express escuchando en http://${address.address}:${address.port}\n`);
+
+    //  -----  separar el aviso en consola  -----
     console.log('\n');
 
-    //  -----  Configuración de BrowserSync para proxy y live reload  -----
+    //  -----  publicar el proxy y el live reload  -----
     bs.init({
-        
+
         proxy: `http://127.0.0.1:${address.port}`,
         port: DEV_SERVER_PORT,
         open: false,
@@ -360,26 +571,31 @@ const internalServer = app.listen(0, '127.0.0.1', () => {
 });
 
 
-/**
- * ------------------------
- * -----  shutdown()  -----
- * ------------------------
- * - Maneja el cierre ordenado del servidor Express y BrowserSync.
- * - Escucha señales de terminación (SIGINT, SIGTERM) para realizar un shutdown limpio. 
- */
 
+/**
+ * --------------------------
+ * -----  `shutdown()`  -----
+ * --------------------------
+ * - Cierra BrowserSync y el servidor Express.
+ */
 const shutdown = () => {
-    
-    //  -----  Cierra BrowserSync  -----
+
+    //  -----  cerrar BrowserSync  -----
     bs.exit();
-    
-    //  -----  Cierre ordenado del servidor Express. Al cerrar, se termina el proceso con exit(0)  -----
-    internalServer.close(() => process.exit(0));
+
+    //  -----  cerrar Express y terminar el proceso  -----
+    internalServer.close(() => {
+
+        //  -----  salir cuando el servidor ya cerró  -----
+        process.exit(0);
+
+    });
+
 };
 
 
-//  -----  Manejo de señales para shutdown ordenado  -----
+//  -----  cerrar al recibir SIGINT  -----
 process.on('SIGINT', shutdown);
 
-//  -----  SIGTERM es común en entornos de contenedores para indicar terminación  -----
+//  -----  cerrar al recibir SIGTERM  -----
 process.on('SIGTERM', shutdown);

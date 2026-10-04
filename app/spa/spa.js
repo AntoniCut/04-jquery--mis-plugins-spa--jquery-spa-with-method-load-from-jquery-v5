@@ -11,9 +11,6 @@ import { loadJQueryUILib } from '../libs/jquery-module/loader/load-jquery-ui-by-
 
 
 
-/** @typedef {import('../../types/index.js').ConfigOptionsSPA} ConfigOptionsSPA */
-
-
 /**
  *  -------------------
  *  ----- `spa()` -----
@@ -27,20 +24,32 @@ import { loadJQueryUILib } from '../libs/jquery-module/loader/load-jquery-ui-by-
  *   -   ✔ pasar la configuración al plugin
  *   -   ✔ inicializar la SPA
  */
-    
 export const spa = () => {
 
     
+    //  -----  avisar que se ha cargado el archivo spa.js  -----
     console.log('\n');
     console.warn('-----  spa.js cargado  -----');
     console.log('\n');
 
 
-    /** @type {JQuery<HTMLDivElement>} - `-----  Contenedor raíz de la SPA  -----`     */
+    /** 
+     * ---------------------
+     * ----- `$layout` -----
+     * ---------------------
+     * - `Contenedor raíz de la SPA`
+     * @type {JQuery<HTMLDivElement>}
+     */
     const $layout = $('#layout');
 
 
-    /** @type {ConfigOptionsSPA} - `-----  Opciones de configuración para la SPA  -----` */
+    /** 
+     * -----------------------------------
+     * -----  `ConfigOptionsSPA` {}  -----
+     * -----------------------------------
+     * - `Opciones de configuración para la SPA`
+     * @type {ConfigOptionsSPA} - `Opciones de configuración para la SPA`
+     */
     const optionsPluginsSPA = {
         routeManifest,
         routeModulesBase: `${base}/app/routes`,

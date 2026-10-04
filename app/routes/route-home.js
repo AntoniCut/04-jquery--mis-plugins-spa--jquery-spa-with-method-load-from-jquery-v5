@@ -26,7 +26,7 @@ const {
 } = paths;
 
 
-/** @type {import('../../types/index.js').Route} */
+/** @type {Route} - `Ruta de la página Home` */
 export const routeHome = {
         id: 'home',
         favicon: `${favicon}/jquery-icon.svg`,
