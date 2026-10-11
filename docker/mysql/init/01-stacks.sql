@@ -1,4 +1,7 @@
 -- base jquery_mis_plugins_spa, creada por MYSQL_DATABASE en el primer arranque
+-- el cliente de docker lee el fichero como utf8mb4
+
+SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS stacks (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,

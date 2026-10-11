@@ -24,7 +24,7 @@ export const routeManifest = [
         file: 'route-home'
     },
 
-    //  ----------  Páginas de Stack (HTML / CSS / JavaScript / jQuery / jQuery UI / React / Astro)  ----------
+    //  ----------  Páginas de Stack (HTML / CSS / JavaScript / jQuery / jQuery UI / React / Astro / MySQL)  ----------
     {
         id: 'htmlPage',
         path: 'stack/html-page',
@@ -59,6 +59,11 @@ export const routeManifest = [
         id: 'astroPage',
         path: 'stack/astro-page',
         file: 'route-astro-page'
+    },
+    {
+        id: 'mysqlPage',
+        path: 'stack/mysql-page',
+        file: 'route-mysql-page'
     },
 
     //  ----------  404 - Not Found  ----------

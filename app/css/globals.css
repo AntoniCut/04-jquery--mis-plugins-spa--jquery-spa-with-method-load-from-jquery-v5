@@ -1378,6 +1378,10 @@ input[type=submit]:hover {
   --navbar-accent: #bc52ee;
 }
 
+.navbar__item--mysql {
+  --navbar-accent: #00758f;
+}
+
 /*
     *  --------------------------------------------------------------------------------------------------------------------------  *
     *  -----  _layout-navbar-themes-jquery-ui.scss  --  /src/styles/components/layout/_layout-navbar-themes-jquery-ui.scss  -----  *

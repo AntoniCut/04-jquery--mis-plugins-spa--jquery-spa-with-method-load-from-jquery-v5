@@ -59,6 +59,7 @@
         "gulp-plumber": "^1.2.1",
         "gulp-sass": "^6.0.1",
         "gulp-terser": "^2.1.0",
+        "mysql2": "^3.24.5",
         "sass": "^1.97.3",
         "sharp": "^0.34.5"
     },

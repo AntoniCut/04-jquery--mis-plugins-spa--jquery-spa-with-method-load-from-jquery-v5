@@ -11,6 +11,9 @@ import 'dotenv/config';
 //  -----  servidor http  -----
 import express from 'express';
 
+//  -----  consultas de la página mysql  -----
+import { registerMysqlQueryRoute } from './mysql-query.js';
+
 //  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
 
@@ -379,6 +382,9 @@ app.use(redirectRootToBase);
 
 //  -----  ejecutar los php del build con php-cgi  -----
 app.use(makePhpHandler(DIST_ROOT, PREVIEW_SERVER_PORT));
+
+//  -----  aceptar consultas de solo lectura de la página mysql  -----
+registerMysqlQueryRoute(app, DEV_ROUTE_BASE);
 
 //  -----  servir dist bajo la base, sin index automático  -----
 app.use(DEV_ROUTE_BASE, express.static(DIST_ROOT, { index: false }));

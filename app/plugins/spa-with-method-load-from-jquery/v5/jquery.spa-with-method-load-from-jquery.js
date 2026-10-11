@@ -1694,9 +1694,9 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                 /** @type {string} - `Path de las themes de jQuery UI` */
                 const pathThemes = `${settings.base}/app/libs/jquery/ui/themes`;
 
-                //  -----  avisar por consola la path de las themes de jQuery UI  -----
+                //  -----  dejar en consola la path de las themes de jQuery UI  -----
                 console.log('\n');
-                console.warn(`-----  jQuery UI Themes Path: ${pathThemes}  -----`);
+                console.log(`-----  jQuery UI Themes Path: ${pathThemes}  -----`);
                 console.log('\n');
 
                 //  -----  Evitar handlers duplicados al recargar o navegar entre rutas  -----
