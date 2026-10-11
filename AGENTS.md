@@ -51,6 +51,17 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 - `src/plugins/actions-navbars-with-jquery-jquery-ui/` es una pieza aparte. La SPA v5 no la importa. El comportamiento activo es `actionsNavbar()`.
 - La inyección de vistas usa `jQuery.load()` y `.html()`. Ese es el contrato del plugin. No lo sustituyas por `createElement` ni por un router de terceros.
 
+## Consulta MySQL
+
+La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese PHP está en `src/services/mysql/query.php` y Gulp lo copia a `app/services/` y luego a `dist/`. El navegador lo pide igual en `pnpm dev` y en Nginx.
+
+- No cambies el `fetch` a `api/mysql/query`. Esa ruta solo existe en Express (`server/mysql-query.js`, registrado por `dev-server.js` y `preview-server.js`). En el VPS Nginx no ejecuta Node: el `POST` cae en `index.html` y responde 405 con HTML.
+- La validación de solo lectura vive en el PHP. Si tocas `server/mysql-query.js`, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o la página y el servidor local divergen.
+- `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
+- Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.
+- VPS: el MySQL del sistema en el puerto **3306**, la misma base y el usuario `jquery_user` del curso. Las credenciales van en `.env.production`. `deploy.sh` lo sube como `.env` con modo `640` y grupo `www-data`. Sin ese grupo, PHP-FPM no lo lee y conecta al 3307 (`Connection refused`).
+- No uses la base `jquery_escuelait_classicmodels` para esta página.
+
 ## Convenciones de código
 
 Al crear o editar `.js` y `.html` de este repo (no vendors):
@@ -88,7 +99,7 @@ El detalle de cada script está en `package.json` → `scriptsDoc` y en el READM
 
 - No editar `app/`, `dist/` ni el HTML de `src/markdown-shiki/`.
 - No añadir dependencias npm si no se piden.
-- No commitear `.env`, `deploy.sh`, `node_modules/` ni `prompts/`.
+- No commitear `.env`, `.env.production`, `deploy.sh`, `node_modules/` ni `prompts/`.
 - No cambiar `base` en un solo archivo.
 - No duplicar lógica de navbar o de carga de rutas fuera del plugin que ya la posee.
 - No dar por hecho que el curso `escuelait` y este prototipo deben quedar idénticos: si se trae una mejora, se adapta a la estructura de v5.

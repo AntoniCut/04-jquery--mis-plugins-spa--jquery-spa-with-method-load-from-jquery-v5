@@ -68,7 +68,8 @@ La vista de inicio documenta el plugin: `src/pages/home.html`, `src/pages-compon
 
 - **Node.js** ≥ 18
 - **pnpm** ≥ 9 — `npm install -g pnpm`
-- **php-cgi** *(opcional)* — solo si usas los servicios PHP de ejemplo en `src/services/`
+- **php-cgi** y la extensión **mysqli** (`php8.3-cgi`, `php8.3-mysql`) — la página MySQL llama a `app/services/mysql/query.php` también en desarrollo
+- **Docker** — MySQL local del proyecto (`docker compose up -d`), publicado en el puerto **3307**
 
 ---
 
@@ -97,9 +98,11 @@ pnpm install
 | `pnpm preview` | Sirve `dist/` y abre el navegador (puerto 4173 por defecto) |
 | `pnpm add:ts-nocheck` | Añade `// @ts-nocheck` a los JS de desarrollo que lo necesiten |
 
-### Variables de entorno (`.env`)
+### Variables de entorno
 
-El archivo `.env` no se versiona.
+Ningún `.env` se versiona (`.gitignore` ignora `.env` y `.env.*`).
+
+El servidor de desarrollo lee el puerto y el watch desde `.env`:
 
 ```dotenv
 DEV_SERVER_PORT=3000        # Puerto público del servidor dev (BrowserSync)
@@ -107,6 +110,19 @@ PREVIEW_SERVER_PORT=4173    # Puerto del servidor preview
 CHOKIDAR_USEPOLLING=false   # true en WSL/Docker si el watch falla
 CHOKIDAR_INTERVAL=250       # Intervalo de polling en ms
 ```
+
+MySQL local (Docker, puerto **3307**) también va en ese `.env`. La plantilla está en `.env.example`:
+
+```dotenv
+MYSQL_ROOT_PASSWORD=
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3307
+MYSQL_USER=jquery_user
+MYSQL_PASSWORD=
+MYSQL_DATABASE=jquery_mis_plugins_spa
+```
+
+Producción usa otro archivo, `.env.production`. Mismas claves `MYSQL_*`, pero el puerto es el del MySQL del VPS (**3306**), no el 3307 de Docker. `deploy.sh` copia ese archivo al VPS con el nombre `.env`.
 
 ---
 
@@ -197,6 +213,7 @@ Array con `fileName`, `fileExtension`, `urlInput`, `urlOutput` y `target` (`[dat
 | `jqueryUiPage` | `/stack/jquery-ui-page` |
 | `reactPage` | `/stack/react-page` |
 | `astroPage` | `/stack/astro-page` |
+| `mysqlPage` | `/stack/mysql-page` |
 | `404NotFoundPage` | `/404` |
 
 ---
@@ -222,13 +239,15 @@ jquery-spa-with-method-load-from-jquery-v5/
 │   ├── effects/effect-loading-page.js
 │   ├── libs/                         # jQuery clásico, themes y carga por módulo ESM
 │   ├── markdown-shiki/               # HTML Shiki generado (no editar a mano)
-│   └── services/                     # PHP de ejemplo (opcional)
+│   └── services/                     # PHP de la consulta MySQL (load-env.php, mysql/query.php)
 │
 ├── app/                              # Copia de desarrollo generada por Gulp
 ├── dist/                             # Build de producción minificado
 ├── assets/                           # Imágenes, fuentes y favicons
+├── docker/mysql/init/                # SQL del primer arranque del contenedor local
+├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
 ├── types/                            # Tipos JSDoc del dominio
-├── server/                           # dev-server, preview-server, stop-dev-server
+├── server/                           # dev-server, preview-server, mysql-query.js
 ├── gulpfile.js
 └── generate-markdown-shiki.js
 ```
@@ -246,22 +265,50 @@ Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_mo
 
 ---
 
+## Consulta MySQL
+
+La página `stack/mysql-page` no abre MySQL desde el navegador. El formulario hace `POST` a `app/services/mysql/query.php` con `{ "sql": "..." }` y pinta el JSON.
+
+Ese PHP es el mismo en desarrollo y en el VPS. `server/mysql-query.js` publica `POST /api/mysql/query` solo en Express (`pnpm dev` y `pnpm preview`). La página no llama a esa ruta: en Nginx un `POST` que no es un `.php` cae en `index.html` y responde **405** con HTML.
+
+Solo se admiten lecturas (`SELECT`, `SHOW`, `DESCRIBE`, `EXPLAIN`, `WITH`), una sentencia, sin `INTO OUTFILE` ni `LOAD DATA`. La respuesta muestra como máximo 200 filas.
+
+Hay dos MySQL distintos:
+
+| | Local | VPS |
+|---|---|---|
+| Proceso | Contenedor `jquery-mis-plugins-spa-mysql` (`docker compose up -d`) | El MySQL del sistema, el mismo del curso EscuelaIT |
+| Puerto | **3307** | **3306** |
+| Base | `jquery_mis_plugins_spa` | `jquery_mis_plugins_spa` |
+| Usuario | `jquery_user` | `jquery_user` (el mismo usuario del curso; la base es otra) |
+| Credenciales | `.env` | `.env.production`, subido como `.env` |
+
+La base del curso, `jquery_escuelait_classicmodels`, no se usa aquí. En el VPS la tabla `stacks` se crea en `jquery_mis_plugins_spa` con el SQL de `docker/mysql/init/01-stacks.sql`, más el `CREATE DATABASE` y el `GRANT SELECT` para `jquery_user` en `localhost` y `127.0.0.1`.
+
+`src/services/load-env.php` busca el `.env` subiendo carpetas desde el PHP. En el sitio publicado lo encuentra junto al `index.html`.
+
+---
+
 ## Despliegue (Nginx)
 
 ```bash
-pnpm run build
-# Copiar dist/ al directorio público del servidor
+./deploy.sh
 ```
 
-El script local `deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio.
+`deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace dos copias:
 
-La página MySQL hace `POST` a `app/services/mysql/query.php`. Nginx tiene que ejecutar ese archivo con PHP-FPM. Un `POST` a una ruta que no es un `.php` cae en `index.html` y Nginx responde `405` con HTML.
+1. `pnpm run build` y sube `dist/` a `/var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/`. El `rsync --delete` excluye `.env` para no borrarlo.
+2. Si existe `.env.production`, lo sube a ese directorio con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté.
 
-El `.env` de producción va junto a `index.html` (lo sube `deploy.sh` desde `.env.production`). PHP lee `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD` y `MYSQL_DATABASE`.
+PHP-FPM corre como `www-data`. Con dueño `root:root` no puede leer el `.env`, ignora `MYSQL_PORT=3306` y prueba el **3307**. En el VPS nadie escucha ahí y MySQL responde `Connection refused`.
 
-Ejemplo de bloque Nginx con `root` (el mismo patrón que EscuelaIT; `alias` rompe `SCRIPT_FILENAME` en el PHP anidado):
+El bloque que sirve el sitio usa `root`. Así `$request_filename` apunta al PHP de `app/services/`. Con `alias`, esa variable deja de coincidir con el archivo.
 
 ```nginx
+location = /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5 {
+    return 301 /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/;
+}
+
 location ^~ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/ {
     root /var/www/jquery.antonydev.tech;
     try_files $uri $uri/ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/index.html;
@@ -272,15 +319,16 @@ location ^~ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/ {
     }
 
     location ~ \.php$ {
-        try_files $uri =404;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_index index.php;
         include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
         fastcgi_param QUERY_STRING    $query_string;
     }
 }
 ```
+
+El `location` de `\.env` todavía no está en el Nginx del VPS. Hay que añadirlo: el archivo está junto al `index.html` y, sin ese `deny`, se puede pedir por HTTP. PHP lo sigue leyendo del disco.
 
 ---
 
