@@ -182,8 +182,8 @@ const runQuery = async (form) => {
     //  -----  intentar la petición  -----
     try {
 
-        /** - `respuesta del servidor de desarrollo` */
-        const response = await fetch('api/mysql/query', {
+        /** - `respuesta php, la misma en desarrollo y en nginx` */
+        const response = await fetch('app/services/mysql/query.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -192,6 +192,20 @@ const runQuery = async (form) => {
                 sql: field.value,
             }),
         });
+
+        /** - `tipo declarado por el servidor` */
+        const contentType = response.headers.get('content-type') || '';
+
+        //  -----  si nginx devolvió html, no leerlo como json  -----
+        if (!contentType.includes('application/json')) {
+
+            //  -----  mostrar el código http en la página  -----
+            setStatus(status, `El servidor respondió ${response.status} sin JSON. La consulta no llegó a PHP.`, true);
+
+            //  -----  no pintar una tabla  -----
+            return;
+
+        }
 
         /** @type {MysqlQueryResponse} - `cuerpo json de la consulta` */
         const body = await response.json();

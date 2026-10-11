@@ -255,18 +255,28 @@ pnpm run build
 
 El script local `deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio.
 
-Ejemplo de bloque Nginx con fallback SPA:
+La página MySQL hace `POST` a `app/services/mysql/query.php`. Nginx tiene que ejecutar ese archivo con PHP-FPM. Un `POST` a una ruta que no es un `.php` cae en `index.html` y Nginx responde `405` con HTML.
+
+El `.env` de producción va junto a `index.html` (lo sube `deploy.sh` desde `.env.production`). PHP lee `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD` y `MYSQL_DATABASE`.
+
+Ejemplo de bloque Nginx con `root` (el mismo patrón que EscuelaIT; `alias` rompe `SCRIPT_FILENAME` en el PHP anidado):
 
 ```nginx
 location ^~ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/ {
-    alias /var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/;
+    root /var/www/jquery.antonydev.tech;
     try_files $uri $uri/ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/index.html;
 
+    location ~ /\.env {
+        deny all;
+        return 404;
+    }
+
     location ~ \.php$ {
+        try_files $uri =404;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_index index.php;
         include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $request_filename;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param QUERY_STRING    $query_string;
     }
 }

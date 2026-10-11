@@ -322,7 +322,8 @@ const handleMysqlQuery = async (req, res) => {
  * -------------------------------------------------------
  * -----  `registerMysqlQueryRoute(app, routeBase)`  -----
  * -------------------------------------------------------
- * - Publica POST {base}/api/mysql/query.
+ * - Publica POST {base}/api/mysql/query en el servidor Node local.
+ * - En Nginx la página usa app/services/mysql/query.php.
  * @param {import('express').Express} app - Aplicación Express.
  * @param {string} routeBase - Prefijo de la SPA.
  * @return {void}
