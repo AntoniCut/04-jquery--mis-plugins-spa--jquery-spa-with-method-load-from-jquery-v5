@@ -599,7 +599,13 @@
 <span class="line"><span style="color:#6A9955">                    //  *    FASE 2 — Mutar el DOM DENTRO de startViewTransition con callback SÍNCRONO</span></span>
 <span class="line"><span style="color:#6A9955">                    //  *  =============================================================================</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">                    /** - `Vuelca el payload precargado al DOM de forma síncrona` */</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    /** </span></span>
+<span class="line"><span style="color:#6A9955">                     * ------------------------</span></span>
+<span class="line"><span style="color:#6A9955">                     * -----  `mutate()`  -----</span></span>
+<span class="line"><span style="color:#6A9955">                     * ------------------------</span></span>
+<span class="line"><span style="color:#6A9955">                     * - Mutar el DOM DENTRO de startViewTransition con callback SÍNCRONO</span></span>
+<span class="line"><span style="color:#6A9955">                     * - `Vuelca el payload precargado al DOM de forma síncrona` */</span></span>
 <span class="line"><span style="color:#569CD6">                    const</span><span style="color:#DCDCAA"> mutate</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#DCDCAA"> applyPreloadedContent</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">payload</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">source</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  si el navegador soporta view transitions, no hay otra en curso y el navegador no anima ya el historial  -----</span></span>
@@ -1335,9 +1341,9 @@
 <span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">            /**</span></span>
-<span class="line"><span style="color:#6A9955">             * -----------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955">             * -----------------------------------------------------</span></span>
 <span class="line"><span style="color:#6A9955">             * -----  `applyRouteMetaAsync(route, isCurrent)`  -----</span></span>
-<span class="line"><span style="color:#6A9955">             * ------------------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955">             * -----------------------------------------------------</span></span>
 <span class="line"><span style="color:#6A9955">             * `FASE 3` — Carga scripts y libs DESPUÉS de que el DOM</span></span>
 <span class="line"><span style="color:#6A9955">             * ya está mutado y la View Transition ha terminado.</span></span>
 <span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@async</span></span>
