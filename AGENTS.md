@@ -74,6 +74,7 @@ La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al 
 
 - `pnpm install` en la raíz cubre las dos zonas: hay un único `pnpm-lock.yaml` versionado.
 - `allowBuilds` del workspace deja correr los scripts de `sharp` y `@parcel/watcher`. pnpm 10+ los bloquea por defecto y sin ellos falla el build.
+- La versión de Node está fijada en `.nvmrc` (`24.22.3`, la misma del VPS) y declarada en `engines` de los dos `package.json`. Con nvm, `nvm use` la toma del archivo; `pnpm` lo resuelve corepack desde `packageManager`.
 - El proceso de producción no instala nada: `deploy.sh` arma el artefacto con `pnpm --filter jquery-node-api deploy .deploy-api --prod` y sube ese directorio, `node_modules` incluido.
 
 ## Demos PHP y Express

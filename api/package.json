@@ -9,6 +9,9 @@
     "start": "node src/server.js"
   },
   "license": "ISC",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
     "dotenv": "catalog:",
     "express": "catalog:",

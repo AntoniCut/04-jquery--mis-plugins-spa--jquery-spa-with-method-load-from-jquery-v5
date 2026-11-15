@@ -66,7 +66,7 @@ La vista de inicio documenta el plugin: `src/pages/home.html`, `src/pages-compon
 
 ## Requisitos previos
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 24 — la versión exacta está en `.nvmrc` (`nvm use` la lee solo). Coincide con la del VPS.
 - **pnpm** ≥ 11 — `npm install -g pnpm`. El campo `packageManager` de `package.json` fija la versión exacta; con Corepack basta `corepack enable`.
 - **php-cgi** y la extensión **mysqli** (`php8.3-cgi`, `php8.3-mysql`) — la página MySQL llama a `app/services/mysql/query.php` también en desarrollo
 - **Docker** — MySQL local del proyecto (`docker compose up -d`), publicado en el puerto **3307**
