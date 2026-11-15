@@ -18,7 +18,7 @@ import express from 'express';
 import { registerMysqlQueryRoute } from './mysql-query.js';
 
 //  -----  crud en memoria de la página express  -----
-import { createTasksRouter } from './tasks-router.js';
+import { createTasksRouter } from '../api/src/tasks-router.js';
 
 //  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
@@ -481,8 +481,8 @@ app.use(makePhpHandler(PROJECT_ROOT, devServerPort));
 //  -----  aceptar consultas de solo lectura de la página mysql  -----
 registerMysqlQueryRoute(app, DEV_ROUTE_BASE);
 
-//  -----  montar el crud de tareas bajo la base del sitio  -----
-app.use(`${DEV_ROUTE_BASE}/api`, createTasksRouter());
+//  -----  montar el crud de tareas en la raíz del dominio  -----
+app.use('/api', createTasksRouter());
 
 //  -----  servir estáticos bajo la base, sin index automático  -----
 app.use(DEV_ROUTE_BASE, express.static(PROJECT_ROOT, { index: false }));

@@ -17,6 +17,8 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
 | `src/libs/jquery/`, `src/libs/jquery-module/`, plugins `*.min.js` | Vendors. No se reformatean ni se comentan |
 | `prompts/` | Notas locales. No forman parte del producto |
+| `api/` | Runtime Node de producción (`/api/tasks` y `/api/health`). Lo importa el dev server |
+| `infra/` | systemd, nginx y provisión de ese proceso. No corre en local |
 
 Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tener `pnpm dev` en marcha para ver el cambio.
 
@@ -58,7 +60,7 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 
 La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese PHP está en `src/services/mysql/query.php` y Gulp lo copia a `app/services/` y luego a `dist/`. El navegador lo pide igual en `pnpm dev` y en Nginx.
 
-- No cambies el `fetch` a `api/mysql/query`. Esa ruta solo existe en Express (`server/mysql-query.js`, registrado por `dev-server.js` y `preview-server.js`). En el VPS Nginx no ejecuta Node: el `POST` cae en `index.html` y responde 405 con HTML.
+- No cambies el `fetch` a `api/mysql/query`. Esa ruta solo existe en Express (`server/mysql-query.js`, registrado por `dev-server.js` y `preview-server.js`). En el VPS ese `POST` no lo atiende el proceso de `/api/`: cae en `index.html` y responde 405 con HTML.
 - La validación de solo lectura vive en el PHP. Si tocas `server/mysql-query.js`, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o la página y el servidor local divergen.
 - `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
 - Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.
@@ -69,7 +71,7 @@ La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese 
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
 
-`stack/express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `server/tasks-router.js` y solo lo monta `server/dev-server.js` en `{SITE_BASE}/api`. Preview y Nginx no ejecutan ese proceso: la página tiene que mostrar el fallo en el DOM.
+`stack/express-page` hace `GET`, `POST` y `DELETE` a `/api/tasks`, absoluto desde la raíz del dominio. El router está en `api/src/tasks-router.js`. `server/dev-server.js` lo monta en `/api`. En el VPS lo sirve `jquery-node` (`/opt/jquery-node-api`, `127.0.0.1:3200`, `location ^~ /api/` en nginx). Preview no monta el router: la página tiene que mostrar el fallo en el DOM. MySQL no se mueve a este proceso. `deploy.sh` sube `api/`, instala con `pnpm install --prod` y reinicia la unit.
 
 ## Convenciones de código
 

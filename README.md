@@ -249,6 +249,8 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
 ├── types/                            # Tipos JSDoc del dominio
 ├── server/                           # dev-server, preview-server, mysql-query.js
+├── api/                              # Runtime Node de /api (tareas + health)
+├── infra/                            # systemd, nginx y provisión del API en el VPS
 ├── gulpfile.js
 └── generate-markdown-shiki.js
 ```
@@ -272,7 +274,7 @@ La página `stack/mysql-page` no abre MySQL desde el navegador. El formulario ha
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php`. Ese PHP no usa base de datos y responde igual en `pnpm dev`, en preview y en el VPS.
 
-`stack/express-page` consume `api/tasks` (relativo al `<base>`). Ese router solo lo monta `pnpm dev`. En preview y en el VPS la misma URL cae en el HTML de la SPA.
+`stack/express-page` consume `GET`, `POST` y `DELETE` `/api/tasks`, absoluto desde la raíz del dominio. El router vive en `api/src/tasks-router.js`. `pnpm dev` lo monta en `/api` y el VPS lo atiende el proceso `jquery-node` (`127.0.0.1:3200`, fuera del web root en `/opt/jquery-node-api`). `pnpm preview` no lo monta: la página muestra el fallo en el DOM. MySQL no pasa por este proceso.
 
 Ese PHP es el mismo en desarrollo y en el VPS. `server/mysql-query.js` publica `POST /api/mysql/query` solo en Express (`pnpm dev` y `pnpm preview`). La página no llama a esa ruta: en Nginx un `POST` que no es un `.php` cae en `index.html` y responde **405** con HTML.
 
@@ -300,10 +302,13 @@ La base del curso, `jquery_escuelait_classicmodels`, no se usa aquí. En el VPS 
 ./deploy.sh
 ```
 
-`deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace dos copias:
+`deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. La plantilla versionada es `deploy.sh.example`. Hace tres copias:
 
 1. `pnpm run build` y sube `dist/` a `/var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/`. El `rsync --delete` excluye `.env` para no borrarlo.
 2. Si existe `.env.production`, lo sube a ese directorio con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté.
+3. Sube `api/` a `/opt/jquery-node-api` (sin `node_modules`, protegiendo `.env`), ejecuta `pnpm install --prod`, repite el `.env.production` en ese directorio con los mismos permisos y hace `systemctl restart jquery-node`. Si el `.env` no trae `API_PORT`, el proceso escucha en **3200**.
+
+Antes del primer deploy de este API, en el VPS: `bash infra/provision/provision-node-api.sh` y el fragmento `infra/nginx/jquery.antonydev.tech-api.conf` dentro del `server {}` del dominio. El detalle está en `infra/README.md`.
 
 PHP-FPM corre como `www-data`. Con dueño `root:root` no puede leer el `.env`, ignora `MYSQL_PORT=3306` y prueba el **3307**. En el VPS nadie escucha ahí y MySQL responde `Connection refused`.
 

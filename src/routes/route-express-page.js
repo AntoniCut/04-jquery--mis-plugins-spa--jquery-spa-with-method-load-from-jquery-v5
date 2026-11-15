@@ -84,7 +84,7 @@ export const routeExpressPage = {
             {
                 fileName: 'express-page-server-js.html',
                 fileExtension: 'js',
-                urlInput: `${base}/server/tasks-router.js`,
+                urlInput: `${base}/api/src/tasks-router.js`,
                 urlOutput: `${markdownShikiHtml}/pages/express`,
                 target: '[data-shiki="codeServerJs"]',
             },

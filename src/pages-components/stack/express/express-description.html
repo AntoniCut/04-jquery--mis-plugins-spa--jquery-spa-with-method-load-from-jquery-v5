@@ -22,9 +22,9 @@
     <!--  -----  Intro  -----  -->
     <section class="express-page__intro">
         <p class="express-page__intro-text">
-            <strong>Express</strong> corre dentro del servidor de desarrollo de este proyecto.
-            <code>pnpm dev</code> monta el router en <strong>api/tasks</strong>, bajo el
-            <code>&lt;base&gt;</code> del sitio. Preview y el VPS no levantan ese proceso Node.
+            <strong>Express</strong> responde en <strong>/api/tasks</strong>, en la raíz del dominio.
+            <code>pnpm dev</code> y el proceso systemd del VPS montan el mismo router.
+            Preview no levanta ese proceso Node.
         </p>
         <p class="express-page__intro-text">
             El <strong>router</strong> es dueño de las rutas y del contrato JSON, mientras que el
@@ -33,7 +33,8 @@
         </p>
         <p class="express-page__intro-text">
             Las tareas viven <strong>solo en memoria</strong>: no hay base de datos. Si el proceso
-            Node se reinicia, la lista vuelve a las <strong>3 tareas semilla</strong> originales.
+            Node se reinicia, también con <code>systemctl restart jquery-node</code>, la lista
+            vuelve a las <strong>3 tareas semilla</strong> originales.
         </p>
     </section>
 

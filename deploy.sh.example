@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==== Configuración ====
+# Copia este archivo a deploy.sh (está en .gitignore) y completa el host.
+VPS_USER="root"
+VPS_HOST="VPS_HOST"
+VPS_PORT="22"
+REMOTE_PATH="/var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5"
+REMOTE_API_PATH="/opt/jquery-node-api"
+API_SERVICE="jquery-node"
+LOCAL_BUILD_DIR="dist"
+
+# ==== Build ====
+echo "==> Generando build..."
+pnpm run build
+
+if [ ! -d "$LOCAL_BUILD_DIR" ]; then
+  echo "Error: no existe la carpeta '$LOCAL_BUILD_DIR'. Revisa LOCAL_BUILD_DIR."
+  exit 1
+fi
+
+# ==== Deploy ====
+CONTROL_PATH="${XDG_RUNTIME_DIR:-/tmp}/ssh-deploy-jquery-spa-v5-${VPS_USER}-${VPS_HOST}-${VPS_PORT}"
+SSH_CMD="ssh -p ${VPS_PORT} -o ControlMaster=auto -o ControlPath=${CONTROL_PATH} -o ControlPersist=15"
+
+cleanup_ssh() {
+  $SSH_CMD -O exit "${VPS_USER}@${VPS_HOST}" >/dev/null 2>&1 || true
+}
+trap cleanup_ssh EXIT
+
+echo "==> Subiendo al VPS ($VPS_HOST)..."
+rsync -avz --delete \
+  -e "$SSH_CMD" \
+  --exclude 'node_modules' \
+  --exclude '.git' \
+  --exclude '.DS_Store' \
+  --exclude '.env' \
+  --exclude '.env.*' \
+  --filter 'P .env' \
+  --filter 'P .env.*' \
+  "$LOCAL_BUILD_DIR"/ \
+  "$VPS_USER@$VPS_HOST:$REMOTE_PATH"
+
+if [ -f .env.production ]; then
+  echo "==> Subiendo .env de produccion..."
+  rsync -avz --chmod=F640 --chown=root:www-data \
+    -e "$SSH_CMD" \
+    .env.production \
+    "$VPS_USER@$VPS_HOST:$REMOTE_PATH/.env"
+else
+  echo "Aviso: no existe .env.production; el .env remoto no se actualiza."
+fi
+
+# ==== Deploy del API Node ====
+echo "==> Subiendo api/ a $REMOTE_API_PATH..."
+rsync -avz --delete \
+  -e "$SSH_CMD" \
+  --exclude 'node_modules' \
+  --exclude '.env' \
+  --filter 'P .env' \
+  api/ \
+  "$VPS_USER@$VPS_HOST:$REMOTE_API_PATH"
+
+echo "==> Instalando dependencias de producción del API..."
+$SSH_CMD "$VPS_USER@$VPS_HOST" "node -v && cd $REMOTE_API_PATH && pnpm install --prod"
+
+if [ -f .env.production ]; then
+  echo "==> Subiendo .env del API..."
+  rsync -avz --chmod=F640 --chown=root:www-data \
+    -e "$SSH_CMD" \
+    .env.production \
+    "$VPS_USER@$VPS_HOST:$REMOTE_API_PATH/.env"
+else
+  echo "Aviso: no existe .env.production; el .env del API no se actualiza."
+fi
+
+echo "==> Reiniciando el API Node..."
+$SSH_CMD "$VPS_USER@$VPS_HOST" "systemctl restart $API_SERVICE"
+
+echo "==> Deploy completado."
