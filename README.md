@@ -67,7 +67,7 @@ La vista de inicio documenta el plugin: `src/pages/home.html`, `src/pages-compon
 ## Requisitos previos
 
 - **Node.js** ≥ 18
-- **pnpm** ≥ 9 — `npm install -g pnpm`
+- **pnpm** ≥ 11 — `npm install -g pnpm`. El campo `packageManager` de `package.json` fija la versión exacta; con Corepack basta `corepack enable`.
 - **php-cgi** y la extensión **mysqli** (`php8.3-cgi`, `php8.3-mysql`) — la página MySQL llama a `app/services/mysql/query.php` también en desarrollo
 - **Docker** — MySQL local del proyecto (`docker compose up -d`), publicado en el puerto **3307**
 
@@ -303,10 +303,11 @@ La base del curso, `jquery_escuelait_classicmodels`, no se usa aquí. En el VPS 
 ./deploy.sh
 ```
 
-`deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace dos copias:
+`deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace tres pasos:
 
 1. `pnpm run build` y sube `dist/` a `/var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/`. El `rsync --delete` excluye `.env` para no borrarlo.
-2. Si existe `.env.production`, lo sube a ese directorio con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté.
+2. `pnpm --filter jquery-node-api deploy .deploy-api --prod` arma el artefacto del API con sus `node_modules` ya resueltos desde el `pnpm-lock.yaml` del workspace, y lo sube a `/opt/jquery-node-api`. El VPS no ejecuta pnpm: recibe las mismas versiones que se probaron en local.
+3. Si existe `.env.production`, lo sube a esos directorios con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté. Después reinicia `jquery-node`.
 
 PHP-FPM corre como `www-data`. Con dueño `root:root` no puede leer el `.env`, ignora `MYSQL_PORT=3306` y prueba el **3307**. En el VPS nadie escucha ahí y MySQL responde `Connection refused`.
 
