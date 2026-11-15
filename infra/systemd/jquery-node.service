@@ -1,0 +1,27 @@
+# ==============================================================
+#  systemd — jquery-node
+#  API Node de producción de jquery.antonydev.tech
+#  --------------------------------------------------------------
+#  - Corre el runtime de api/ desde /opt/jquery-node-api,
+#    fuera del web root, como www-data.
+#  - El código y el .env llegan con deploy.sh; esta unit solo
+#    arranca el proceso y lo reinicia si falla.
+#  - Los logs van a journald: journalctl -u jquery-node -f
+#  - Escucha en 127.0.0.1:3200. El 3100 lo usa javascript-node.
+# ==============================================================
+
+[Unit]
+Description=Node API for jquery.antonydev.tech
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/jquery-node-api
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

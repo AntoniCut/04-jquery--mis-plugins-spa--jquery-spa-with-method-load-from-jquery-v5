@@ -28,9 +28,10 @@
             <code>&lt;base&gt;</code> del sitio.
         </p>
         <p class="node-mysql-page__intro-text">
-            <code>pnpm dev</code> y <code>pnpm preview</code> montan ese router.
-            En el VPS, sin el proceso Node, Nginx responde el HTML de la SPA y esta página
-            lo muestra en el aviso, sin leerlo como JSON.
+            <code>pnpm dev</code> monta ese router. En el VPS lo sirve
+            <code>jquery-node</code> detrás de Nginx, en el mismo prefijo del
+            <code>&lt;base&gt;</code>. <code>pnpm preview</code> no lo monta: la página
+            muestra el HTML de la SPA en el aviso, sin leerlo como JSON.
         </p>
         <p class="node-mysql-page__intro-text">
             La página <strong>PHP con MySQL</strong> sigue hablando con
