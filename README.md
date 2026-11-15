@@ -213,6 +213,8 @@ Array con `fileName`, `fileExtension`, `urlInput`, `urlOutput` y `target` (`[dat
 | `reactPage` | `/stack/react-page` |
 | `astroPage` | `/stack/astro-page` |
 | `mysqlPage` | `/stack/mysql-page` |
+| `phpPage` | `/stack/php-page` |
+| `expressPage` | `/stack/express-page` |
 | `404NotFoundPage` | `/404` |
 
 ---
@@ -267,6 +269,10 @@ Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_mo
 ## Consulta MySQL
 
 La página `stack/mysql-page` no abre MySQL desde el navegador. El formulario hace `POST` a `app/services/mysql/query.php` con `{ "sql": "..." }` y pinta el JSON.
+
+`stack/php-page` hace `POST` a `app/services/php/validate.php`. Ese PHP no usa base de datos y responde igual en `pnpm dev`, en preview y en el VPS.
+
+`stack/express-page` consume `api/tasks` (relativo al `<base>`). Ese router solo lo monta `pnpm dev`. En preview y en el VPS la misma URL cae en el HTML de la SPA.
 
 Ese PHP es el mismo en desarrollo y en el VPS. `server/mysql-query.js` publica `POST /api/mysql/query` solo en Express (`pnpm dev` y `pnpm preview`). La página no llama a esa ruta: en Nginx un `POST` que no es un `.php` cae en `index.html` y responde **405** con HTML.
 

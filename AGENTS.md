@@ -65,6 +65,12 @@ La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese 
 - VPS: el MySQL del sistema en el puerto **3306**, la misma base y el usuario `jquery_user` del curso. Las credenciales van en `.env.production`. `deploy.sh` lo sube como `.env` con modo `640` y grupo `www-data`. Sin ese grupo, PHP-FPM no lo lee y conecta al 3307 (`Connection refused`).
 - No uses la base `jquery_escuelait_classicmodels` para esta página.
 
+## Demos PHP y Express
+
+`stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
+
+`stack/express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `server/tasks-router.js` y solo lo monta `server/dev-server.js` en `{SITE_BASE}/api`. Preview y Nginx no ejecutan ese proceso: la página tiene que mostrar el fallo en el DOM.
+
 ## Convenciones de código
 
 Al crear o editar `.js` y `.html` de este repo (no vendors):
