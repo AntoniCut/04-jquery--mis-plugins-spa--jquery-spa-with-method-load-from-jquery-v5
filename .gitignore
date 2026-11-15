@@ -7,6 +7,9 @@ pnpm-lock.yaml
 .env.*
 !.env.example
 
+# Carpeta de la aplicación
+app/
+
 # Carpeta de distribución / compilados
 dist/
 
@@ -24,3 +27,5 @@ prompts/
 
 # workflow
 workflow/
+
+.engram/

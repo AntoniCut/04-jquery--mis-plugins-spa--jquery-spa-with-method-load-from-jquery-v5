@@ -82,6 +82,12 @@
 <span class="line"><span style="color:#6A9955">            /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {number}</span><span style="color:#6A9955"> - `Token incremental de la navegación en curso, usado para descartar respuestas obsoletas` */</span></span>
 <span class="line"><span style="color:#569CD6">            let</span><span style="color:#9CDCFE"> navigationToken</span><span style="color:#D4D4D4"> = </span><span style="color:#B5CEA8">0</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
+<span class="line"><span style="color:#6A9955">            /** - `true mientras hay una View Transition del plugin en curso, para no iniciar otra encima` */</span></span>
+<span class="line"><span style="color:#569CD6">            let</span><span style="color:#9CDCFE"> activeViewTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">false</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">            /** - `true si el popstate ya trae la transición visual del navegador` */</span></span>
+<span class="line"><span style="color:#569CD6">            let</span><span style="color:#9CDCFE"> hasUAVisualTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">false</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">            /*</span></span>
 <span class="line"><span style="color:#6A9955">                *  ---------------------------------------------------------  *</span></span>
@@ -497,8 +503,10 @@
 <span class="line"><span style="color:#D4D4D4">                    </span></span>
 <span class="line"><span style="color:#569CD6">                    new</span><span style="color:#DCDCAA"> CustomEvent</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'spa:route-loaded'</span><span style="color:#D4D4D4">, {</span></span>
 <span class="line"><span style="color:#9CDCFE">                        detail:</span><span style="color:#D4D4D4"> {</span></span>
-<span class="line"><span style="color:#9CDCFE">                            id:</span><span style="color:#9CDCFE"> route</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">id</span><span style="color:#D4D4D4"> || </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">,</span></span>
-<span class="line"><span style="color:#9CDCFE">                            path:</span><span style="color:#9CDCFE"> route</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">path</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">window</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">location</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">pathname</span></span>
+<span class="line"><span style="color:#9CDCFE">                            route:</span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#9CDCFE">                                id:</span><span style="color:#9CDCFE"> route</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">id</span><span style="color:#D4D4D4"> || </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                                path:</span><span style="color:#9CDCFE"> route</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">path</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">window</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">location</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">pathname</span></span>
+<span class="line"><span style="color:#D4D4D4">                            }</span></span>
 <span class="line"><span style="color:#D4D4D4">                        }</span></span>
 <span class="line"><span style="color:#D4D4D4">                    })</span></span>
 <span class="line"><span style="color:#D4D4D4">                );</span></span>
@@ -544,6 +552,12 @@
 <span class="line"><span style="color:#6A9955">             */</span></span>
 <span class="line"><span style="color:#569CD6">            const</span><span style="color:#DCDCAA"> loadContent</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">async</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">source</span><span style="color:#D4D4D4"> = </span><span style="color:#CE9178">'click'</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"></span>
+<span class="line"><span style="color:#6A9955">                /** - `consumir el flag de transición visual del navegador: true si el user agent ya anima este popstate` */</span></span>
+<span class="line"><span style="color:#569CD6">                const</span><span style="color:#4FC1FF"> skipViewTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">hasUAVisualTransition</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  resetear el flag tras leerlo, para que la siguiente navegación no herede la omisión  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                hasUAVisualTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">false</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  si la ruta no es válida, salir  -----</span></span>
 <span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">) {</span></span>
@@ -588,8 +602,11 @@
 <span class="line"><span style="color:#6A9955">                    /** - `Vuelca el payload precargado al DOM de forma síncrona` */</span></span>
 <span class="line"><span style="color:#569CD6">                    const</span><span style="color:#DCDCAA"> mutate</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#DCDCAA"> applyPreloadedContent</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">payload</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">source</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">                    //  -----  si el navegador soporta view transitions  -----</span></span>
-<span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">startViewTransition</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  si el navegador soporta view transitions, no hay otra en curso y el navegador no anima ya el historial  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">startViewTransition</span><span style="color:#D4D4D4"> &#x26;&#x26; !</span><span style="color:#9CDCFE">activeViewTransition</span><span style="color:#D4D4D4"> &#x26;&#x26; !</span><span style="color:#9CDCFE">skipViewTransition</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  marcar que hay una View Transition en curso  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                        activeViewTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">true</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                        /** - `Transición de vista de esta navegación` */</span></span>
 <span class="line"><span style="color:#569CD6">                        const</span><span style="color:#4FC1FF"> viewTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">startViewTransition</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#DCDCAA"> mutate</span><span style="color:#D4D4D4">());</span></span>
@@ -597,8 +614,15 @@
 <span class="line"><span style="color:#6A9955">                        //  -----  Esperar solo a que el DOM quede mutado, NO a que termine la animación  -----</span></span>
 <span class="line"><span style="color:#C586C0">                        await</span><span style="color:#9CDCFE"> viewTransition</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">updateCallbackDone</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">catch</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> { });</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">                        //  -----  La animación finaliza en segundo plano sin bloquear FASE 3  -----</span></span>
-<span class="line"><span style="color:#9CDCFE">                        viewTransition</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">finished</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">catch</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> { });</span></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  La animación finaliza en segundo plano y libera el flag  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                        viewTransition</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">finished</span></span>
+<span class="line"><span style="color:#D4D4D4">                            .</span><span style="color:#DCDCAA">catch</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> { })</span></span>
+<span class="line"><span style="color:#D4D4D4">                            .</span><span style="color:#DCDCAA">finally</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                                //  -----  permitir la próxima transición  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                                activeViewTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">false</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">                            });</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">                    } </span></span>
 <span class="line"><span style="color:#D4D4D4">                    </span></span>
@@ -614,8 +638,22 @@
 <span class="line"><span style="color:#6A9955">                    //  *    FASE 3 — Cargar scripts dinámicos con el DOM ya mutado</span></span>
 <span class="line"><span style="color:#6A9955">                    //  *  ==========================================================</span></span>
 <span class="line"><span style="color:#D4D4D4">                    </span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  si llegó una navegación más nueva durante la mutación, no cargar scripts de esta  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">myNavigationToken</span><span style="color:#D4D4D4"> !== </span><span style="color:#9CDCFE">navigationToken</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  descartar la fase 3 de esta navegación  -----</span></span>
+<span class="line"><span style="color:#C586C0">                        return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#D4D4D4">                    }</span></span>
+<span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  cargar scripts y librerías con el dom ya mutado  -----</span></span>
-<span class="line"><span style="color:#C586C0">                    await</span><span style="color:#DCDCAA"> applyRouteMetaAsync</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#C586C0">                    await</span><span style="color:#DCDCAA"> applyRouteMetaAsync</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, () </span><span style="color:#569CD6">=></span><span style="color:#9CDCFE"> myNavigationToken</span><span style="color:#D4D4D4"> === </span><span style="color:#9CDCFE">navigationToken</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  si la navegación quedó obsoleta durante los scripts, no notificar esta ruta  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">myNavigationToken</span><span style="color:#D4D4D4"> !== </span><span style="color:#9CDCFE">navigationToken</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  dejar que la navegación nueva notifique la suya  -----</span></span>
+<span class="line"><span style="color:#C586C0">                        return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#D4D4D4">                    }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  avisar de que la ruta ya está en el dom  -----</span></span>
 <span class="line"><span style="color:#DCDCAA">                    notifyRouteLoaded</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">);</span></span>
@@ -623,6 +661,13 @@
 <span class="line"><span style="color:#D4D4D4">                </span></span>
 <span class="line"><span style="color:#6A9955">                //  -----  si la carga de la ruta falla  -----</span></span>
 <span class="line"><span style="color:#C586C0">                catch</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">err</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  un fallo de una navegación ya reemplazada no pisa el error de la nueva  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">myNavigationToken</span><span style="color:#D4D4D4"> !== </span><span style="color:#9CDCFE">navigationToken</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  salir sin notificar  -----</span></span>
+<span class="line"><span style="color:#C586C0">                        return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#D4D4D4">                    }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  notificar el error de carga  -----</span></span>
 <span class="line"><span style="color:#DCDCAA">                    notifyRouteLoadError</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">err</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">source</span><span style="color:#D4D4D4">);</span></span>
@@ -1291,18 +1336,29 @@
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">            /**</span></span>
 <span class="line"><span style="color:#6A9955">             * -----------------------------------------</span></span>
-<span class="line"><span style="color:#6A9955">             * -----  `applyRouteMetaAsync(route)`  -----</span></span>
-<span class="line"><span style="color:#6A9955">             * -----------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955">             * -----  `applyRouteMetaAsync(route, isCurrent)`  -----</span></span>
+<span class="line"><span style="color:#6A9955">             * ------------------------------------------------</span></span>
 <span class="line"><span style="color:#6A9955">             * `FASE 3` — Carga scripts y libs DESPUÉS de que el DOM</span></span>
 <span class="line"><span style="color:#6A9955">             * ya está mutado y la View Transition ha terminado.</span></span>
 <span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@async</span></span>
 <span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {Route}</span><span style="color:#9CDCFE"> route</span><span style="color:#6A9955"> - Ruta actual.</span></span>
+<span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {() => boolean}</span><span style="color:#9CDCFE"> isCurrent</span><span style="color:#6A9955"> - `true mientras esta navegación sigue siendo la última`.</span></span>
 <span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@returns</span><span style="color:#4EC9B0"> {Promise&#x3C;void>}</span><span style="color:#6A9955"> - `Termina cuando los scripts y las librerías de la ruta ya están cargados`</span></span>
 <span class="line"><span style="color:#6A9955">             */</span></span>
-<span class="line"><span style="color:#569CD6">            const</span><span style="color:#DCDCAA"> applyRouteMetaAsync</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">async</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#569CD6">            const</span><span style="color:#DCDCAA"> applyRouteMetaAsync</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">async</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">isCurrent</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  si ya hay una navegación más nueva, no tocar el DOM  -----</span></span>
+<span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (!</span><span style="color:#DCDCAA">isCurrent</span><span style="color:#D4D4D4">())</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  salir sin cargar libs ni scripts  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    return</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  Cargar libs de jQuery UI bajo demanda (incluye widget tooltip)  -----</span></span>
 <span class="line"><span style="color:#C586C0">                await</span><span style="color:#DCDCAA"> loadLibsByRoute</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">libs</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  si la navegación quedó obsoleta durante las libs, no seguir  -----</span></span>
+<span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (!</span><span style="color:#DCDCAA">isCurrent</span><span style="color:#D4D4D4">())</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  salir sin cambiar el theme ni los scripts  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    return</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  Cambio de themes jQuery UI (requiere tooltip de jQuery UI ya cargado)  -----</span></span>
 <span class="line"><span style="color:#C586C0">                try</span><span style="color:#D4D4D4"> {</span></span>
@@ -1319,10 +1375,15 @@
 <span class="line"><span style="color:#6A9955">                //  -----  Habilitar elementos draggables tras cargar las libs  -----</span></span>
 <span class="line"><span style="color:#DCDCAA">                enableDraggables</span><span style="color:#D4D4D4">();</span></span>
 <span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  si la navegación quedó obsoleta, no cargar scripts sobre el DOM nuevo  -----</span></span>
+<span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (!</span><span style="color:#DCDCAA">isCurrent</span><span style="color:#D4D4D4">())</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  salir sin encolar scripts  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  Cargar scripts dinámicos de la ruta  -----</span></span>
 <span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">scripts</span><span style="color:#D4D4D4">)</span></span>
-<span class="line"><span style="color:#6A9955">                    //  -----  cargar los scripts de la ruta  -----</span></span>
-<span class="line"><span style="color:#C586C0">                    await</span><span style="color:#DCDCAA"> loadScriptsByPage</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">scripts</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  cargar los scripts de la ruta y cortar la cola si llega otra navegación  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    await</span><span style="color:#DCDCAA"> loadScriptsByPage</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">route</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">scripts</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">isCurrent</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">            };</span></span>
 <span class="line"></span>
@@ -1610,30 +1671,50 @@
 <span class="line"><span style="color:#6A9955">                // -----  Click Fuera de los Menús  -----</span></span>
 <span class="line"><span style="color:#DCDCAA">                $</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">on</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"click.spaNavbar"</span><span style="color:#D4D4D4">, </span><span style="color:#569CD6">function</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">) {</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">                    //  -----  Verificar si el click fue dentro de algún menú  -----</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  leer el DOM en el momento del clic: la navegación reemplaza estos nodos  -----</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {JQuery&#x3C;HTMLElement>}</span><span style="color:#6A9955"> - `contenedor vivo del menú principal` */</span></span>
+<span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> $menuMainContainer</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">$</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'.navbar__container'</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {JQuery&#x3C;HTMLElement>}</span><span style="color:#6A9955"> - `botón vivo de abrir el menú principal` */</span></span>
+<span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> $menuMainBtnOpen</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">$</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'.navbar__btn-open'</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {JQuery&#x3C;HTMLElement>}</span><span style="color:#6A9955"> - `contenedor vivo del menú de themes` */</span></span>
+<span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> $menuThemesContainer</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">$</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'#linksThemesContainer'</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {JQuery&#x3C;HTMLElement>}</span><span style="color:#6A9955"> - `botón vivo de abrir el menú de themes` */</span></span>
+<span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> $menuThemesBtnOpen</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">$</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'.navbar-ui__btn-open'</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {boolean}</span><span style="color:#6A9955"> - `Click dentro del menú principal` */</span></span>
 <span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> clickMain</span><span style="color:#D4D4D4"> =</span></span>
-<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuMain</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">container</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">) ||</span></span>
-<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuMain</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">btnOpen</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">$menuMainContainer</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">) ||</span></span>
+<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">$menuMainBtnOpen</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {boolean}</span><span style="color:#6A9955"> - `Click dentro del menú themes` */</span></span>
 <span class="line"><span style="color:#569CD6">                    const</span><span style="color:#4FC1FF"> clickThemes</span><span style="color:#D4D4D4"> =</span></span>
-<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuThemes</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">container</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">) ||</span></span>
-<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuThemes</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">btnOpen</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">$menuThemesContainer</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">) ||</span></span>
+<span class="line"><span style="color:#DCDCAA">                        clickInside</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">$menuThemesBtnOpen</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">target</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  Si el click fue fuera, cerrar ambos menús  -----   </span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">clickMain</span><span style="color:#D4D4D4">)</span></span>
-<span class="line"><span style="color:#6A9955">                        //  -----  cerrar el menú principal  -----</span></span>
-<span class="line"><span style="color:#DCDCAA">                        closeMenu</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuMain</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  cerrar el menú principal que está en el DOM ahora  -----</span></span>
+<span class="line"><span style="color:#DCDCAA">                        closeMenu</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">                            container:</span><span style="color:#9CDCFE"> $menuMainContainer</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                            btnOpen:</span><span style="color:#9CDCFE"> $menuMainBtnOpen</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                            btnClose:</span><span style="color:#DCDCAA"> $</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'.navbar__btn-close'</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#D4D4D4">                        });</span></span>
 <span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                    //  -----  si el click fue fuera del menú de themes, cerrarlo  -----</span></span>
 <span class="line"><span style="color:#C586C0">                    if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">clickThemes</span><span style="color:#D4D4D4">)</span></span>
-<span class="line"><span style="color:#6A9955">                        //  -----  cerrar el menú de themes  -----</span></span>
-<span class="line"><span style="color:#DCDCAA">                        closeMenu</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">menuThemes</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  cerrar el menú de themes que está en el DOM ahora  -----</span></span>
+<span class="line"><span style="color:#DCDCAA">                        closeMenu</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">                            container:</span><span style="color:#9CDCFE"> $menuThemesContainer</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                            btnOpen:</span><span style="color:#9CDCFE"> $menuThemesBtnOpen</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                            btnClose:</span><span style="color:#DCDCAA"> $</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'.navbar-ui__btn-close'</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#D4D4D4">                        });</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">                });</span></span>
 <span class="line"></span>
@@ -1894,8 +1975,9 @@
 <span class="line"><span style="color:#6A9955">             * - Antes elimina los scripts dinámicos previos.</span></span>
 <span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {RouteScript[]|object}</span><span style="color:#9CDCFE"> scripts</span><span style="color:#6A9955"> - `Array o diccionario de scripts a cargar para la ruta. </span></span>
 <span class="line"><span style="color:#6A9955">             * Cada script debe tener al menos una propiedad 'src' con la URL del script.`</span></span>
+<span class="line"><span style="color:#6A9955">             * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {() => boolean}</span><span style="color:#9CDCFE"> [isCurrent]</span><span style="color:#6A9955"> - `Si se pasa, cada script espera a que la navegación siga vigente`.</span></span>
 <span class="line"><span style="color:#6A9955">             */</span></span>
-<span class="line"><span style="color:#569CD6">            const</span><span style="color:#DCDCAA"> loadScriptsByPage</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">scripts</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#569CD6">            const</span><span style="color:#DCDCAA"> loadScriptsByPage</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">scripts</span><span style="color:#D4D4D4">, </span><span style="color:#DCDCAA">isCurrent</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#569CD6"> true</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  Remover scripts anteriores  -----</span></span>
 <span class="line"><span style="color:#6A9955">                //  - Solo elimina scripts cargados por rutas → seguros</span></span>
@@ -1930,8 +2012,18 @@
 <span class="line"><span style="color:#6A9955">                        //  -----  pasar al siguiente script  -----</span></span>
 <span class="line"><span style="color:#C586C0">                        return</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">                    //  -----  encolar la carga de este script  -----</span></span>
-<span class="line"><span style="color:#9CDCFE">                    scriptQueue</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">scriptQueue</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">then</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#DCDCAA"> loadScripts</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">script</span><span style="color:#D4D4D4">));</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  encolar la carga de este script si la navegación sigue vigente  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                    scriptQueue</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">scriptQueue</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">then</span><span style="color:#D4D4D4">(() </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  una navegación más nueva no debe ejecutar el script de la anterior  -----</span></span>
+<span class="line"><span style="color:#C586C0">                        if</span><span style="color:#D4D4D4"> (!</span><span style="color:#DCDCAA">isCurrent</span><span style="color:#D4D4D4">())</span></span>
+<span class="line"><span style="color:#6A9955">                            //  -----  cortar el resto de la cola  -----</span></span>
+<span class="line"><span style="color:#C586C0">                            return</span><span style="color:#4EC9B0"> Promise</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">resolve</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                        //  -----  cargar este script  -----</span></span>
+<span class="line"><span style="color:#C586C0">                        return</span><span style="color:#DCDCAA"> loadScripts</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">script</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">                    });</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">                });</span></span>
 <span class="line"></span>
@@ -2247,6 +2339,14 @@
 <span class="line"><span style="color:#6A9955">            */</span></span>
 <span class="line"><span style="color:#DCDCAA">            $</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">on</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'click'</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">'a[data-id], a[data-route]'</span><span style="color:#D4D4D4">, </span><span style="color:#569CD6">async</span><span style="color:#569CD6"> function</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">event</span><span style="color:#D4D4D4">) {</span></span>
 <span class="line"></span>
+<span class="line"><span style="color:#6A9955">                /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {MouseEvent}</span><span style="color:#6A9955"> - `evento nativo del clic, con botón y modificadores` */</span></span>
+<span class="line"><span style="color:#569CD6">                const</span><span style="color:#4FC1FF"> nativeClick</span><span style="color:#D4D4D4"> = </span><span style="color:#6A9955">/** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {MouseEvent}</span><span style="color:#6A9955"> */</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">event</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">originalEvent</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">event</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  dejar pasar clic con modificador, botón distinto del izquierdo o default ya cancelado  -----</span></span>
+<span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">defaultPrevented</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">button</span><span style="color:#D4D4D4"> !== </span><span style="color:#B5CEA8">0</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">metaKey</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">ctrlKey</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">shiftKey</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">nativeClick</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">altKey</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">                    //  -----  el navegador abre la pestaña o sigue su comportamiento  -----</span></span>
+<span class="line"><span style="color:#C586C0">                    return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  evitar la navegación nativa del enlace  -----</span></span>
 <span class="line"><span style="color:#9CDCFE">                event</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">preventDefault</span><span style="color:#D4D4D4">();</span></span>
 <span class="line"></span>
@@ -2352,6 +2452,9 @@
 <span class="line"><span style="color:#6A9955">                ---------------------------------------------------</span></span>
 <span class="line"><span style="color:#6A9955">            */</span></span>
 <span class="line"><span style="color:#9CDCFE">            window</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">addEventListener</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'popstate'</span><span style="color:#D4D4D4">, </span><span style="color:#569CD6">async</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">                //  -----  si el navegador ya animó este atrás/adelante, el plugin no inicia otra View Transition  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">                hasUAVisualTransition</span><span style="color:#D4D4D4"> = </span><span style="color:#6A9955">/** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {PopStateEvent &#x26; { hasUAVisualTransition?: boolean }}</span><span style="color:#6A9955"> */</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">).</span><span style="color:#9CDCFE">hasUAVisualTransition</span><span style="color:#D4D4D4"> === </span><span style="color:#569CD6">true</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">                //  -----  Actualizar el favicon inmediatamente (síncronamente) desde el state para evitar parpadeo durante la carga asíncrona (lazy) del módulo de ruta  -----</span></span>
 <span class="line"><span style="color:#C586C0">                if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">e</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">state</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">favicon</span><span style="color:#D4D4D4">)</span></span>

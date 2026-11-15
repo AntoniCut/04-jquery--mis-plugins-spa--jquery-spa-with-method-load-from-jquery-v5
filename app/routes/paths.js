@@ -1,12 +1,15 @@
 /*
     *  -------------------------------------------------  *
-    *  -----  /paths.js  --  /src/routes/paths.js  -----  *
+    *  -----  paths.js  --  /src/routes/paths.js  -----  *
     *  -------------------------------------------------  *
 */
 
 
-/** @type {string} - `Base del proyecto (debe coincidir con src/main.js)` */
-export const base = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
+import { base } from '../config/site-base.js';
+
+
+/** - `base del proyecto: se reexporta desde src/config/site-base.js` */
+export { base };
 
 
 /** 

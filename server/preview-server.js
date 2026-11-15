@@ -23,12 +23,18 @@ import fs from 'node:fs';
 //  -----  unir rutas  -----
 import path from 'node:path';
 
+//  -----  base pública del sitio, leída de SITE_BASE  -----
+import { base } from '../src/config/site-base.js';
 
-/** - `prefijo URL del base href` */
-const DEV_ROUTE_BASE = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
+//  -----  primer puerto libre a partir del de partida  -----
+import { findAvailablePort } from './find-available-port.js';
+
+
+/** - `prefijo URL que usa el base href del proyecto (SITE_BASE del .env)` */
+const DEV_ROUTE_BASE = base;
 
 /** - `puerto público del preview` */
-const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 4173);
+const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 8765);
 
 /** - `raíz del build de producción` */
 const DIST_ROOT = path.join(process.cwd(), 'dist');
@@ -70,7 +76,7 @@ app.disable('x-powered-by');
 const redirectRootToBase = (req, res, next) => {
 
     //  -----  si piden la raíz, index.html o la base sin barra, ir a la base  -----
-    if (req.path === '/' || req.path === '/index.html' || req.path === DEV_ROUTE_BASE) {
+    if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html` || req.path === DEV_ROUTE_BASE) {
 
         //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
@@ -377,11 +383,47 @@ const makePhpHandler = (rootDir, serverPort) => {
 
 
 
+/** - `host donde escucha el servidor de previsualización` */
+const PREVIEW_SERVER_HOST = '127.0.0.1';
+
+/** @type {number} - `puerto real de previsualización: el primero libre a partir de PREVIEW_SERVER_PORT` */
+let previewServerPort;
+
+//  -----  resolver el puerto antes de registrar middlewares, porque php-cgi necesita el puerto real  -----
+try {
+
+    //  -----  buscar el primer puerto libre desde el de partida, probando en el mismo host que usará listen  -----
+    previewServerPort = await findAvailablePort(PREVIEW_SERVER_PORT, {
+        host: PREVIEW_SERVER_HOST,
+        envName: 'PREVIEW_SERVER_PORT',
+    });
+
+}
+
+//  -----  si no hay puerto libre o el valor del .env no es válido, terminar  -----
+catch (error) {
+
+    //  -----  mostrar el mensaje del error  -----
+    console.error(error instanceof Error ? error.message : error);
+
+    //  -----  terminar con código de error  -----
+    process.exit(1);
+}
+
+//  -----  avisar cuando el puerto cambia respecto al configurado  -----
+if (previewServerPort !== PREVIEW_SERVER_PORT) {
+
+    //  -----  mostrar el puerto ocupado y el puerto que se usa  -----
+    console.log(`El puerto ${PREVIEW_SERVER_PORT} está ocupado. Se usa el ${previewServerPort}.`);
+}
+
+
+
 //  -----  redirigir la raíz a la base de la SPA  -----
 app.use(redirectRootToBase);
 
 //  -----  ejecutar los php del build con php-cgi  -----
-app.use(makePhpHandler(DIST_ROOT, PREVIEW_SERVER_PORT));
+app.use(makePhpHandler(DIST_ROOT, previewServerPort));
 
 //  -----  aceptar consultas de solo lectura de la página mysql  -----
 registerMysqlQueryRoute(app, DEV_ROUTE_BASE);
@@ -413,13 +455,13 @@ app.use((
  * -----------------------------
  * - `servidor de preview del build`
  */
-const previewServer = app.listen(PREVIEW_SERVER_PORT, '127.0.0.1', () => {
+const previewServer = app.listen(previewServerPort, PREVIEW_SERVER_HOST, () => {
 
     //  -----  separar el aviso en consola  -----
     console.log('\n');
 
     //  -----  mostrar la url del preview  -----
-    console.log(`Preview disponible en http://localhost:${PREVIEW_SERVER_PORT}${DEV_ROUTE_BASE}/`);
+    console.log(`Preview disponible en http://localhost:${previewServerPort}${DEV_ROUTE_BASE}/`);
 
     //  -----  separar el aviso en consola  -----
     console.log('\n');

@@ -22,13 +22,16 @@ Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tene
 
 ## URL base
 
-El prefijo `/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5` tiene que ser el mismo en:
+El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`). No lo hardcodees.
 
-- `index.html` → `<base href>`
-- `src/routes/paths.js` → `base`
-- `server/dev-server.js` y `server/preview-server.js` → `DEV_ROUTE_BASE`
+- Node lo lee con `src/config/site-base.js`. Gulp, los servidores y `generate-markdown-shiki.js` cargan `dotenv/config` antes de importarlo.
+- El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`.
+- Sass usa `$base: site-base();`. Gulp registra esa función con el valor del `.env`.
+- `.htaccess` también lleva `%SITE_BASE%`. `htaccessToDist` escribe el valor real en `dist/.htaccess`.
 
-`routeModulesBase` en `src/spa/spa.js` apunta a `${base}/app/routes` porque el navegador importa los módulos ya copiados.
+`src/routes/paths.js` reexporta `base`. `routeModulesBase` en `src/spa/spa.js` apunta a `${base}/app/routes` porque el navegador importa los módulos ya copiados.
+
+`DEV_SERVER_PORT` y `PREVIEW_SERVER_PORT` son puertos de partida. Si están ocupados, el servidor prueba los 19 siguientes. `pnpm stop:dev` y `pnpm stop:preview` solo matan el proceso cuyo `cwd` es este proyecto.
 
 ## Añadir o cambiar una ruta
 
@@ -85,12 +88,12 @@ No reformatees un archivo entero si el cambio es local. Aplica las convenciones 
 
 ```bash
 pnpm install
-pnpm dev          # reset + watch + servidor en :3000
+pnpm dev          # reset + watch + servidor en :9876
 pnpm stop:dev
 pnpm refresh      # regenera app/ sin quedar a la escucha
 pnpm code-highlight
 pnpm build
-pnpm preview      # sirve dist/ en :4173
+pnpm preview      # sirve dist/ en :8765
 ```
 
 El detalle de cada script está en `package.json` → `scriptsDoc` y en el README.

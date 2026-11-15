@@ -25,6 +25,9 @@
 */
 
 
+//  -----  cargar .env antes de leer SITE_BASE  -----
+import 'dotenv/config';
+
 //  -----  convertir código a html con shiki  -----
 import { codeToHtml } from 'shiki';
 
@@ -44,8 +47,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 
-/** @type {string} - `base del proyecto, la misma que en src/main.js` */
-const base = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
+//  -----  base pública del sitio, leída de SITE_BASE  -----
+import { base } from './src/config/site-base.js';
 
 
 /** 

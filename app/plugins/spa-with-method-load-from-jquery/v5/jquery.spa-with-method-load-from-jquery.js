@@ -113,6 +113,12 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
             /** @type {number} - `Token incremental de la navegación en curso, usado para descartar respuestas obsoletas` */
             let navigationToken = 0;
 
+            /** - `true mientras hay una View Transition del plugin en curso, para no iniciar otra encima` */
+            let activeViewTransition = false;
+
+            /** - `true si el popstate ya trae la transición visual del navegador` */
+            let hasUAVisualTransition = false;
+
 
             /*
                 *  ---------------------------------------------------------  *
@@ -528,8 +534,10 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                     
                     new CustomEvent('spa:route-loaded', {
                         detail: {
-                            id: route?.id || null,
-                            path: route?.path || window.location.pathname
+                            route: {
+                                id: route?.id || null,
+                                path: route?.path || window.location.pathname
+                            }
                         }
                     })
                 );
@@ -575,6 +583,12 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
              */
             const loadContent = async (route, source = 'click') => {
 
+                /** - `consumir el flag de transición visual del navegador: true si el user agent ya anima este popstate` */
+                const skipViewTransition = hasUAVisualTransition;
+
+                //  -----  resetear el flag tras leerlo, para que la siguiente navegación no herede la omisión  -----
+                hasUAVisualTransition = false;
+
 
                 //  -----  si la ruta no es válida, salir  -----
                 if (!route) {
@@ -616,11 +630,20 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                     //  *    FASE 2 — Mutar el DOM DENTRO de startViewTransition con callback SÍNCRONO
                     //  *  =============================================================================
 
-                    /** - `Vuelca el payload precargado al DOM de forma síncrona` */
+
+                    /** 
+                     * ------------------------
+                     * -----  `mutate()`  -----
+                     * ------------------------
+                     * - Mutar el DOM DENTRO de startViewTransition con callback SÍNCRONO
+                     * - `Vuelca el payload precargado al DOM de forma síncrona` */
                     const mutate = () => applyPreloadedContent(payload, route, source);
 
-                    //  -----  si el navegador soporta view transitions  -----
-                    if (document.startViewTransition) {
+                    //  -----  si el navegador soporta view transitions, no hay otra en curso y el navegador no anima ya el historial  -----
+                    if (document.startViewTransition && !activeViewTransition && !skipViewTransition) {
+
+                        //  -----  marcar que hay una View Transition en curso  -----
+                        activeViewTransition = true;
 
                         /** - `Transición de vista de esta navegación` */
                         const viewTransition = document.startViewTransition(() => mutate());
@@ -628,8 +651,15 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                         //  -----  Esperar solo a que el DOM quede mutado, NO a que termine la animación  -----
                         await viewTransition.updateCallbackDone.catch(() => { });
 
-                        //  -----  La animación finaliza en segundo plano sin bloquear FASE 3  -----
-                        viewTransition.finished.catch(() => { });
+                        //  -----  La animación finaliza en segundo plano y libera el flag  -----
+                        viewTransition.finished
+                            .catch(() => { })
+                            .finally(() => {
+
+                                //  -----  permitir la próxima transición  -----
+                                activeViewTransition = false;
+
+                            });
 
                     } 
                     
@@ -645,8 +675,22 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                     //  *    FASE 3 — Cargar scripts dinámicos con el DOM ya mutado
                     //  *  ==========================================================
                     
+                    //  -----  si llegó una navegación más nueva durante la mutación, no cargar scripts de esta  -----
+                    if (myNavigationToken !== navigationToken) {
+
+                        //  -----  descartar la fase 3 de esta navegación  -----
+                        return;
+                    }
+
                     //  -----  cargar scripts y librerías con el dom ya mutado  -----
-                    await applyRouteMetaAsync(route);
+                    await applyRouteMetaAsync(route, () => myNavigationToken === navigationToken);
+
+                    //  -----  si la navegación quedó obsoleta durante los scripts, no notificar esta ruta  -----
+                    if (myNavigationToken !== navigationToken) {
+
+                        //  -----  dejar que la navegación nueva notifique la suya  -----
+                        return;
+                    }
 
                     //  -----  avisar de que la ruta ya está en el dom  -----
                     notifyRouteLoaded(route);
@@ -654,6 +698,13 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                 
                 //  -----  si la carga de la ruta falla  -----
                 catch (err) {
+
+                    //  -----  un fallo de una navegación ya reemplazada no pisa el error de la nueva  -----
+                    if (myNavigationToken !== navigationToken) {
+
+                        //  -----  salir sin notificar  -----
+                        return;
+                    }
 
                     //  -----  notificar el error de carga  -----
                     notifyRouteLoadError(route, err, source);
@@ -1321,19 +1372,30 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
 
 
             /**
-             * -----------------------------------------
-             * -----  `applyRouteMetaAsync(route)`  -----
-             * -----------------------------------------
+             * -----------------------------------------------------
+             * -----  `applyRouteMetaAsync(route, isCurrent)`  -----
+             * -----------------------------------------------------
              * `FASE 3` — Carga scripts y libs DESPUÉS de que el DOM
              * ya está mutado y la View Transition ha terminado.
              * @async
              * @param {Route} route - Ruta actual.
+             * @param {() => boolean} isCurrent - `true mientras esta navegación sigue siendo la última`.
              * @returns {Promise<void>} - `Termina cuando los scripts y las librerías de la ruta ya están cargados`
              */
-            const applyRouteMetaAsync = async (route) => {
+            const applyRouteMetaAsync = async (route, isCurrent) => {
+
+                //  -----  si ya hay una navegación más nueva, no tocar el DOM  -----
+                if (!isCurrent())
+                    //  -----  salir sin cargar libs ni scripts  -----
+                    return;
 
                 //  -----  Cargar libs de jQuery UI bajo demanda (incluye widget tooltip)  -----
                 await loadLibsByRoute(route.libs);
+
+                //  -----  si la navegación quedó obsoleta durante las libs, no seguir  -----
+                if (!isCurrent())
+                    //  -----  salir sin cambiar el theme ni los scripts  -----
+                    return;
 
                 //  -----  Cambio de themes jQuery UI (requiere tooltip de jQuery UI ya cargado)  -----
                 try {
@@ -1350,10 +1412,15 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                 //  -----  Habilitar elementos draggables tras cargar las libs  -----
                 enableDraggables();
 
+                //  -----  si la navegación quedó obsoleta, no cargar scripts sobre el DOM nuevo  -----
+                if (!isCurrent())
+                    //  -----  salir sin encolar scripts  -----
+                    return;
+
                 //  -----  Cargar scripts dinámicos de la ruta  -----
                 if (route.scripts)
-                    //  -----  cargar los scripts de la ruta  -----
-                    await loadScriptsByPage(route.scripts);
+                    //  -----  cargar los scripts de la ruta y cortar la cola si llega otra navegación  -----
+                    await loadScriptsByPage(route.scripts, isCurrent);
 
             };
 
@@ -1641,30 +1708,50 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                 // -----  Click Fuera de los Menús  -----
                 $(document).on("click.spaNavbar", function (e) {
 
-                    //  -----  Verificar si el click fue dentro de algún menú  -----
+                    //  -----  leer el DOM en el momento del clic: la navegación reemplaza estos nodos  -----
+
+                    /** @type {JQuery<HTMLElement>} - `contenedor vivo del menú principal` */
+                    const $menuMainContainer = $('.navbar__container');
+
+                    /** @type {JQuery<HTMLElement>} - `botón vivo de abrir el menú principal` */
+                    const $menuMainBtnOpen = $('.navbar__btn-open');
+
+                    /** @type {JQuery<HTMLElement>} - `contenedor vivo del menú de themes` */
+                    const $menuThemesContainer = $('#linksThemesContainer');
+
+                    /** @type {JQuery<HTMLElement>} - `botón vivo de abrir el menú de themes` */
+                    const $menuThemesBtnOpen = $('.navbar-ui__btn-open');
 
                     /** @type {boolean} - `Click dentro del menú principal` */
                     const clickMain =
-                        clickInside(menuMain.container, e.target) ||
-                        clickInside(menuMain.btnOpen, e.target);
+                        clickInside($menuMainContainer, e.target) ||
+                        clickInside($menuMainBtnOpen, e.target);
 
                     /** @type {boolean} - `Click dentro del menú themes` */
                     const clickThemes =
-                        clickInside(menuThemes.container, e.target) ||
-                        clickInside(menuThemes.btnOpen, e.target);
+                        clickInside($menuThemesContainer, e.target) ||
+                        clickInside($menuThemesBtnOpen, e.target);
 
 
                     //  -----  Si el click fue fuera, cerrar ambos menús  -----   
 
                     if (!clickMain)
-                        //  -----  cerrar el menú principal  -----
-                        closeMenu(menuMain);
+                        //  -----  cerrar el menú principal que está en el DOM ahora  -----
+                        closeMenu({
+                            container: $menuMainContainer,
+                            btnOpen: $menuMainBtnOpen,
+                            btnClose: $('.navbar__btn-close')
+                        });
 
 
                     //  -----  si el click fue fuera del menú de themes, cerrarlo  -----
                     if (!clickThemes)
-                        //  -----  cerrar el menú de themes  -----
-                        closeMenu(menuThemes);
+                        //  -----  cerrar el menú de themes que está en el DOM ahora  -----
+                        closeMenu({
+                            container: $menuThemesContainer,
+                            btnOpen: $menuThemesBtnOpen,
+                            btnClose: $('.navbar-ui__btn-close')
+                        });
 
                 });
 
@@ -1925,8 +2012,9 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
              * - Antes elimina los scripts dinámicos previos.
              * @param {RouteScript[]|object} scripts - `Array o diccionario de scripts a cargar para la ruta. 
              * Cada script debe tener al menos una propiedad 'src' con la URL del script.`
+             * @param {() => boolean} [isCurrent] - `Si se pasa, cada script espera a que la navegación siga vigente`.
              */
-            const loadScriptsByPage = (scripts) => {
+            const loadScriptsByPage = (scripts, isCurrent = () => true) => {
 
                 //  -----  Remover scripts anteriores  -----
                 //  - Solo elimina scripts cargados por rutas → seguros
@@ -1961,8 +2049,18 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                         //  -----  pasar al siguiente script  -----
                         return;
 
-                    //  -----  encolar la carga de este script  -----
-                    scriptQueue = scriptQueue.then(() => loadScripts(script));
+                    //  -----  encolar la carga de este script si la navegación sigue vigente  -----
+                    scriptQueue = scriptQueue.then(() => {
+
+                        //  -----  una navegación más nueva no debe ejecutar el script de la anterior  -----
+                        if (!isCurrent())
+                            //  -----  cortar el resto de la cola  -----
+                            return Promise.resolve();
+
+                        //  -----  cargar este script  -----
+                        return loadScripts(script);
+
+                    });
 
                 });
 
@@ -2278,6 +2376,14 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
             */
             $(document).on('click', 'a[data-id], a[data-route]', async function (event) {
 
+                /** @type {MouseEvent} - `evento nativo del clic, con botón y modificadores` */
+                const nativeClick = /** @type {MouseEvent} */ (event.originalEvent || event);
+
+                //  -----  dejar pasar clic con modificador, botón distinto del izquierdo o default ya cancelado  -----
+                if (nativeClick.defaultPrevented || nativeClick.button !== 0 || nativeClick.metaKey || nativeClick.ctrlKey || nativeClick.shiftKey || nativeClick.altKey)
+                    //  -----  el navegador abre la pestaña o sigue su comportamiento  -----
+                    return;
+
                 //  -----  evitar la navegación nativa del enlace  -----
                 event.preventDefault();
 
@@ -2383,6 +2489,9 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                 ---------------------------------------------------
             */
             window.addEventListener('popstate', async (e) => {
+
+                //  -----  si el navegador ya animó este atrás/adelante, el plugin no inicia otra View Transition  -----
+                hasUAVisualTransition = /** @type {PopStateEvent & { hasUAVisualTransition?: boolean }} */ (e).hasUAVisualTransition === true;
 
                 //  -----  Actualizar el favicon inmediatamente (síncronamente) desde el state para evitar parpadeo durante la carga asíncrona (lazy) del módulo de ruta  -----
                 if (e.state?.favicon)
