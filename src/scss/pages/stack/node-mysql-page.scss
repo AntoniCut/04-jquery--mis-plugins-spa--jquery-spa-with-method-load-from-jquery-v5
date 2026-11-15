@@ -1,0 +1,330 @@
+/*
+    *  ----------------------------------------------------------------------------------  *
+    *  -----  node-mysql-page.scss  --  /src/scss/pages/stack/node-mysql-page.scss  -----  *
+    *  ----------------------------------------------------------------------------------  *
+*/
+
+@use '../../base/variables' as var;
+@use '../../base/mixins' as mx;
+
+
+//  -----  variables  -----
+$node-mysql-primary:           #339933;
+$node-mysql-secondary:         #215732;
+$node-mysql-hero-end:          #00758f;
+$node-mysql-accent-bg:         #f3faf3;
+$node-mysql-row-alt:           rgba($node-mysql-primary, 0.06);
+$node-mysql-text:              #2c3e50;
+$node-mysql-text-light:        #5d6d7e;
+$node-mysql-card-bg:           var.$bg-white;
+$node-mysql-card-border:       rgba($node-mysql-primary, 0.2);
+$node-mysql-card-shadow:       0 4px 16px rgba($node-mysql-primary, 0.1);
+$node-mysql-card-shadow-hover: 0 8px 28px rgba($node-mysql-primary, 0.2);
+$node-mysql-tag-bg:            rgba($node-mysql-primary, 0.08);
+$node-mysql-tag-color:         $node-mysql-primary;
+$node-mysql-tag-border:        rgba($node-mysql-primary, 0.3);
+$color-white:             var.$bg-white;
+$shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
+
+
+//  -----  título del header  -----
+.header__dynamic-title {
+    color: $node-mysql-primary;
+}
+
+
+//  -----  títulos de sección  -----
+.main__title {
+    color: $node-mysql-primary;
+}
+
+
+//  -----  la columna no crece con la tabla  -----
+.node-mysql-page__panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+
+//  -----  node-mysql-page  -----
+.node-mysql-page,
+.node-mysql-demo {
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4rem;
+
+
+    //  -----  hero  -----
+    &__hero {
+        width: 100%;
+        min-height: 18rem;
+        background: linear-gradient(135deg, $node-mysql-primary 0%, $node-mysql-secondary 60%, $node-mysql-hero-end 100%);
+        border-radius: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 2rem;
+
+        @include mx.tablet {
+            min-height: 24rem;
+            padding: 4rem 3rem;
+        }
+    }
+
+    &__hero-badge {
+        text-align: center;
+        color: $color-white;
+    }
+
+    &__hero-tag {
+        display: block;
+        font-size: 4rem;
+        font-weight: 800;
+        font-family: monospace;
+        letter-spacing: 0.3rem;
+    }
+
+    &__hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0.6rem 0 0.4rem;
+        text-shadow: $shadow-hero-title;
+
+        @include mx.tablet {
+            font-size: 4.5rem;
+        }
+    }
+
+    &__hero-subtitle {
+        font-size: 1.4rem;
+        opacity: 0.9;
+
+        @include mx.tablet {
+            font-size: 1.8rem;
+        }
+    }
+
+
+    //  -----  intro  -----
+    &__intro {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.6rem;
+        background-color: $node-mysql-accent-bg;
+        border-left: 5px solid $node-mysql-primary;
+        border-radius: 0 0.8rem 0.8rem 0;
+        padding: 2.5rem;
+    }
+
+    &__intro-text {
+        width: 100%;
+        font-size: 1.5rem;
+        line-height: 1.8;
+        color: $node-mysql-text;
+
+        strong {
+            color: $node-mysql-primary;
+            font-weight: 600;
+        }
+    }
+
+
+    //  -----  features  -----
+    &__features {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+    }
+
+    &__features-title {
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: $node-mysql-primary;
+        text-align: center;
+
+        &::after {
+            content: '';
+            display: block;
+            width: 6rem;
+            height: 3px;
+            background-color: $node-mysql-primary;
+            margin: 0.8rem auto 0;
+            border-radius: 2px;
+        }
+    }
+
+    &__features-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+
+        @include mx.tablet {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    &__feature {
+        background-color: $node-mysql-card-bg;
+        border: 1px solid $node-mysql-card-border;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        box-shadow: $node-mysql-card-shadow;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    &__feature-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: $node-mysql-primary;
+    }
+
+    &__feature-text {
+        font-size: 1.4rem;
+        line-height: 1.75;
+        color: $node-mysql-text-light;
+    }
+
+
+    //  -----  concepts  -----
+    &__concepts-section {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    &__concepts-title {
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: $node-mysql-primary;
+        text-align: center;
+    }
+
+    &__concepts {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+
+    &__concept {
+        background-color: $node-mysql-tag-bg;
+        color: $node-mysql-tag-color;
+        border: 1px solid $node-mysql-tag-border;
+        border-radius: 2rem;
+        padding: 0.6rem 1.4rem;
+        font-size: 1.3rem;
+        font-family: monospace;
+        font-weight: 500;
+    }
+
+
+    //  -----  formulario  -----
+    &__form {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    &__label {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: $node-mysql-primary;
+    }
+
+    &__sql {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 14rem;
+        padding: 1.4rem;
+        border: 1px solid $node-mysql-card-border;
+        border-radius: 0.8rem;
+        background-color: $node-mysql-card-bg;
+        color: $node-mysql-text;
+        font-family: monospace;
+        font-size: 1.4rem;
+        line-height: 1.6;
+        resize: none;
+    }
+
+    &__submit {
+        align-self: flex-start;
+        border: 0;
+        border-radius: 0.8rem;
+        padding: 1rem 1.8rem;
+        background-color: $node-mysql-primary;
+        color: $color-white;
+        font-size: 1.4rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+    }
+
+
+    //  -----  resultado  -----
+    &__status {
+        min-height: 1.6rem;
+        font-size: 1.4rem;
+        color: $node-mysql-text;
+
+        &.is-error {
+            color: #9b2335;
+        }
+    }
+
+    &__result {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: 40rem;
+        overflow: auto;
+    }
+
+    &__table {
+        width: max-content;
+        min-width: 100%;
+        border-collapse: collapse;
+        font-size: 1.3rem;
+
+        th,
+        td {
+            border: 1px solid $node-mysql-card-border;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: $node-mysql-accent-bg;
+            color: $node-mysql-primary;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: $node-mysql-row-alt;
+        }
+    }
+
+}

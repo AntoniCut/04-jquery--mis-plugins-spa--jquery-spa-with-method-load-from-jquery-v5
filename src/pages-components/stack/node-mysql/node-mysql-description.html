@@ -1,0 +1,92 @@
+<!--
+    *  -----------------------------------------------------------------------------------------------------------------  *
+    *  -----  node-mysql-description.html  --  /src/pages-components/stack/node-mysql/node-mysql-description.html  -----  *
+    *  -----------------------------------------------------------------------------------------------------------------  *
+-->
+
+
+
+<div class="node-mysql-page">
+
+
+    <!--  -----  Hero  -----  -->
+    <div class="node-mysql-page__hero">
+        <div class="node-mysql-page__hero-badge">
+            <span class="node-mysql-page__hero-tag" aria-hidden="true">SQL</span>
+            <h3 class="node-mysql-page__hero-title">Node con MySQL</h3>
+            <p class="node-mysql-page__hero-subtitle">La misma lectura, por Express</p>
+        </div>
+    </div>
+
+
+    <!--  -----  Intro  -----  -->
+    <section class="node-mysql-page__intro">
+        <p class="node-mysql-page__intro-text">
+            <strong>Express</strong> ejecuta la consulta contra
+            <strong>jquery_mis_plugins_spa</strong> con el usuario <strong>jquery_user</strong>.
+            El formulario envía la sentencia a <strong>api/mysql/query</strong>, relativo al
+            <code>&lt;base&gt;</code> del sitio.
+        </p>
+        <p class="node-mysql-page__intro-text">
+            <code>pnpm dev</code> y <code>pnpm preview</code> montan ese router.
+            En el VPS, sin el proceso Node, Nginx responde el HTML de la SPA y esta página
+            lo muestra en el aviso, sin leerlo como JSON.
+        </p>
+        <p class="node-mysql-page__intro-text">
+            La página <strong>PHP con MySQL</strong> sigue hablando con
+            <strong>app/services/mysql/query.php</strong>. Las dos comparten el contrato
+            <strong>ok</strong>, <strong>message</strong>, <strong>columns</strong> y <strong>rows</strong>.
+        </p>
+    </section>
+
+
+    <!--  -----  Features  -----  -->
+    <section class="node-mysql-page__features">
+
+        <h3 class="node-mysql-page__features-title">Qué hace este router</h3>
+
+        <div class="node-mysql-page__features-grid">
+
+            <article class="node-mysql-page__feature">
+                <h4 class="node-mysql-page__feature-title">Tabla stacks</h4>
+                <p class="node-mysql-page__feature-text">
+                    La consulta semilla lee slug, título, ruta y orden.
+                </p>
+            </article>
+
+            <article class="node-mysql-page__feature">
+                <h4 class="node-mysql-page__feature-title">Solo lectura</h4>
+                <p class="node-mysql-page__feature-text">
+                    SELECT, SHOW, DESCRIBE y EXPLAIN. Una sentencia por envío.
+                </p>
+            </article>
+
+            <article class="node-mysql-page__feature">
+                <h4 class="node-mysql-page__feature-title">Tope de filas</h4>
+                <p class="node-mysql-page__feature-text">
+                    La respuesta muestra como máximo 200 filas.
+                </p>
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!--  -----  Concepts  -----  -->
+    <section class="node-mysql-page__concepts-section">
+
+        <h3 class="node-mysql-page__concepts-title">Contrato del API</h3>
+
+        <ul class="node-mysql-page__concepts">
+            <li class="node-mysql-page__concept">POST api/mysql/query</li>
+            <li class="node-mysql-page__concept">{ sql }</li>
+            <li class="node-mysql-page__concept">ok</li>
+            <li class="node-mysql-page__concept">message</li>
+            <li class="node-mysql-page__concept">columns</li>
+            <li class="node-mysql-page__concept">rows</li>
+        </ul>
+
+    </section>
+
+</div>

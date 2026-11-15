@@ -69,7 +69,7 @@ La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese 
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
 
-`stack/express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `server/tasks-router.js` y solo lo monta `server/dev-server.js` en `{SITE_BASE}/api`. Preview y Nginx no ejecutan ese proceso: la página tiene que mostrar el fallo en el DOM.
+`stack/express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js` y solo lo monta `server/dev-server.js` en `{SITE_BASE}/api`. Preview y Nginx no ejecutan ese proceso: la página tiene que mostrar el fallo en el DOM.
 
 ## Convenciones de código
 
