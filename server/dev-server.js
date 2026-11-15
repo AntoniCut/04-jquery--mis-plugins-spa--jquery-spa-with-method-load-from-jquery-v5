@@ -14,8 +14,8 @@ import browserSync from 'browser-sync';
 //  -----  servidor http  -----
 import express from 'express';
 
-//  -----  consultas de la página mysql  -----
-import { registerMysqlQueryRoute } from './mysql-query.js';
+//  -----  health y consulta mysql, el mismo router que producción  -----
+import { createApiRouter } from '../api/src/mysql-query.js';
 
 //  -----  crud en memoria de la página express  -----
 import { createTasksRouter } from '../api/src/tasks-router.js';
@@ -478,8 +478,8 @@ app.use(redirectRootToBase);
 //  -----  ejecutar los php con php-cgi  -----
 app.use(makePhpHandler(PROJECT_ROOT, devServerPort));
 
-//  -----  aceptar consultas de solo lectura de la página mysql  -----
-registerMysqlQueryRoute(app, DEV_ROUTE_BASE);
+//  -----  montar health y la consulta mysql bajo la base del sitio  -----
+app.use(`${DEV_ROUTE_BASE}/api`, createApiRouter());
 
 //  -----  montar el crud de tareas bajo la base del sitio  -----
 app.use(`${DEV_ROUTE_BASE}/api`, createTasksRouter());

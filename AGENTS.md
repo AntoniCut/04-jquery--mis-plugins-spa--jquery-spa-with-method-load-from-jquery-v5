@@ -11,7 +11,7 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | Carpeta | Trato |
 |---|---|
 | `src/` | Origen de verdad. Aquí va el código nuevo |
-| `index.html`, `gulpfile.js`, `server/`, `types/`, `generate-markdown-shiki.js` | Se editan cuando el cambio lo pide |
+| `index.html`, `gulpfile.js`, `server/`, `api/`, `infra/`, `types/`, `generate-markdown-shiki.js` | Se editan cuando el cambio lo pide |
 | `app/` | Salida de Gulp. No se edita a mano |
 | `dist/` | Build de producción. No se edita a mano |
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
@@ -56,20 +56,23 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 
 ## Consulta MySQL
 
-La página `stack/mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese PHP está en `src/services/mysql/query.php` y Gulp lo copia a `app/services/` y luego a `dist/`. El navegador lo pide igual en `pnpm dev` y en Nginx.
+La página `stack/php-mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese PHP está en `src/services/mysql/query.php` y Gulp lo copia a `app/services/` y luego a `dist/`. El navegador lo pide igual en `pnpm dev` y en Nginx.
 
-- No cambies el `fetch` a `api/mysql/query`. Esa ruta solo existe en Express (`server/mysql-query.js`, registrado por `dev-server.js` y `preview-server.js`). En el VPS Nginx no ejecuta Node: el `POST` cae en `index.html` y responde 405 con HTML.
-- La validación de solo lectura vive en el PHP. Si tocas `server/mysql-query.js`, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o la página y el servidor local divergen.
+La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `server/dev-server.js` y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
+
+- No cambies el `fetch` de la página PHP a `api/mysql/query`. Son dos entradas del mismo contrato.
+- En el VPS, Nginx solo llega al proceso Node si está pegado `infra/nginx/jquery.antonydev.tech-api.conf` dentro del `server {}`. El `location` es `{SITE_BASE}/api/`, no `/api/` en la raíz del dominio. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
+- La validación de solo lectura vive en el PHP y en `api/src/mysql-query.js`. Si tocas uno, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o las páginas divergen.
 - `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
 - Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.
-- VPS: el MySQL del sistema en el puerto **3306**, la misma base y el usuario `jquery_user` del curso. Las credenciales van en `.env.production`. `deploy.sh` lo sube como `.env` con modo `640` y grupo `www-data`. Sin ese grupo, PHP-FPM no lo lee y conecta al 3307 (`Connection refused`).
+- VPS: el MySQL del sistema en el puerto **3306**, la misma base y el usuario `jquery_user` del curso. Las credenciales van en `.env.production`. La plantilla versionada es `.env.production.example`. `deploy.sh` lo sube como `.env` con modo `640` y grupo `www-data`, al web root de PHP y a `/opt/jquery-node-api/.env`. Sin ese grupo, PHP-FPM no lo lee y conecta al 3307 (`Connection refused`).
 - No uses la base `jquery_escuelait_classicmodels` para esta página.
 
 ## Demos PHP y Express
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
 
-`stack/express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js` y solo lo monta `server/dev-server.js` en `{SITE_BASE}/api`. Preview y Nginx no ejecutan ese proceso: la página tiene que mostrar el fallo en el DOM.
+`stack/node-express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js`. `server/dev-server.js` lo monta en `{SITE_BASE}/api`. En producción lo sirve `jquery-node` detrás del fragmento nginx de `infra/`. Preview no ejecuta ese proceso: la página tiene que mostrar el fallo en el DOM.
 
 ## Convenciones de código
 
@@ -84,7 +87,7 @@ Al crear o editar `.js` y `.html` de este repo (no vendors):
 - Una línea en blanco entre instrucciones y entre variables hermanas. Tres líneas en blanco entre función y función.
 - Comentarios en español, en minúsculas salvo nombres propios, describiendo lo que hace esa línea.
 - Tipos de dominio en `types/*.d.js`. Referencia con `/// <reference path="..." />` cuando el archivo los necesite.
-- `jsconfig.json` ya incluye `src/`, `types/`, `server/` y `gulpfile.js`. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
+- `jsconfig.json` ya incluye `src/`, `types/`, `server/`, `api/` y `gulpfile.js`. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
 
 Este repositorio no es un proyecto Astro. No añadas Prettier, `prettier-plugin-astro` ni `tsconfig` paths salvo que se pida.
 

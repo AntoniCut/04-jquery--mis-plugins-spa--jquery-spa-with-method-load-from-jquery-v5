@@ -101,7 +101,7 @@ pnpm install
 
 ### Variables de entorno
 
-Ningún `.env` se versiona (`.gitignore` ignora `.env` y `.env.*`).
+Los `.env` con secretos no se versionan (`.gitignore` ignora `.env` y `.env.*`). Sí se versionan `.env.example` y `.env.production.example`.
 
 El servidor de desarrollo lee la base, los puertos de partida y el watch desde `.env`:
 
@@ -126,7 +126,7 @@ MYSQL_PASSWORD=
 MYSQL_DATABASE=jquery_mis_plugins_spa
 ```
 
-Producción usa otro archivo, `.env.production`. Mismas claves `MYSQL_*`, pero el puerto es el del MySQL del VPS (**3306**), no el 3307 de Docker. `deploy.sh` copia ese archivo al VPS con el nombre `.env`.
+Producción usa otro archivo, `.env.production`. La plantilla versionada es `.env.production.example`: mismas claves `MYSQL_*`, más `API_HOST` y `API_PORT` (`3200`), con el MySQL del VPS en el **3306**, no el 3307 de Docker. `deploy.sh` copia ese archivo al VPS con el nombre `.env`, al web root de PHP y a `/opt/jquery-node-api/.env`.
 
 ---
 
@@ -212,9 +212,10 @@ Array con `fileName`, `fileExtension`, `urlInput`, `urlOutput` y `target` (`[dat
 | `jqueryUiPage` | `/stack/jquery-ui-page` |
 | `reactPage` | `/stack/react-page` |
 | `astroPage` | `/stack/astro-page` |
-| `mysqlPage` | `/stack/mysql-page` |
+| `phpMysqlPage` | `/stack/php-mysql-page` |
 | `phpPage` | `/stack/php-page` |
-| `expressPage` | `/stack/express-page` |
+| `nodeExpressPage` | `/stack/node-express-page` |
+| `nodeMysqlPage` | `/stack/node-mysql-page` |
 | `404NotFoundPage` | `/404` |
 
 ---
@@ -248,7 +249,9 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── docker/mysql/init/                # SQL del primer arranque del contenedor local
 ├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
 ├── types/                            # Tipos JSDoc del dominio
-├── server/                           # dev-server, preview-server, mysql-query.js
+├── api/                              # Runtime Node de producción (health, MySQL, tareas)
+├── infra/                            # systemd, nginx y provision de jquery-node
+├── server/                           # dev-server y preview-server
 ├── gulpfile.js
 └── generate-markdown-shiki.js
 ```
@@ -268,13 +271,13 @@ Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_mo
 
 ## Consulta MySQL
 
-La página `stack/mysql-page` no abre MySQL desde el navegador. El formulario hace `POST` a `app/services/mysql/query.php` con `{ "sql": "..." }` y pinta el JSON.
+La página `stack/php-mysql-page` no abre MySQL desde el navegador. El formulario hace `POST` a `app/services/mysql/query.php` con `{ "sql": "..." }` y pinta el JSON.
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php`. Ese PHP no usa base de datos y responde igual en `pnpm dev`, en preview y en el VPS.
 
-`stack/express-page` consume `api/tasks` (relativo al `<base>`). Ese router solo lo monta `pnpm dev`. En preview y en el VPS la misma URL cae en el HTML de la SPA.
+`stack/node-express-page` consume `api/tasks` y `stack/node-mysql-page` consume `api/mysql/query`, ambos relativos al `<base>`. Los routers viven en `api/src/` y los monta `pnpm dev` en `{SITE_BASE}/api`. El mismo proceso, en `127.0.0.1:3200`, lo levanta systemd (`jquery-node`) en el VPS. Nginx tiene que proxyar `{SITE_BASE}/api/` hacia ese puerto; el fragmento está en `infra/nginx/jquery.antonydev.tech-api.conf`. `pnpm preview` no monta `/api`: esas páginas muestran el fallo en el DOM.
 
-Ese PHP es el mismo en desarrollo y en el VPS. `server/mysql-query.js` publica `POST /api/mysql/query` solo en Express (`pnpm dev` y `pnpm preview`). La página no llama a esa ruta: en Nginx un `POST` que no es un `.php` cae en `index.html` y responde **405** con HTML.
+Ese PHP es el mismo en desarrollo y en el VPS. Sin el proceso Node, un `POST` a `api/mysql/query` cae en `index.html` y responde **405** con HTML.
 
 Solo se admiten lecturas (`SELECT`, `SHOW`, `DESCRIBE`, `EXPLAIN`, `WITH`), una sentencia, sin `INTO OUTFILE` ni `LOAD DATA`. La respuesta muestra como máximo 200 filas.
 

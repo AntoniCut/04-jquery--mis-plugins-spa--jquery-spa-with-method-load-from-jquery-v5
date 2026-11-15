@@ -123,6 +123,11 @@
 <span class="line"><span style="color:#6A9955">        //  -----  avisar de que la consulta toca el sistema de ficheros  -----</span></span>
 <span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Esa consulta no está permitida.'</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  impedir escrituras escondidas tras un WITH  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#D16969">/</span><span style="color:#DCDCAA">\b</span><span style="color:#CE9178">(</span><span style="color:#D16969">update</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">delete</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">insert</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">replace</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">alter</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">truncate</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">drop</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">grant</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">revoke</span><span style="color:#CE9178">)</span><span style="color:#DCDCAA">\b</span><span style="color:#D16969">/</span><span style="color:#569CD6">i</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">test</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que la sentencia modifica datos o el esquema  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Solo se admiten consultas de lectura, sin sentencias de escritura.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
 <span class="line"><span style="color:#6A9955">    //  -----  la sentencia es válida  -----</span></span>
 <span class="line"><span style="color:#C586C0">    return</span><span style="color:#CE9178"> ''</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
@@ -311,29 +316,84 @@
 <span class="line"></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">/**</span></span>
-<span class="line"><span style="color:#6A9955"> * -------------------------------------------------------</span></span>
-<span class="line"><span style="color:#6A9955"> * -----  `registerMysqlQueryRoute(app, routeBase)`  -----</span></span>
-<span class="line"><span style="color:#6A9955"> * -------------------------------------------------------</span></span>
-<span class="line"><span style="color:#6A9955"> * - Publica POST {base}/api/mysql/query en el servidor Node local.</span></span>
-<span class="line"><span style="color:#6A9955"> * - La página Node con MySQL usa esta ruta. La página PHP con MySQL sigue en app/services/mysql/query.php.</span></span>
-<span class="line"><span style="color:#6A9955"> * - En Nginx, sin el proceso Node, esta ruta cae en el HTML de la SPA.</span></span>
-<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Express}</span><span style="color:#9CDCFE"> app</span><span style="color:#6A9955"> - Aplicación Express.</span></span>
-<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {string}</span><span style="color:#9CDCFE"> routeBase</span><span style="color:#6A9955"> - Prefijo de la SPA.</span></span>
+<span class="line"><span style="color:#6A9955"> * -----------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `methodNotAllowed(allowed)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * -----------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Responde 405 con el método admitido en la cabecera Allow.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {string}</span><span style="color:#9CDCFE"> allowed</span><span style="color:#6A9955"> - Método HTTP que admite la ruta.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {import('express').RequestHandler}</span><span style="color:#6A9955"> - Manejador que responde el rechazo.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> methodNotAllowed</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">allowed</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  anunciar el método admitido  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">set</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'Allow'</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">allowed</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  responder el rechazo en json  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">status</span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">405</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">        ok:</span><span style="color:#569CD6"> false</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">        message:</span><span style="color:#CE9178"> `Solo se admite </span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">allowed</span><span style="color:#569CD6">}</span><span style="color:#CE9178">.`</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#D4D4D4">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * --------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `handleHealth(req, res)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * --------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Confirma que el proceso Node responde, sin tocar MySQL.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Request}</span><span style="color:#9CDCFE"> req</span><span style="color:#6A9955"> - Petición recibida.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Response}</span><span style="color:#9CDCFE"> res</span><span style="color:#6A9955"> - Respuesta JSON.</span></span>
 <span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {void}</span></span>
 <span class="line"><span style="color:#6A9955"> */</span></span>
-<span class="line"><span style="color:#C586C0">export</span><span style="color:#569CD6"> const</span><span style="color:#DCDCAA"> registerMysqlQueryRoute</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">app</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">routeBase</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> handleHealth</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  responder estado, uptime y fecha actual  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">        ok:</span><span style="color:#569CD6"> true</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">        service:</span><span style="color:#CE9178"> 'jquery-node-api'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">        uptime:</span><span style="color:#9CDCFE"> process</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">uptime</span><span style="color:#D4D4D4">(),</span></span>
+<span class="line"><span style="color:#9CDCFE">        timestamp:</span><span style="color:#569CD6"> new</span><span style="color:#DCDCAA"> Date</span><span style="color:#D4D4D4">().</span><span style="color:#DCDCAA">toISOString</span><span style="color:#D4D4D4">(),</span></span>
+<span class="line"><span style="color:#D4D4D4">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `createApiRouter()`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Crea el router compartido por el runtime standalone y el dev server.</span></span>
+<span class="line"><span style="color:#6A9955"> * - Publica GET /health y POST /mysql/query; el resto de métodos responde 405.</span></span>
+<span class="line"><span style="color:#6A9955"> * - El dev server lo monta en {SITE_BASE}/api. Nginx quita ese prefijo en producción.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {import('express').Router}</span><span style="color:#6A9955"> - Router con las rutas del API.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#C586C0">export</span><span style="color:#569CD6"> const</span><span style="color:#DCDCAA"> createApiRouter</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    /** - `router compartido del api` */</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> router</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">express</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">Router</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  responder el health sin tocar mysql  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    router</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">get</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'/health'</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">handleHealth</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  rechazar métodos distintos de GET en health  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    router</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">all</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'/health'</span><span style="color:#D4D4D4">, </span><span style="color:#DCDCAA">methodNotAllowed</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'GET'</span><span style="color:#D4D4D4">));</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    //  -----  aceptar el json de la página y ejecutar la consulta  -----</span></span>
-<span class="line"><span style="color:#9CDCFE">    app</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">post</span><span style="color:#D4D4D4">(</span></span>
-<span class="line"><span style="color:#CE9178">        `</span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">routeBase</span><span style="color:#569CD6">}</span><span style="color:#CE9178">/api/mysql/query`</span><span style="color:#D4D4D4">,</span></span>
-<span class="line"><span style="color:#9CDCFE">        express</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({ </span><span style="color:#9CDCFE">limit:</span><span style="color:#CE9178"> '16kb'</span><span style="color:#D4D4D4"> }),</span></span>
-<span class="line"><span style="color:#D4D4D4">        (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#9CDCFE">    router</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">post</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'/mysql/query'</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">express</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({ </span><span style="color:#9CDCFE">limit:</span><span style="color:#CE9178"> '16kb'</span><span style="color:#D4D4D4"> }), (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">            //  -----  no esperar aquí: el manejador responde solo  -----</span></span>
-<span class="line"><span style="color:#569CD6">            void</span><span style="color:#DCDCAA"> handleMysqlQuery</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  no esperar aquí: el manejador responde solo  -----</span></span>
+<span class="line"><span style="color:#569CD6">        void</span><span style="color:#DCDCAA"> handleMysqlQuery</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#D4D4D4">        }</span></span>
-<span class="line"><span style="color:#D4D4D4">    );</span></span>
+<span class="line"><span style="color:#D4D4D4">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  rechazar métodos distintos de POST en la consulta  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    router</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">all</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'/mysql/query'</span><span style="color:#D4D4D4">, </span><span style="color:#DCDCAA">methodNotAllowed</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'POST'</span><span style="color:#D4D4D4">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  devolver el router montable  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#9CDCFE"> router</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">};</span></span>
 <span class="line"></span></code></pre>

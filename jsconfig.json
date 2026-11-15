@@ -17,7 +17,8 @@
         "src/libs/jquery/core/types/global.d.ts",
         "generate-markdown-shiki.js",
         "gulpfile.js",
-        "server"
+        "server",
+        "api"
     ],
     "exclude": [
         "node_modules",

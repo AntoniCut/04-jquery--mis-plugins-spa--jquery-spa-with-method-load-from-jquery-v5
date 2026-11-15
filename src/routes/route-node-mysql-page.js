@@ -84,7 +84,7 @@ export const routeNodeMysqlPage = {
             {
                 fileName: 'node-mysql-page-server-js.html',
                 fileExtension: 'js',
-                urlInput: `${base}/server/mysql-query.js`,
+                urlInput: `${base}/api/src/mysql-query.js`,
                 urlOutput: `${markdownShikiHtml}/pages/node-mysql`,
                 target: '[data-shiki="codeServerJs"]',
             },
