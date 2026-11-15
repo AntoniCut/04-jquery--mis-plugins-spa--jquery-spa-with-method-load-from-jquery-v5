@@ -5,6 +5,9 @@
 */
 
 
+//  -----  carga .env antes que cualquier módulo que lea SITE_BASE  -----
+import 'dotenv/config';
+
 //  -----  tareas de gulp  -----
 import gulp from 'gulp';
 
@@ -47,6 +50,9 @@ import sharp from 'sharp';
 //  -----  generar el html resaltado con shiki  -----
 import { generateMarkdownShiki } from './generate-markdown-shiki.js';
 
+//  -----  base pública del sitio, leída de SITE_BASE  -----
+import { base } from './src/config/site-base.js';
+
 
 /** - `métodos de gulp usados en las tareas` */
 const { src, dest, watch, series, parallel } = gulp;
@@ -54,6 +60,13 @@ const { src, dest, watch, series, parallel } = gulp;
 
 /** - `dart sass como motor de gulp-sass` */
 const sass = gulpSass(dartSass);
+
+/** - `opciones de Sass: registra site-base() para que los SCSS lean SITE_BASE` */
+const sassOptions = {
+    functions: {
+        'site-base()': () => new dartSass.SassString(base),
+    },
+};
 
 
 
@@ -145,6 +158,12 @@ const paths = {
      * - Fuentes que se copian o compilan hacia app/.
      */
     src: {
+
+        /** - `carpeta de la base del sitio` */
+        configDir: path.join('src', 'config'),
+
+        /** - `módulo isomórfico de SITE_BASE` */
+        config: path.posix.join('src', 'config', '**/*'),
 
         /** - `carpeta de componentes` */
         componentsDir: path.join('src', 'components'),
@@ -809,6 +828,16 @@ convertImages.displayName = 'convertImages';
 
 
 /**
+ * -----------------------------
+ * -----  `copyConfig()`  -----
+ * -----------------------------
+ * - Copia src/config/ a app/config/ para que el navegador importe site-base.js.
+ */
+export const copyConfig = createCopyTask('copyConfig', { glob: paths.src.config, checkPath: paths.src.configDir });
+
+
+
+/**
  * --------------------------------
  * -----  `copyComponents()`  -----
  * --------------------------------
@@ -1086,7 +1115,7 @@ export const css = () => {
     //  -----  compilar globals.scss a app/css  -----
     return src(paths.src.scssGlobals, { sourcemaps: true, allowEmpty: true })
         .pipe(safePipe())
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass(sassOptions).on('error', sass.logError))
         .pipe(validateFiles('css'))
         .pipe(dest(path.posix.join(paths.appRoot, 'css'), { sourcemaps: CSS_SOURCEMAPS }));
 
@@ -1111,7 +1140,7 @@ export const cssPages = () => {
     //  -----  compilar los scss de páginas  -----
     return src(paths.src.scssPages, { base: paths.src.scssPagesDir, sourcemaps: true })
         .pipe(safePipe())
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass(sassOptions).on('error', sass.logError))
         .pipe(validateFiles('cssPages'))
         .pipe(dest(path.posix.join(paths.appRoot, 'css', 'pages'), { sourcemaps: CSS_SOURCEMAPS }));
 
@@ -1166,6 +1195,7 @@ generateShiki.displayName = 'generateShiki';
  * - Copia los fuentes y compila el SCSS en paralelo. El HTML de Shiki se copia después.
  */
 const buildSources = parallel(
+    copyConfig,
     copyComponents,
     copyEffects,
     copyFonts,
@@ -1228,6 +1258,7 @@ const watchTask = () => {
 
     /** @type {Array<[string | string[], import('gulp').TaskFunction]>} - `glob y tarea de cada observador` */
     const watchers = [
+        [paths.src.config, copyConfig],
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],
@@ -1309,18 +1340,71 @@ export const watchStyles = () => watch(paths.src.scssAll, WATCH_OPTIONS, styles)
 
 /**
  * ---------------------------------
+ * -----  `replaceSiteBase()`  -----
+ * ---------------------------------
+ * - Crea un Transform que sustituye el marcador %SITE_BASE% por la base del .env.
+ * @return {Transform} - `Stream que reescribe el marcador`.
+ */
+const replaceSiteBase = () => new Transform({
+
+    /** - `cada chunk es un archivo de vinyl` */
+    objectMode: true,
+
+    /**
+     * @param {import('vinyl')} file - Archivo del stream.
+     * @param {BufferEncoding} _enc - Codificación, sin uso en modo objeto.
+     * @param {import('stream').TransformCallback} cb - Callback para continuar el stream.
+     */
+    transform(file, _enc, cb) {
+
+        //  -----  solo procesa archivos con contenido  -----
+        if (file.isBuffer()) {
+
+            //  -----  reemplaza todas las apariciones del marcador  -----
+            file.contents = Buffer.from(file.contents.toString('utf-8').replaceAll('%SITE_BASE%', base));
+        }
+
+        //  -----  pasa el archivo al siguiente paso  -----
+        cb(null, file);
+    },
+});
+
+
+
+/**
+ * ---------------------------------
  * -----  `minifyRootIndex()`  -----
  * ---------------------------------
- * - Minifica index.html de la raíz hacia dist/index.html.
+ * - Minifica index.html de la raíz hacia dist/index.html, con la base sustituida.
  * @return {NodeJS.ReadWriteStream} - `Stream de minificado`.
  */
 export const minifyRootIndex = () => {
 
-    //  -----  minificar el index de la raíz  -----
+    //  -----  leer index.html, sustituir la base, minificar y escribir en dist/  -----
     return src('index.html', { allowEmpty: true })
         .pipe(safePipe())
+        .pipe(replaceSiteBase())
         .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
         .pipe(validateFiles('minifyRootIndex'))
+        .pipe(dest(paths.distRoot));
+};
+
+
+
+/**
+ * --------------------------------
+ * -----  `htaccessToDist()`  -----
+ * --------------------------------
+ * - Copia .htaccess de la raíz hacia dist/.htaccess con la base del .env.
+ * @return {NodeJS.ReadWriteStream} - `Stream de copia`.
+ */
+export const htaccessToDist = () => {
+
+    //  -----  leer .htaccess, sustituir la base y escribir en dist/  -----
+    return src('.htaccess', { allowEmpty: true, dot: true })
+        .pipe(safePipe())
+        .pipe(replaceSiteBase())
+        .pipe(validateFiles('htaccessToDist'))
         .pipe(dest(paths.distRoot));
 };
 
@@ -1552,7 +1636,7 @@ addTsNoCheck.displayName = 'addTsNoCheck';
 export const build = series(
     parallel(cleanDist, cleanApp, cleanMarkdownShiki),
     copyAll,
-    parallel(minifyAllJs, minifyAllCss, minifyRootIndex, minifyHtml, minifyServices, copyStaticAssetsToDist, copyRootAssetsToDist),
+    parallel(minifyAllJs, minifyAllCss, minifyRootIndex, htaccessToDist, minifyHtml, minifyServices, copyStaticAssetsToDist, copyRootAssetsToDist),
 );
 
 

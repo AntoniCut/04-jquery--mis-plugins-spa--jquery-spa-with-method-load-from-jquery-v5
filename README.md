@@ -91,25 +91,29 @@ pnpm install
 | `pnpm refresh` | Vacía y vuelve a copiar/compilar `src/` → `app/`, sin quedar a la escucha |
 | `pnpm serve:dev` | Levanta Express + BrowserSync sobre `app/` ya generado |
 | `pnpm server` | Alias de `serve:dev` |
-| `pnpm stop:dev` | Cierra el servidor de desarrollo si sigue en marcha |
+| `pnpm stop:dev` | Cierra el servidor de desarrollo de este proyecto si sigue en marcha |
+| `pnpm stop:preview` | Cierra el servidor de preview de este proyecto si sigue en marcha |
 | `pnpm code-highlight` | Genera los bloques HTML de Shiki en `src/markdown-shiki/` |
 | `pnpm convert-images` | Convierte las capturas PNG de `assets/img/clase-*` a AVIF |
 | `pnpm build` | Limpia `dist/`, `app/` y markdown-shiki, regenera `app/` y minifica a `dist/` |
-| `pnpm preview` | Sirve `dist/` y abre el navegador (puerto 4173 por defecto) |
+| `pnpm preview` | Sirve `dist/` en local. El puerto de `.env` es el de partida |
 | `pnpm add:ts-nocheck` | Añade `// @ts-nocheck` a los JS de desarrollo que lo necesiten |
 
 ### Variables de entorno
 
 Ningún `.env` se versiona (`.gitignore` ignora `.env` y `.env.*`).
 
-El servidor de desarrollo lee el puerto y el watch desde `.env`:
+El servidor de desarrollo lee la base, los puertos de partida y el watch desde `.env`:
 
 ```dotenv
-DEV_SERVER_PORT=3000        # Puerto público del servidor dev (BrowserSync)
-PREVIEW_SERVER_PORT=4173    # Puerto del servidor preview
+SITE_BASE=/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5
+DEV_SERVER_PORT=9876        # Puerto de partida del servidor dev (BrowserSync)
+PREVIEW_SERVER_PORT=8765    # Puerto de partida del servidor preview
 CHOKIDAR_USEPOLLING=false   # true en WSL/Docker si el watch falla
 CHOKIDAR_INTERVAL=250       # Intervalo de polling en ms
 ```
+
+`DEV_SERVER_PORT` y `PREVIEW_SERVER_PORT` son el puerto de partida. Si está ocupado, el servidor prueba el siguiente (+1, hasta 20) y lo avisa por consola. `pnpm stop:dev` y `pnpm stop:preview` solo cierran el proceso de este directorio.
 
 MySQL local (Docker, puerto **3307**) también va en ese `.env`. La plantilla está en `.env.example`:
 
@@ -134,16 +138,11 @@ El proyecto se sirve bajo:
 /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/
 ```
 
-Desarrollo: [http://localhost:3000/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:3000/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
+Desarrollo: [http://localhost:9876/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:9876/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
 
-Preview: [http://localhost:4173/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:4173/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
+Preview: [http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
 
-Ese prefijo tiene que coincidir en cuatro sitios:
-
-- `<base href>` de `index.html`
-- `base` en `src/routes/paths.js`
-- `DEV_ROUTE_BASE` en `server/dev-server.js`
-- `DEV_ROUTE_BASE` en `server/preview-server.js`
+Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. `src/config/site-base.js` lo lee en Node. En el navegador sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`.
 
 ---
 

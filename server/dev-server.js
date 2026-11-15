@@ -23,18 +23,21 @@ import { spawn } from 'node:child_process';
 //  -----  comprobar archivos en disco  -----
 import fs from 'node:fs';
 
-//  -----  probar si un puerto está libre  -----
-import net from 'node:net';
-
 //  -----  unir rutas  -----
 import path from 'node:path';
 
+//  -----  base pública del sitio, leída de SITE_BASE  -----
+import { base } from '../src/config/site-base.js';
 
-/** - `prefijo URL del base href` */
-const DEV_ROUTE_BASE = '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
+//  -----  primer puerto libre a partir del de partida  -----
+import { findAvailablePort } from './find-available-port.js';
+
+
+/** - `prefijo URL que usa el base href del proyecto (SITE_BASE del .env)` */
+const DEV_ROUTE_BASE = base;
 
 /** - `puerto público de BrowserSync` */
-const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 3000);
+const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 9876);
 
 /** - `raíz del proyecto` */
 const PROJECT_ROOT = process.cwd();
@@ -85,6 +88,28 @@ app.disable('x-powered-by');
 
 
 /**
+ * ---------------------------------
+ * -----  `sendSpaEntry(res)`  -----
+ * ---------------------------------
+ * - Responde con index.html sustituyendo el marcador %SITE_BASE% por la base del .env.
+ * @param {import('express').Response} res - Respuesta de Express.
+ * @return {void}
+ */
+const sendSpaEntry = (res) => {
+
+    /** - `contenido de index.html con el marcador sin resolver` */
+    const template = fs.readFileSync(SPA_ENTRY_FILE, 'utf-8');
+
+    /** - `contenido de index.html con la base real` */
+    const html = template.replaceAll('%SITE_BASE%', base);
+
+    //  -----  responder con el html ya resuelto  -----
+    res.type('html').send(html);
+};
+
+
+
+/**
  * --------------------------------------------------
  * -----  `redirectRootToBase(req, res, next)`  -----
  * --------------------------------------------------
@@ -96,7 +121,7 @@ app.disable('x-powered-by');
 const redirectRootToBase = (req, res, next) => {
 
     //  -----  si piden la raíz o index.html, ir a la base de la SPA  -----
-    if (req.path === '/' || req.path === '/index.html') {
+    if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html`) {
 
         //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
@@ -149,8 +174,8 @@ const serveSpaFallback = (req, res, next) => {
     //  -----  si piden la base, servir el index  -----
     if (relativePath === '') {
 
-        //  -----  enviar index.html  -----
-        res.sendFile(SPA_ENTRY_FILE);
+        //  -----  responder con index.html y la base ya sustituida  -----
+        sendSpaEntry(res);
 
         //  -----  no seguir  -----
         return;
@@ -169,8 +194,8 @@ const serveSpaFallback = (req, res, next) => {
     //  -----  si no es un archivo y no existe, servir el index  -----
     if (!hasFileExtension && !fileExists) {
 
-        //  -----  enviar index.html  -----
-        res.sendFile(SPA_ENTRY_FILE);
+        //  -----  responder con index.html y la base ya sustituida  -----
+        sendSpaEntry(res);
 
         //  -----  no seguir  -----
         return;
@@ -414,76 +439,33 @@ const makePhpHandler = (rootDir, serverPort) => {
 
 
 
-/**
- * -----------------------------------------
- * -----  `assertPortAvailable(port)`  -----
- * -----------------------------------------
- * - Comprueba que el puerto público de BrowserSync está libre.
- * @param {number} port - Puerto a probar.
- * @return {Promise<void>} - `Termina cuando el puerto se pudo abrir y cerrar`.
- */
-const assertPortAvailable = (port) => {
+/** @type {number} - `puerto público real: el primero libre a partir de DEV_SERVER_PORT` */
+let devServerPort;
 
-    //  -----  probar el puerto con un servidor temporal  -----
-    return new Promise((resolve, reject) => {
+//  -----  resolver el puerto público antes de registrar middlewares, porque php-cgi necesita el puerto real  -----
+try {
 
-        /** - `servidor que solo comprueba el puerto` */
-        const probeServer = net.createServer();
+    //  -----  buscar el primer puerto libre desde el de partida  -----
+    devServerPort = await findAvailablePort(DEV_SERVER_PORT, { envName: 'DEV_SERVER_PORT' });
 
-        //  -----  no mantener el proceso vivo por esta prueba  -----
-        probeServer.unref();
+}
 
-        //  -----  rechazar si el puerto no se puede abrir  -----
-        probeServer.once('error', (
-            /** @type {NodeJS.ErrnoException} - `fallo al abrir el puerto` */
-            error
-        ) => {
+//  -----  si no hay puerto libre o el valor del .env no es válido, terminar  -----
+catch (error) {
 
-            //  -----  si el puerto está ocupado, explicarlo  -----
-            if (error.code === 'EADDRINUSE') {
+    //  -----  mostrar el mensaje del error  -----
+    console.error(error instanceof Error ? error.message : error);
 
-                //  -----  rechazar con un mensaje claro  -----
-                reject(new Error(`El puerto público ${port} ya está en uso. Cierra la instancia anterior del servidor de desarrollo o cambia DEV_SERVER_PORT.`));
+    //  -----  terminar con código de error  -----
+    process.exit(1);
+}
 
-                //  -----  no rechazar otra vez  -----
-                return;
-            }
+//  -----  avisar cuando el puerto cambia respecto al configurado  -----
+if (devServerPort !== DEV_SERVER_PORT) {
 
-            //  -----  rechazar cualquier otro fallo  -----
-            reject(error);
-
-        });
-
-
-        //  -----  cerrar la prueba cuando el puerto responde  -----
-        probeServer.once('listening', () => {
-
-            //  -----  soltar el puerto  -----
-            probeServer.close((error) => {
-
-                //  -----  si el cierre falla, rechazar  -----
-                if (error) {
-
-                    //  -----  propagar el fallo  -----
-                    reject(error);
-
-                    //  -----  no resolver  -----
-                    return;
-                }
-
-                //  -----  el puerto está libre  -----
-                resolve();
-
-            });
-
-        });
-
-        //  -----  intentar escuchar en el puerto  -----
-        probeServer.listen(port);
-
-    });
-
-};
+    //  -----  mostrar el puerto ocupado y el puerto que se usa  -----
+    console.log(`El puerto ${DEV_SERVER_PORT} está ocupado. Se usa el ${devServerPort}.`);
+}
 
 
 
@@ -491,7 +473,7 @@ const assertPortAvailable = (port) => {
 app.use(redirectRootToBase);
 
 //  -----  ejecutar los php con php-cgi  -----
-app.use(makePhpHandler(PROJECT_ROOT, DEV_SERVER_PORT));
+app.use(makePhpHandler(PROJECT_ROOT, devServerPort));
 
 //  -----  aceptar consultas de solo lectura de la página mysql  -----
 registerMysqlQueryRoute(app, DEV_ROUTE_BASE);
@@ -514,25 +496,6 @@ app.use((
     res.status(404).send(`Cannot ${req.method} ${req.originalUrl}`);
 
 });
-
-
-//  -----  comprobar que el puerto público está libre  -----
-try {
-
-    //  -----  reservar el puerto un instante y soltarlo  -----
-    await assertPortAvailable(DEV_SERVER_PORT);
-}
-
-//  -----  si el puerto no está libre, salir  -----
-catch (error) {
-
-    //  -----  escribir el motivo  -----
-    console.error(error instanceof Error ? error.message : error);
-
-    //  -----  salir con error  -----
-    process.exit(1);
-}
-
 
 
 /** 
@@ -564,7 +527,7 @@ const internalServer = app.listen(0, '127.0.0.1', () => {
     bs.init({
 
         proxy: `http://127.0.0.1:${address.port}`,
-        port: DEV_SERVER_PORT,
+        port: devServerPort,
         open: false,
         notify: false,
         ui: false,

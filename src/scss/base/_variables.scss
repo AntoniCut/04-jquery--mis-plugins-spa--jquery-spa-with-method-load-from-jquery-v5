@@ -5,8 +5,8 @@
  */
 
 
- //  -----  base del proyecto  -----
-$base: '/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5';
+ //  -----  base del proyecto: la función site-base() la registra gulpfile.js desde SITE_BASE  -----
+$base: site-base();
 
 //  -----  Fuentes  -----
 $font-primary: "Montserrat", Arial, Helvetica, sans-serif;
