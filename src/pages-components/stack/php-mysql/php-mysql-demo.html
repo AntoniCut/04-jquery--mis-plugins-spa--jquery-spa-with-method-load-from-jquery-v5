@@ -1,42 +1,42 @@
 <!--
-    *  ------------------------------------------------------------------------------------  *
-    *  -----  mysql-demo.html  --  /src/pages-components/stack/mysql/mysql-demo.html  -----  *
-    *  ------------------------------------------------------------------------------------  *
+    *  ------------------------------------------------------------------------------------------------  *
+    *  -----  php-mysql-demo.html  --  /src/pages-components/stack/php-mysql/php-mysql-demo.html  -----  *
+    *  ------------------------------------------------------------------------------------------------  *
 -->
 
 
 
-<div class="mysql-demo">
+<div class="php-mysql-demo">
 
 
     <!--  -----  Hero  -----  -->
-    <div class="mysql-page__hero">
-        <div class="mysql-page__hero-badge">
-            <span class="mysql-page__hero-tag" aria-hidden="true">SQL</span>
-            <h3 class="mysql-page__hero-title">Consulta</h3>
-            <p class="mysql-page__hero-subtitle">Demo de scripts SPA</p>
+    <div class="php-mysql-page__hero">
+        <div class="php-mysql-page__hero-badge">
+            <span class="php-mysql-page__hero-tag" aria-hidden="true">SQL</span>
+            <h3 class="php-mysql-page__hero-title">Consulta</h3>
+            <p class="php-mysql-page__hero-subtitle">Demo de scripts SPA</p>
         </div>
     </div>
 
 
     <!--  -----  Estado del script clásico  -----  -->
-    <p class="mysql-page__intro-text" data-mysql-cjs-status>
-        Esperando mysql-page.cjs.js…
+    <p class="php-mysql-page__intro-text" data-php-mysql-cjs-status>
+        Esperando php-mysql-page.cjs.js…
     </p>
 
 
     <!--  -----  Formulario de consulta  -----  -->
-    <section class="mysql-page__features">
+    <section class="php-mysql-page__features">
 
-        <h3 class="mysql-page__features-title">Ejecutar consulta</h3>
+        <h3 class="php-mysql-page__features-title">Ejecutar consulta</h3>
 
-        <form class="mysql-page__form" data-mysql-query-form>
+        <form class="php-mysql-page__form" data-php-mysql-query-form>
 
-            <label class="mysql-page__label" for="mysqlQuerySql">Consulta SQL</label>
+            <label class="php-mysql-page__label" for="phpMysqlQuerySql">Consulta SQL</label>
 
             <textarea
-                id="mysqlQuerySql"
-                class="mysql-page__sql"
+                id="phpMysqlQuerySql"
+                class="php-mysql-page__sql"
                 name="sql"
                 rows="6"
                 spellcheck="false"
@@ -45,13 +45,13 @@
 FROM stacks
 ORDER BY sort_order;</textarea>
 
-            <button class="mysql-page__submit" type="submit">Ejecutar consulta</button>
+            <button class="php-mysql-page__submit" type="submit">Ejecutar consulta</button>
 
         </form>
 
-        <p class="mysql-page__status" data-mysql-status role="status"></p>
+        <p class="php-mysql-page__status" data-php-mysql-status role="status"></p>
 
-        <div class="mysql-page__result" data-mysql-result></div>
+        <div class="php-mysql-page__result" data-php-mysql-result></div>
 
     </section>
 

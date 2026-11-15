@@ -1,0 +1,339 @@
+<pre class="shiki dark-plus" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#C586C0">import</span><span style="color:#9CDCFE"> express</span><span style="color:#C586C0"> from</span><span style="color:#CE9178"> 'express'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">//  -----  cliente mysql del contenedor local  -----</span></span>
+<span class="line"><span style="color:#C586C0">import</span><span style="color:#9CDCFE"> mysql</span><span style="color:#C586C0"> from</span><span style="color:#CE9178"> 'mysql2/promise'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/** - `máximo de filas devueltas por una consulta` */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> MAX_ROWS</span><span style="color:#D4D4D4"> = </span><span style="color:#B5CEA8">200</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/** - `tamaño máximo del sql en caracteres` */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> MAX_SQL_LENGTH</span><span style="color:#D4D4D4"> = </span><span style="color:#B5CEA8">8000</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {import('mysql2/promise').Pool|null}</span><span style="color:#6A9955"> - `pool reutilizable` */</span></span>
+<span class="line"><span style="color:#569CD6">let</span><span style="color:#9CDCFE"> pool</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `getPool()`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Abre el pool de MySQL con las variables de .env.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {import('mysql2/promise').Pool}</span><span style="color:#6A9955"> - Pool contra la base local.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> getPool</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  reutilizar el pool si ya existe  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">pool</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver el pool abierto  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> pool</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  crear el pool contra el contenedor local  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    pool</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">mysql</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">createPool</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `host publicado por docker` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        host:</span><span style="color:#9CDCFE"> process</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">env</span><span style="color:#D4D4D4">.</span><span style="color:#4FC1FF">MYSQL_HOST</span><span style="color:#D4D4D4"> || </span><span style="color:#CE9178">'127.0.0.1'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `puerto del host, 3307 para no pisar otro mysql` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        port:</span><span style="color:#DCDCAA"> Number</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">process</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">env</span><span style="color:#D4D4D4">.</span><span style="color:#4FC1FF">MYSQL_PORT</span><span style="color:#D4D4D4"> || </span><span style="color:#B5CEA8">3307</span><span style="color:#D4D4D4">),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `usuario de la aplicación` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        user:</span><span style="color:#9CDCFE"> process</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">env</span><span style="color:#D4D4D4">.</span><span style="color:#4FC1FF">MYSQL_USER</span><span style="color:#D4D4D4"> || </span><span style="color:#CE9178">'jquery_user'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `contraseña leída de .env` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        password:</span><span style="color:#9CDCFE"> process</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">env</span><span style="color:#D4D4D4">.</span><span style="color:#4FC1FF">MYSQL_PASSWORD</span><span style="color:#D4D4D4"> || </span><span style="color:#CE9178">''</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `base creada en el primer arranque` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        database:</span><span style="color:#9CDCFE"> process</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">env</span><span style="color:#D4D4D4">.</span><span style="color:#4FC1FF">MYSQL_DATABASE</span><span style="color:#D4D4D4"> || </span><span style="color:#CE9178">'jquery_mis_plugins_spa'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `esperar si el pool está ocupado` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        waitForConnections:</span><span style="color:#569CD6"> true</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `conexiones simultáneas` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        connectionLimit:</span><span style="color:#B5CEA8"> 4</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `una sola sentencia por petición` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        multipleStatements:</span><span style="color:#569CD6"> false</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `juego de caracteres de la tabla stacks` */</span></span>
+<span class="line"><span style="color:#9CDCFE">        charset:</span><span style="color:#CE9178"> 'utf8mb4'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  devolver el pool nuevo  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#9CDCFE"> pool</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `normalizeSql(sql)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Recorta el sql y quita un punto y coma final.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {string}</span><span style="color:#9CDCFE"> sql</span><span style="color:#6A9955"> - Texto enviado por la página.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {string}</span><span style="color:#6A9955"> - Sentencia lista para validar.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> normalizeSql</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    /** - `sql sin espacios laterales` */</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> trimmed</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">trim</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  quitar un único punto y coma final  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#9CDCFE"> trimmed</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">replace</span><span style="color:#D4D4D4">(</span><span style="color:#D16969">/;\s</span><span style="color:#D7BA7D">*</span><span style="color:#DCDCAA">$</span><span style="color:#D16969">/</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">''</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">trim</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `rejectReason(sql)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Rechaza sql vacío, múltiple o que no sea una consulta de lectura.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {string}</span><span style="color:#9CDCFE"> sql</span><span style="color:#6A9955"> - Sentencia ya normalizada.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {string}</span><span style="color:#6A9955"> - Motivo del rechazo, o cadena vacía si es válida.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> rejectReason</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  exigir una sentencia  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que no hay sql  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Escribe una consulta SQL.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  limitar el tamaño del texto  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#D4D4D4"> > </span><span style="color:#4FC1FF">MAX_SQL_LENGTH</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que el texto es demasiado largo  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'La consulta supera el tamaño permitido.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  impedir varias sentencias  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">includes</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">';'</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que solo se admite una sentencia  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Solo se admite una sentencia, sin punto y coma en medio.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  admitir solo lecturas  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (!</span><span style="color:#D16969">/</span><span style="color:#DCDCAA">^</span><span style="color:#CE9178">(</span><span style="color:#D16969">select</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">show</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">describe</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">desc</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">explain</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">with</span><span style="color:#CE9178">)</span><span style="color:#DCDCAA">\b</span><span style="color:#D16969">/</span><span style="color:#569CD6">i</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">test</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que la sentencia no es una consulta  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Solo se admiten consultas de lectura: SELECT, SHOW, DESCRIBE o EXPLAIN.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  impedir volcados y lectura de ficheros  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#D16969">/</span><span style="color:#DCDCAA">\b</span><span style="color:#CE9178">(</span><span style="color:#D16969">into\s</span><span style="color:#D7BA7D">+</span><span style="color:#D16969">outfile</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">into\s</span><span style="color:#D7BA7D">+</span><span style="color:#D16969">dumpfile</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">load_file\s</span><span style="color:#D7BA7D">*\(</span><span style="color:#DCDCAA">|</span><span style="color:#D16969">load\s</span><span style="color:#D7BA7D">+</span><span style="color:#D16969">data</span><span style="color:#CE9178">)</span><span style="color:#DCDCAA">\b</span><span style="color:#D16969">/</span><span style="color:#569CD6">i</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">test</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  avisar de que la consulta toca el sistema de ficheros  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#CE9178"> 'Esa consulta no está permitida.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  la sentencia es válida  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#CE9178"> ''</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `plainValue(value)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * ---------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Convierte un valor de mysql a algo que JSON puede enviar.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {unknown}</span><span style="color:#9CDCFE"> value</span><span style="color:#6A9955"> - Valor de una celda.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {string|number|boolean|null}</span><span style="color:#6A9955"> - Valor serializable.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> plainValue</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  conservar los nulos  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4"> === </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4"> || </span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4"> === </span><span style="color:#569CD6">undefined</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver null  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#569CD6"> null</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  pasar las fechas a texto iso  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">value</span><span style="color:#569CD6"> instanceof</span><span style="color:#4EC9B0"> Date</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver la fecha en iso  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">toISOString</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  pasar los enteros grandes a texto  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'bigint'</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver el entero como texto  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">toString</span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  pasar los binarios a texto  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">Buffer</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">isBuffer</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver el binario como utf-8  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">toString</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'utf8'</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  conservar texto, números y booleanos  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'string'</span><span style="color:#D4D4D4"> || </span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'number'</span><span style="color:#D4D4D4"> || </span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'boolean'</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver el valor tal cual  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> value</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  el resto se muestra como texto  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#DCDCAA"> String</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `plainRows(rows)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Convierte las filas de mysql a objetos JSON.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('mysql2').RowDataPacket[]}</span><span style="color:#9CDCFE"> rows</span><span style="color:#6A9955"> - Filas devueltas por mysql.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {Array&#x3C;Record&#x3C;string, string|number|boolean|null>>}</span><span style="color:#6A9955"> - Filas serializables.</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> plainRows</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">rows</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  convertir cada fila  -----</span></span>
+<span class="line"><span style="color:#C586C0">    return</span><span style="color:#9CDCFE"> rows</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">map</span><span style="color:#D4D4D4">((</span><span style="color:#9CDCFE">row</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {Record&#x3C;string, string|number|boolean|null>}</span><span style="color:#6A9955"> - `fila serializable` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> plain</span><span style="color:#D4D4D4"> = {};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  convertir cada celda  -----</span></span>
+<span class="line"><span style="color:#C586C0">        for</span><span style="color:#D4D4D4"> (</span><span style="color:#569CD6">const</span><span style="color:#D4D4D4"> [</span><span style="color:#4FC1FF">key</span><span style="color:#D4D4D4">, </span><span style="color:#4FC1FF">value</span><span style="color:#D4D4D4">] </span><span style="color:#569CD6">of</span><span style="color:#9CDCFE"> Object</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">entries</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">row</span><span style="color:#D4D4D4">))</span></span>
+<span class="line"><span style="color:#6A9955">            //  -----  guardar la celda ya convertida  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">            plain</span><span style="color:#D4D4D4">[</span><span style="color:#9CDCFE">key</span><span style="color:#D4D4D4">] = </span><span style="color:#DCDCAA">plainValue</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">value</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  devolver la fila convertida  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#9CDCFE"> plain</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * ------------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `handleMysqlQuery(req, res)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * ------------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Ejecuta una consulta de lectura y responde JSON.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Request}</span><span style="color:#9CDCFE"> req</span><span style="color:#6A9955"> - Petición con el sql.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Response}</span><span style="color:#9CDCFE"> res</span><span style="color:#6A9955"> - Respuesta JSON.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {Promise&#x3C;void>}</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> handleMysqlQuery</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">async</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    /** - `sql recibido, o cadena vacía` */</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> rawSql</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> req</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">body</span><span style="color:#D4D4D4">?.</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'string'</span><span style="color:#D4D4D4"> ? </span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">body</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4"> : </span><span style="color:#CE9178">''</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    /** - `sentencia normalizada` */</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> sql</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">normalizeSql</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">rawSql</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    /** - `motivo de rechazo, si lo hay` */</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> reason</span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA">rejectReason</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  rechazar la sentencia antes de tocar mysql  -----</span></span>
+<span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">reason</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  responder el motivo  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">        res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">status</span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">400</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">            ok:</span><span style="color:#569CD6"> false</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            message:</span><span style="color:#9CDCFE"> reason</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#D4D4D4">        });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  no consultar  -----</span></span>
+<span class="line"><span style="color:#C586C0">        return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  intentar la consulta  -----</span></span>
+<span class="line"><span style="color:#C586C0">    try</span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `filas y columnas devueltas por mysql` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#D4D4D4"> [</span><span style="color:#4FC1FF">rows</span><span style="color:#D4D4D4">, </span><span style="color:#4FC1FF">fields</span><span style="color:#D4D4D4">] = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> getPool</span><span style="color:#D4D4D4">().</span><span style="color:#DCDCAA">query</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">sql</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  exigir un resultado tabular  -----</span></span>
+<span class="line"><span style="color:#C586C0">        if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">Array</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">isArray</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">rows</span><span style="color:#D4D4D4">)) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">            //  -----  responder que no hubo filas que mostrar  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">            res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">status</span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">400</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">                ok:</span><span style="color:#569CD6"> false</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">                message:</span><span style="color:#CE9178"> 'La sentencia no devolvió filas.'</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#D4D4D4">            });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">            //  -----  no seguir  -----</span></span>
+<span class="line"><span style="color:#C586C0">            return</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {import('mysql2').RowDataPacket[]}</span><span style="color:#6A9955"> - `filas de la consulta` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> packetRows</span><span style="color:#D4D4D4"> = </span><span style="color:#6A9955">/** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {import('mysql2').RowDataPacket[]}</span><span style="color:#6A9955"> */</span><span style="color:#D4D4D4"> (</span></span>
+<span class="line"><span style="color:#9CDCFE">            rows</span></span>
+<span class="line"><span style="color:#D4D4D4">        );</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `filas recortadas al máximo` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> limitedRows</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">packetRows</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">slice</span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">0</span><span style="color:#D4D4D4">, </span><span style="color:#4FC1FF">MAX_ROWS</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `nombres de columna en el orden de mysql` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> columns</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">Array</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">isArray</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">fields</span><span style="color:#D4D4D4">) ? </span><span style="color:#9CDCFE">fields</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">map</span><span style="color:#D4D4D4">((</span><span style="color:#9CDCFE">field</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#9CDCFE"> field</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">name</span><span style="color:#D4D4D4">) : [];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `aviso si el resultado se recortó` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> message</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">packetRows</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#D4D4D4"> > </span><span style="color:#4FC1FF">MAX_ROWS</span></span>
+<span class="line"><span style="color:#D4D4D4">            ? </span><span style="color:#CE9178">`Se muestran </span><span style="color:#569CD6">${</span><span style="color:#4FC1FF">MAX_ROWS</span><span style="color:#569CD6">}</span><span style="color:#CE9178"> de </span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">packetRows</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#569CD6">}</span><span style="color:#CE9178"> filas.`</span></span>
+<span class="line"><span style="color:#D4D4D4">            : </span><span style="color:#CE9178">`</span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">limitedRows</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#569CD6">}</span><span style="color:#CE9178"> filas.`</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  responder la tabla  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">        res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">            ok:</span><span style="color:#569CD6"> true</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            columns</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            rows:</span><span style="color:#DCDCAA"> plainRows</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">limitedRows</span><span style="color:#D4D4D4">),</span></span>
+<span class="line"><span style="color:#9CDCFE">            rowCount:</span><span style="color:#9CDCFE"> limitedRows</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            truncated:</span><span style="color:#9CDCFE"> packetRows</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">length</span><span style="color:#D4D4D4"> > </span><span style="color:#4FC1FF">MAX_ROWS</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            message</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#D4D4D4">        });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  si mysql rechaza la consulta, devolver el mensaje  -----</span></span>
+<span class="line"><span style="color:#C586C0">    catch</span><span style="color:#D4D4D4"> (</span><span style="color:#9CDCFE">error</span><span style="color:#D4D4D4">) {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `texto del fallo de mysql` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> message</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">error</span><span style="color:#569CD6"> instanceof</span><span style="color:#4EC9B0"> Error</span><span style="color:#D4D4D4"> ? </span><span style="color:#9CDCFE">error</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">message</span><span style="color:#D4D4D4"> : </span><span style="color:#CE9178">'No se pudo ejecutar la consulta.'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        /** - `código de mysql, si la sentencia es la que falla` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> code</span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">typeof</span><span style="color:#9CDCFE"> error</span><span style="color:#D4D4D4"> === </span><span style="color:#CE9178">'object'</span><span style="color:#D4D4D4"> &#x26;&#x26; </span><span style="color:#9CDCFE">error</span><span style="color:#D4D4D4"> !== </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4"> &#x26;&#x26; </span><span style="color:#CE9178">'code'</span><span style="color:#569CD6"> in</span><span style="color:#9CDCFE"> error</span></span>
+<span class="line"><span style="color:#D4D4D4">            ? </span><span style="color:#DCDCAA">String</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">error</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">code</span><span style="color:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#D4D4D4">            : </span><span style="color:#CE9178">''</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  una sentencia inválida se responde en el json, sin marcar el http como error  -----</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> status</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">code</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">startsWith</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'ER_'</span><span style="color:#D4D4D4">) ? </span><span style="color:#B5CEA8">200</span><span style="color:#D4D4D4"> : </span><span style="color:#B5CEA8">500</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">        //  -----  responder el fallo sin la pila  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">        res</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">status</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">status</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({</span></span>
+<span class="line"><span style="color:#9CDCFE">            ok:</span><span style="color:#569CD6"> false</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">            message</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#D4D4D4">        });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">/**</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * -----  `registerMysqlQueryRoute(app, routeBase)`  -----</span></span>
+<span class="line"><span style="color:#6A9955"> * -------------------------------------------------------</span></span>
+<span class="line"><span style="color:#6A9955"> * - Publica POST {base}/api/mysql/query en el servidor Node local.</span></span>
+<span class="line"><span style="color:#6A9955"> * - La página Node con MySQL usa esta ruta. La página PHP con MySQL sigue en app/services/mysql/query.php.</span></span>
+<span class="line"><span style="color:#6A9955"> * - En Nginx, sin el proceso Node, esta ruta cae en el HTML de la SPA.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {import('express').Express}</span><span style="color:#9CDCFE"> app</span><span style="color:#6A9955"> - Aplicación Express.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {string}</span><span style="color:#9CDCFE"> routeBase</span><span style="color:#6A9955"> - Prefijo de la SPA.</span></span>
+<span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {void}</span></span>
+<span class="line"><span style="color:#6A9955"> */</span></span>
+<span class="line"><span style="color:#C586C0">export</span><span style="color:#569CD6"> const</span><span style="color:#DCDCAA"> registerMysqlQueryRoute</span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE">app</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">routeBase</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">    //  -----  aceptar el json de la página y ejecutar la consulta  -----</span></span>
+<span class="line"><span style="color:#9CDCFE">    app</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">post</span><span style="color:#D4D4D4">(</span></span>
+<span class="line"><span style="color:#CE9178">        `</span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">routeBase</span><span style="color:#569CD6">}</span><span style="color:#CE9178">/api/mysql/query`</span><span style="color:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#9CDCFE">        express</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">({ </span><span style="color:#9CDCFE">limit:</span><span style="color:#CE9178"> '16kb'</span><span style="color:#D4D4D4"> }),</span></span>
+<span class="line"><span style="color:#D4D4D4">        (</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">            //  -----  no esperar aquí: el manejador responde solo  -----</span></span>
+<span class="line"><span style="color:#569CD6">            void</span><span style="color:#DCDCAA"> handleMysqlQuery</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">req</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE">res</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">        }</span></span>
+<span class="line"><span style="color:#D4D4D4">    );</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span></code></pre>

@@ -1,7 +1,7 @@
 /*
-    *  --------------------------------------------------------------------------  *
-    *  -----  route-express-page.js  --  /src/routes/route-express-page.js  -----  *
-    *  --------------------------------------------------------------------------  *
+    *  ------------------------------------------------------------------------------------  *
+    *  -----  route-node-express-page.js  --  /src/routes/route-node-express-page.js  -----  *
+    *  ------------------------------------------------------------------------------------  *
 */
 
 
@@ -26,77 +26,77 @@ const {
 } = paths;
 
 
-/** @type {Route} - `ruta de la página Express` */
-export const routeExpressPage = {
-        id: 'expressPage',
+/** @type {Route} - `ruta de la página Node con Express` */
+export const routeNodeExpressPage = {
+        id: 'nodeExpressPage',
         favicon: `${favicon}/express-icon.svg`,
-        pageTitle: 'Express — API de tareas en memoria',
-        path: 'stack/express-page',
+        pageTitle: 'Node con Express',
+        path: 'stack/node-express-page',
         components: {
             "#layoutHeader": layoutHeader,
             "#btnNavbar": btnNavbar,
             "#btnNavbarThemesJQueryUI": btnNavbarThemesJQueryUI,
             "#layoutNavbar": layoutNavbar,
             "#layoutNavbarThemesUI": layoutNavbarThemesUI,
-            "#layoutMain": `${pages}/stack/express/express-page.html`,
+            "#layoutMain": `${pages}/stack/node-express/node-express-page.html`,
             "#layoutFooter": layoutFooter,
         },
         pagesComponents: [
-            { url: `${pagesComponents}/stack/express/express-description.html`, target: '[data-component-page="expressDescription"]' },
-            { url: `${pagesComponents}/stack/express/express-demo.html`, target: '[data-component-page="expressDemo"]' },
+            { url: `${pagesComponents}/stack/node-express/node-express-description.html`, target: '[data-component-page="nodeExpressDescription"]' },
+            { url: `${pagesComponents}/stack/node-express/node-express-demo.html`, target: '[data-component-page="nodeExpressDemo"]' },
         ],
         MarkdownShikiHtml: [
             {
-                fileName: 'express-page-html.html',
+                fileName: 'node-express-page-html.html',
                 fileExtension: 'html',
-                urlInput: `${pages}/stack/express/express-page.html`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${pages}/stack/node-express/node-express-page.html`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeHtml"]',
             },
             {
-                fileName: 'express-page-css.html',
+                fileName: 'node-express-page-css.html',
                 fileExtension: 'css',
-                urlInput: `${styles}/pages/stack/express-page.css`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${styles}/pages/stack/node-express-page.css`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeCss"]',
             },
             {
-                fileName: 'express-page-scss.html',
+                fileName: 'node-express-page-scss.html',
                 fileExtension: 'scss',
-                urlInput: `${scssPages}/stack/express-page.scss`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${scssPages}/stack/node-express-page.scss`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeScss"]',
             },
             {
-                fileName: 'express-page.cjs-js.html',
+                fileName: 'node-express-page.cjs-js.html',
                 fileExtension: 'js',
-                urlInput: `${scripts}/pages/stack/express-page.cjs.js`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${scripts}/pages/stack/node-express-page.cjs.js`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeCjsJs"]',
             },
             {
-                fileName: 'express-page.esm-js.html',
+                fileName: 'node-express-page.esm-js.html',
                 fileExtension: 'js',
-                urlInput: `${scripts}/pages/stack/express-page.esm.js`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${scripts}/pages/stack/node-express-page.esm.js`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeEsmJs"]',
             },
             {
-                fileName: 'express-page-server-js.html',
+                fileName: 'node-express-page-server-js.html',
                 fileExtension: 'js',
-                urlInput: `${base}/server/tasks-router.js`,
-                urlOutput: `${markdownShikiHtml}/pages/express`,
+                urlInput: `${base}/api/src/tasks-router.js`,
+                urlOutput: `${markdownShikiHtml}/pages/node-express`,
                 target: '[data-shiki="codeServerJs"]',
             },
         ],
-        headerTitle: 'Express — API de tareas en memoria',
+        headerTitle: 'Node con Express',
         styles: [
-            { href: `${styles}/pages/stack/express-page.css` },
+            { href: `${styles}/pages/stack/node-express-page.css` },
         ],
         scripts: [
             { src: `${scripts}/tooltips.js` },
-            { src: `${scripts}/pages/stack/express-page.cjs.js` },
-            { src: `${scripts}/pages/stack/express-page.esm.js`, type: 'module', exportFunctionName: 'mount' },
+            { src: `${scripts}/pages/stack/node-express-page.cjs.js` },
+            { src: `${scripts}/pages/stack/node-express-page.esm.js`, type: 'module', exportFunctionName: 'mount' },
         ],
         libs: [
             { name: 'tooltip' },

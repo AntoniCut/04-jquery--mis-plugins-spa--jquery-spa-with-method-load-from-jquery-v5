@@ -1,7 +1,7 @@
 /*
-    *  -----------------------------------------------------------------------------------  *
-    *  -----  express-page.esm.js  --  /src/scripts/pages/stack/express-page.esm.js  -----  *
-    *  -----------------------------------------------------------------------------------  *
+    *  ---------------------------------------------------------------------------------------------  *
+    *  -----  node-express-page.esm.js  --  /src/scripts/pages/stack/node-express-page.esm.js  -----  *
+    *  ---------------------------------------------------------------------------------------------  *
 */
 
 
@@ -145,7 +145,7 @@ const renderTasks = (ui, tasks) => {
         const empty = document.createElement('li');
 
         //  -----  asignar la clase del estado vacío  -----
-        empty.className = 'express-page__empty';
+        empty.className = 'node-express-page__empty';
 
         //  -----  escribir el aviso  -----
         empty.textContent = 'No hay tareas todavía.';
@@ -165,13 +165,13 @@ const renderTasks = (ui, tasks) => {
         const item = document.createElement('li');
 
         //  -----  asignar la clase de la fila  -----
-        item.className = 'express-page__item';
+        item.className = 'node-express-page__item';
 
         /** @type {HTMLSpanElement} - `título de la tarea` */
         const title = document.createElement('span');
 
         //  -----  asignar la clase del título  -----
-        title.className = 'express-page__item-title';
+        title.className = 'node-express-page__item-title';
 
         //  -----  escribir el título  -----
         title.textContent = task.title;
@@ -180,7 +180,7 @@ const renderTasks = (ui, tasks) => {
         const identifier = document.createElement('span');
 
         //  -----  asignar la clase del identificador  -----
-        identifier.className = 'express-page__item-id';
+        identifier.className = 'node-express-page__item-id';
 
         //  -----  escribir el identificador  -----
         identifier.textContent = `#${task.id}`;
@@ -192,7 +192,7 @@ const renderTasks = (ui, tasks) => {
         button.type = 'button';
 
         //  -----  asignar la clase del botón  -----
-        button.className = 'express-page__delete';
+        button.className = 'node-express-page__delete';
 
         //  -----  guardar el id en el botón  -----
         button.dataset.taskDelete = String(task.id);
@@ -503,7 +503,7 @@ const deleteTask = async (ui, id) => {
 const collectUi = (demo) => {
 
     /** @type {HTMLFormElement|null} - `formulario de creación` */
-    const form = demo.querySelector('[data-express-form]');
+    const form = demo.querySelector('[data-node-express-form]');
 
     /** @type {HTMLInputElement|null} - `campo del título` */
     const titleField = demo.querySelector('[name="title"]');
@@ -512,22 +512,22 @@ const collectUi = (demo) => {
     const submitButton = form?.querySelector('[type="submit"]') ?? null;
 
     /** @type {HTMLButtonElement|null} - `botón de recarga` */
-    const refreshButton = demo.querySelector('[data-express-refresh]');
+    const refreshButton = demo.querySelector('[data-node-express-refresh]');
 
     /** @type {HTMLElement|null} - `error del campo título` */
     const fieldError = demo.querySelector('[data-error-for="title"]');
 
     /** @type {HTMLElement|null} - `aviso de estado` */
-    const status = demo.querySelector('[data-express-status]');
+    const status = demo.querySelector('[data-node-express-status]');
 
     /** @type {HTMLElement|null} - `insignia del código http` */
-    const httpBadge = demo.querySelector('[data-express-http]');
+    const httpBadge = demo.querySelector('[data-node-express-http]');
 
     /** @type {HTMLElement|null} - `insignia de la latencia` */
-    const latencyBadge = demo.querySelector('[data-express-latency]');
+    const latencyBadge = demo.querySelector('[data-node-express-latency]');
 
     /** @type {HTMLUListElement|null} - `contenedor de la lista` */
-    const list = demo.querySelector('[data-express-list]');
+    const list = demo.querySelector('[data-node-express-list]');
 
     //  -----  salir si falta alguna pieza del demo  -----
     if (!(form instanceof HTMLFormElement)
@@ -559,7 +559,7 @@ const collectUi = (demo) => {
 export const mount = () => {
 
     /** @type {HTMLElement|null} - `wrapper del demo` */
-    const demo = document.querySelector('.express-demo');
+    const demo = document.querySelector('.node-express-demo');
 
     //  -----  salir si esta ruta no está montada  -----
     if (!(demo instanceof HTMLElement))

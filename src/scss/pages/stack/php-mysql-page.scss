@@ -1,7 +1,7 @@
 /*
-    *  ------------------------------------------------------------------------  *
-    *  -----  mysql-page.scss  --  /src/scss/pages/stack/mysql-page.scss  -----  *
-    *  ------------------------------------------------------------------------  *
+    *  --------------------------------------------------------------------------------  *
+    *  -----  php-mysql-page.scss  --  /src/scss/pages/stack/php-mysql-page.scss  -----  *
+    *  --------------------------------------------------------------------------------  *
 */
 
 @use '../../base/variables' as var;
@@ -9,47 +9,47 @@
 
 
 //  -----  variables  -----
-$mysql-primary:           #00758f;
-$mysql-secondary:         #0a97b0;
-$mysql-hero-end:          #f29111;
-$mysql-accent-bg:         #eef8fa;
-$mysql-row-alt:           rgba($mysql-primary, 0.06);
-$mysql-text:              #2c3e50;
-$mysql-text-light:        #5d6d7e;
-$mysql-card-bg:           var.$bg-white;
-$mysql-card-border:       rgba($mysql-primary, 0.2);
-$mysql-card-shadow:       0 4px 16px rgba($mysql-primary, 0.1);
-$mysql-card-shadow-hover: 0 8px 28px rgba($mysql-primary, 0.2);
-$mysql-tag-bg:            rgba($mysql-primary, 0.08);
-$mysql-tag-color:         $mysql-primary;
-$mysql-tag-border:        rgba($mysql-primary, 0.3);
+$php-mysql-primary:           #00758f;
+$php-mysql-secondary:         #0a97b0;
+$php-mysql-hero-end:          #f29111;
+$php-mysql-accent-bg:         #eef8fa;
+$php-mysql-row-alt:           rgba($php-mysql-primary, 0.06);
+$php-mysql-text:              #2c3e50;
+$php-mysql-text-light:        #5d6d7e;
+$php-mysql-card-bg:           var.$bg-white;
+$php-mysql-card-border:       rgba($php-mysql-primary, 0.2);
+$php-mysql-card-shadow:       0 4px 16px rgba($php-mysql-primary, 0.1);
+$php-mysql-card-shadow-hover: 0 8px 28px rgba($php-mysql-primary, 0.2);
+$php-mysql-tag-bg:            rgba($php-mysql-primary, 0.08);
+$php-mysql-tag-color:         $php-mysql-primary;
+$php-mysql-tag-border:        rgba($php-mysql-primary, 0.3);
 $color-white:             var.$bg-white;
 $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
 
 
 //  -----  título del header  -----
 .header__dynamic-title {
-    color: $mysql-primary;
+    color: $php-mysql-primary;
 }
 
 
 //  -----  títulos de sección  -----
 .main__title {
-    color: $mysql-primary;
+    color: $php-mysql-primary;
 }
 
 
 //  -----  la columna no crece con la tabla  -----
-.mysql-page__panel {
+.php-mysql-page__panel {
     width: 100%;
     max-width: 100%;
     min-width: 0;
 }
 
 
-//  -----  mysql-page  -----
-.mysql-page,
-.mysql-demo {
+//  -----  php-mysql-page  -----
+.php-mysql-page,
+.php-mysql-demo {
 
     width: 100%;
     max-width: 100%;
@@ -64,7 +64,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__hero {
         width: 100%;
         min-height: 18rem;
-        background: linear-gradient(135deg, $mysql-primary 0%, $mysql-secondary 60%, $mysql-hero-end 100%);
+        background: linear-gradient(135deg, $php-mysql-primary 0%, $php-mysql-secondary 60%, $php-mysql-hero-end 100%);
         border-radius: 1rem;
         display: flex;
         justify-content: center;
@@ -117,8 +117,8 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
         display: flex;
         flex-direction: column;
         gap: 1.6rem;
-        background-color: $mysql-accent-bg;
-        border-left: 5px solid $mysql-primary;
+        background-color: $php-mysql-accent-bg;
+        border-left: 5px solid $php-mysql-primary;
         border-radius: 0 0.8rem 0.8rem 0;
         padding: 2.5rem;
     }
@@ -127,10 +127,10 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
         width: 100%;
         font-size: 1.5rem;
         line-height: 1.8;
-        color: $mysql-text;
+        color: $php-mysql-text;
 
         strong {
-            color: $mysql-primary;
+            color: $php-mysql-primary;
             font-weight: 600;
         }
     }
@@ -149,7 +149,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__features-title {
         font-size: 2.2rem;
         font-weight: 600;
-        color: $mysql-primary;
+        color: $php-mysql-primary;
         text-align: center;
 
         &::after {
@@ -157,7 +157,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
             display: block;
             width: 6rem;
             height: 3px;
-            background-color: $mysql-primary;
+            background-color: $php-mysql-primary;
             margin: 0.8rem auto 0;
             border-radius: 2px;
         }
@@ -174,11 +174,11 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     }
 
     &__feature {
-        background-color: $mysql-card-bg;
-        border: 1px solid $mysql-card-border;
+        background-color: $php-mysql-card-bg;
+        border: 1px solid $php-mysql-card-border;
         border-radius: 1rem;
         padding: 2.5rem;
-        box-shadow: $mysql-card-shadow;
+        box-shadow: $php-mysql-card-shadow;
         display: flex;
         flex-direction: column;
         gap: 1rem;
@@ -187,13 +187,13 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__feature-title {
         font-size: 1.8rem;
         font-weight: 600;
-        color: $mysql-primary;
+        color: $php-mysql-primary;
     }
 
     &__feature-text {
         font-size: 1.4rem;
         line-height: 1.75;
-        color: $mysql-text-light;
+        color: $php-mysql-text-light;
     }
 
 
@@ -208,7 +208,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__concepts-title {
         font-size: 2.2rem;
         font-weight: 600;
-        color: $mysql-primary;
+        color: $php-mysql-primary;
         text-align: center;
     }
 
@@ -223,9 +223,9 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     }
 
     &__concept {
-        background-color: $mysql-tag-bg;
-        color: $mysql-tag-color;
-        border: 1px solid $mysql-tag-border;
+        background-color: $php-mysql-tag-bg;
+        color: $php-mysql-tag-color;
+        border: 1px solid $php-mysql-tag-border;
         border-radius: 2rem;
         padding: 0.6rem 1.4rem;
         font-size: 1.3rem;
@@ -247,7 +247,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__label {
         font-size: 1.4rem;
         font-weight: 600;
-        color: $mysql-primary;
+        color: $php-mysql-primary;
     }
 
     &__sql {
@@ -256,10 +256,10 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
         min-width: 0;
         min-height: 14rem;
         padding: 1.4rem;
-        border: 1px solid $mysql-card-border;
+        border: 1px solid $php-mysql-card-border;
         border-radius: 0.8rem;
-        background-color: $mysql-card-bg;
-        color: $mysql-text;
+        background-color: $php-mysql-card-bg;
+        color: $php-mysql-text;
         font-family: monospace;
         font-size: 1.4rem;
         line-height: 1.6;
@@ -271,7 +271,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
         border: 0;
         border-radius: 0.8rem;
         padding: 1rem 1.8rem;
-        background-color: $mysql-primary;
+        background-color: $php-mysql-primary;
         color: $color-white;
         font-size: 1.4rem;
         font-weight: 600;
@@ -288,7 +288,7 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
     &__status {
         min-height: 1.6rem;
         font-size: 1.4rem;
-        color: $mysql-text;
+        color: $php-mysql-text;
 
         &.is-error {
             color: #9b2335;
@@ -311,19 +311,19 @@ $shadow-hero-title:       0 2px 8px rgba(0, 0, 0, 0.35);
 
         th,
         td {
-            border: 1px solid $mysql-card-border;
+            border: 1px solid $php-mysql-card-border;
             padding: 0.8rem 1rem;
             text-align: left;
             vertical-align: top;
         }
 
         th {
-            background-color: $mysql-accent-bg;
-            color: $mysql-primary;
+            background-color: $php-mysql-accent-bg;
+            color: $php-mysql-primary;
         }
 
         tbody tr:nth-child(even) {
-            background-color: $mysql-row-alt;
+            background-color: $php-mysql-row-alt;
         }
     }
 

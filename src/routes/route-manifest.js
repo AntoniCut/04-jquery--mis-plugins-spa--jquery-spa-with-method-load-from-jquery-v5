@@ -24,7 +24,7 @@ export const routeManifest = [
         file: 'route-home'
     },
 
-    //  ----------  Páginas de Stack (HTML / CSS / JavaScript / jQuery / jQuery UI / React / Astro / MySQL / PHP / Express)  ----------
+    //  ----------  Páginas de Stack (HTML / CSS / JavaScript / jQuery / jQuery UI / React / Astro / PHP con MySQL / PHP / Node con Express / Node con MySQL)  ----------
     {
         id: 'htmlPage',
         path: 'stack/html-page',
@@ -61,9 +61,9 @@ export const routeManifest = [
         file: 'route-astro-page'
     },
     {
-        id: 'mysqlPage',
-        path: 'stack/mysql-page',
-        file: 'route-mysql-page'
+        id: 'phpMysqlPage',
+        path: 'stack/php-mysql-page',
+        file: 'route-php-mysql-page'
     },
     {
         id: 'phpPage',
@@ -71,9 +71,14 @@ export const routeManifest = [
         file: 'route-php-page'
     },
     {
-        id: 'expressPage',
-        path: 'stack/express-page',
-        file: 'route-express-page'
+        id: 'nodeExpressPage',
+        path: 'stack/node-express-page',
+        file: 'route-node-express-page'
+    },
+    {
+        id: 'nodeMysqlPage',
+        path: 'stack/node-mysql-page',
+        file: 'route-node-mysql-page'
     },
 
     //  ----------  404 - Not Found  ----------

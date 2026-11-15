@@ -1,7 +1,7 @@
 /*
-    *  -------------------------------------------------------------------------------  *
-    *  -----  mysql-page.esm.js  --  /src/scripts/pages/stack/mysql-page.esm.js  -----  *
-    *  -------------------------------------------------------------------------------  *
+    *  ---------------------------------------------------------------------------------------  *
+    *  -----  php-mysql-page.esm.js  --  /src/scripts/pages/stack/php-mysql-page.esm.js  -----  *
+    *  ---------------------------------------------------------------------------------------  *
 */
 
 
@@ -71,7 +71,7 @@ const renderTable = (result, columns, rows) => {
     const table = document.createElement('table');
 
     //  -----  asignar la clase de la tabla  -----
-    table.className = 'mysql-page__table';
+    table.className = 'php-mysql-page__table';
 
     /** @type {HTMLTableSectionElement} - `cabecera de la tabla` */
     const thead = document.createElement('thead');
@@ -157,10 +157,10 @@ const runQuery = async (form) => {
     const field = form.querySelector('[name="sql"]');
 
     /** @type {HTMLElement|null} - `aviso de la consulta` */
-    const status = form.parentElement?.querySelector('[data-mysql-status]') ?? null;
+    const status = form.parentElement?.querySelector('[data-php-mysql-status]') ?? null;
 
     /** @type {HTMLElement|null} - `contenedor de la tabla` */
-    const result = form.parentElement?.querySelector('[data-mysql-result]') ?? null;
+    const result = form.parentElement?.querySelector('[data-php-mysql-result]') ?? null;
 
     /** @type {HTMLButtonElement|null} - `botón de envío` */
     const button = form.querySelector('[type="submit"]');
@@ -262,7 +262,7 @@ const runQuery = async (form) => {
 export const mount = () => {
 
     /** @type {HTMLFormElement|null} - `formulario de la consulta` */
-    const form = document.querySelector('[data-mysql-query-form]');
+    const form = document.querySelector('[data-php-mysql-query-form]');
 
     //  -----  salir si esta ruta no está montada  -----
     if (!(form instanceof HTMLFormElement))

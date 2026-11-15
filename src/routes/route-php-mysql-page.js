@@ -1,7 +1,7 @@
 /*
-    *  ----------------------------------------------------------------------  *
-    *  -----  route-mysql-page.js  --  /src/routes/route-mysql-page.js  -----  *
-    *  ----------------------------------------------------------------------  *
+    *  ------------------------------------------------------------------------------  *
+    *  -----  route-php-mysql-page.js  --  /src/routes/route-php-mysql-page.js  -----  *
+    *  ------------------------------------------------------------------------------  *
 */
 
 
@@ -26,70 +26,70 @@ const {
 } = paths;
 
 
-/** @type {Route} - `ruta de la página MySQL` */
-export const routeMysqlPage = {
-        id: 'mysqlPage',
+/** @type {Route} - `ruta de la página PHP con MySQL` */
+export const routePhpMysqlPage = {
+        id: 'phpMysqlPage',
         favicon: `${favicon}/mysql-icon.svg`,
-        pageTitle: 'MySQL — Consultas a la base de datos',
-        path: 'stack/mysql-page',
+        pageTitle: 'PHP con MySQL',
+        path: 'stack/php-mysql-page',
         components: {
             "#layoutHeader": layoutHeader,
             "#btnNavbar": btnNavbar,
             "#btnNavbarThemesJQueryUI": btnNavbarThemesJQueryUI,
             "#layoutNavbar": layoutNavbar,
             "#layoutNavbarThemesUI": layoutNavbarThemesUI,
-            "#layoutMain": `${pages}/stack/mysql/mysql-page.html`,
+            "#layoutMain": `${pages}/stack/php-mysql/php-mysql-page.html`,
             "#layoutFooter": layoutFooter,
         },
         pagesComponents: [
-            { url: `${pagesComponents}/stack/mysql/mysql-description.html`, target: '[data-component-page="mysqlDescription"]' },
-            { url: `${pagesComponents}/stack/mysql/mysql-demo.html`, target: '[data-component-page="mysqlDemo"]' },
+            { url: `${pagesComponents}/stack/php-mysql/php-mysql-description.html`, target: '[data-component-page="phpMysqlDescription"]' },
+            { url: `${pagesComponents}/stack/php-mysql/php-mysql-demo.html`, target: '[data-component-page="phpMysqlDemo"]' },
         ],
         MarkdownShikiHtml: [
             {
-                fileName: 'mysql-page-html.html',
+                fileName: 'php-mysql-page-html.html',
                 fileExtension: 'html',
-                urlInput: `${pages}/stack/mysql/mysql-page.html`,
-                urlOutput: `${markdownShikiHtml}/pages/mysql`,
+                urlInput: `${pages}/stack/php-mysql/php-mysql-page.html`,
+                urlOutput: `${markdownShikiHtml}/pages/php-mysql`,
                 target: '[data-shiki="codeHtml"]',
             },
             {
-                fileName: 'mysql-page-css.html',
+                fileName: 'php-mysql-page-css.html',
                 fileExtension: 'css',
-                urlInput: `${styles}/pages/stack/mysql-page.css`,
-                urlOutput: `${markdownShikiHtml}/pages/mysql`,
+                urlInput: `${styles}/pages/stack/php-mysql-page.css`,
+                urlOutput: `${markdownShikiHtml}/pages/php-mysql`,
                 target: '[data-shiki="codeCss"]',
             },
             {
-                fileName: 'mysql-page-scss.html',
+                fileName: 'php-mysql-page-scss.html',
                 fileExtension: 'scss',
-                urlInput: `${scssPages}/stack/mysql-page.scss`,
-                urlOutput: `${markdownShikiHtml}/pages/mysql`,
+                urlInput: `${scssPages}/stack/php-mysql-page.scss`,
+                urlOutput: `${markdownShikiHtml}/pages/php-mysql`,
                 target: '[data-shiki="codeScss"]',
             },
             {
-                fileName: 'mysql-page.cjs-js.html',
+                fileName: 'php-mysql-page.cjs-js.html',
                 fileExtension: 'js',
-                urlInput: `${scripts}/pages/stack/mysql-page.cjs.js`,
-                urlOutput: `${markdownShikiHtml}/pages/mysql`,
+                urlInput: `${scripts}/pages/stack/php-mysql-page.cjs.js`,
+                urlOutput: `${markdownShikiHtml}/pages/php-mysql`,
                 target: '[data-shiki="codeCjsJs"]',
             },
             {
-                fileName: 'mysql-page.esm-js.html',
+                fileName: 'php-mysql-page.esm-js.html',
                 fileExtension: 'js',
-                urlInput: `${scripts}/pages/stack/mysql-page.esm.js`,
-                urlOutput: `${markdownShikiHtml}/pages/mysql`,
+                urlInput: `${scripts}/pages/stack/php-mysql-page.esm.js`,
+                urlOutput: `${markdownShikiHtml}/pages/php-mysql`,
                 target: '[data-shiki="codeEsmJs"]',
             },
         ],
-        headerTitle: 'MySQL — Consultas a la base de datos',
+        headerTitle: 'PHP con MySQL',
         styles: [
-            { href: `${styles}/pages/stack/mysql-page.css` },
+            { href: `${styles}/pages/stack/php-mysql-page.css` },
         ],
         scripts: [
             { src: `${scripts}/tooltips.js` },
-            { src: `${scripts}/pages/stack/mysql-page.cjs.js` },
-            { src: `${scripts}/pages/stack/mysql-page.esm.js`, type: 'module', exportFunctionName: 'mount' },
+            { src: `${scripts}/pages/stack/php-mysql-page.cjs.js` },
+            { src: `${scripts}/pages/stack/php-mysql-page.esm.js`, type: 'module', exportFunctionName: 'mount' },
         ],
         libs: [
             { name: 'tooltip' },

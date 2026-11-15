@@ -1,15 +1,15 @@
 // @ts-nocheck
 /*
-    *  -------------------------------------------------------------------------------  *
-    *  -----  mysql-page.cjs.js  --  /src/scripts/pages/stack/mysql-page.cjs.js  -----  *
-    *  -------------------------------------------------------------------------------  *
+    *  ---------------------------------------------------------------------------------------  *
+    *  -----  php-mysql-page.cjs.js  --  /src/scripts/pages/stack/php-mysql-page.cjs.js  -----  *
+    *  ---------------------------------------------------------------------------------------  *
 */
 
 
 (() => {
 
     /** @type {HTMLElement|null} - `aviso del script clásico` */
-    const status = document.querySelector('[data-mysql-cjs-status]');
+    const status = document.querySelector('[data-php-mysql-cjs-status]');
 
     //  -----  salir si el demo todavía no está en el DOM  -----
     if (!status)
@@ -17,6 +17,6 @@
         return;
 
     //  -----  confirmar que el script clásico ya se ejecutó  -----
-    status.textContent = 'mysql-page.cjs.js cargado. La consulta la envía el módulo ESM.';
+    status.textContent = 'php-mysql-page.cjs.js cargado. La consulta la envía el módulo ESM.';
 
 })();

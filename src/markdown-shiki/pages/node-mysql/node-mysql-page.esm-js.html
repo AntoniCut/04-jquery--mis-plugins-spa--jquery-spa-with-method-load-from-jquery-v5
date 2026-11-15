@@ -43,7 +43,7 @@
 <span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> table</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">createElement</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'table'</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    //  -----  asignar la clase de la tabla  -----</span></span>
-<span class="line"><span style="color:#9CDCFE">    table</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">className</span><span style="color:#D4D4D4"> = </span><span style="color:#CE9178">'mysql-page__table'</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#9CDCFE">    table</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">className</span><span style="color:#D4D4D4"> = </span><span style="color:#CE9178">'node-mysql-page__table'</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {HTMLTableSectionElement}</span><span style="color:#6A9955"> - `cabecera de la tabla` */</span></span>
 <span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> thead</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">createElement</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'thead'</span><span style="color:#D4D4D4">);</span></span>
@@ -119,7 +119,7 @@
 <span class="line"><span style="color:#6A9955"> * ------------------------------</span></span>
 <span class="line"><span style="color:#6A9955"> * -----  `runQuery(form)`  -----</span></span>
 <span class="line"><span style="color:#6A9955"> * ------------------------------</span></span>
-<span class="line"><span style="color:#6A9955"> * - Envía el sql al servidor y pinta la respuesta.</span></span>
+<span class="line"><span style="color:#6A9955"> * - Envía el sql a Express y pinta la respuesta.</span></span>
 <span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@param</span><span style="color:#4EC9B0"> {HTMLFormElement}</span><span style="color:#9CDCFE"> form</span><span style="color:#6A9955"> - Formulario de la consulta.</span></span>
 <span class="line"><span style="color:#6A9955"> * </span><span style="color:#569CD6">@return</span><span style="color:#4EC9B0"> {Promise&#x3C;void>}</span></span>
 <span class="line"><span style="color:#6A9955"> */</span></span>
@@ -129,10 +129,10 @@
 <span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> field</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[name="sql"]'</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {HTMLElement|null}</span><span style="color:#6A9955"> - `aviso de la consulta` */</span></span>
-<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> status</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">parentElement</span><span style="color:#D4D4D4">?.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-mysql-status]'</span><span style="color:#D4D4D4">) ?? </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> status</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">parentElement</span><span style="color:#D4D4D4">?.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-node-mysql-status]'</span><span style="color:#D4D4D4">) ?? </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {HTMLElement|null}</span><span style="color:#6A9955"> - `contenedor de la tabla` */</span></span>
-<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> result</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">parentElement</span><span style="color:#D4D4D4">?.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-mysql-result]'</span><span style="color:#D4D4D4">) ?? </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> result</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">parentElement</span><span style="color:#D4D4D4">?.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-node-mysql-result]'</span><span style="color:#D4D4D4">) ?? </span><span style="color:#569CD6">null</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {HTMLButtonElement|null}</span><span style="color:#6A9955"> - `botón de envío` */</span></span>
 <span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> button</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">form</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[type="submit"]'</span><span style="color:#D4D4D4">);</span></span>
@@ -154,8 +154,8 @@
 <span class="line"><span style="color:#6A9955">    //  -----  intentar la petición  -----</span></span>
 <span class="line"><span style="color:#C586C0">    try</span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">        /** - `respuesta php, la misma en desarrollo y en nginx` */</span></span>
-<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> response</span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> fetch</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'app/services/mysql/query.php'</span><span style="color:#D4D4D4">, {</span></span>
+<span class="line"><span style="color:#6A9955">        /** - `respuesta de express en api/mysql/query` */</span></span>
+<span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> response</span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> fetch</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'api/mysql/query'</span><span style="color:#D4D4D4">, {</span></span>
 <span class="line"><span style="color:#9CDCFE">            method:</span><span style="color:#CE9178"> 'POST'</span><span style="color:#D4D4D4">,</span></span>
 <span class="line"><span style="color:#9CDCFE">            headers:</span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"><span style="color:#CE9178">                'Content-Type'</span><span style="color:#9CDCFE">:</span><span style="color:#CE9178"> 'application/json'</span><span style="color:#D4D4D4">,</span></span>
@@ -172,14 +172,14 @@
 <span class="line"><span style="color:#C586C0">        if</span><span style="color:#D4D4D4"> (!</span><span style="color:#9CDCFE">contentType</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">includes</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'application/json'</span><span style="color:#D4D4D4">)) {</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">            //  -----  mostrar el código http en la página  -----</span></span>
-<span class="line"><span style="color:#DCDCAA">            setStatus</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">status</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">`El servidor respondió </span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">response</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">status</span><span style="color:#569CD6">}</span><span style="color:#CE9178"> sin JSON. La consulta no llegó a PHP.`</span><span style="color:#D4D4D4">, </span><span style="color:#569CD6">true</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#DCDCAA">            setStatus</span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE">status</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">`El servidor respondió </span><span style="color:#569CD6">${</span><span style="color:#9CDCFE">response</span><span style="color:#D4D4D4">.</span><span style="color:#9CDCFE">status</span><span style="color:#569CD6">}</span><span style="color:#CE9178"> sin JSON. La consulta no llegó a Node.`</span><span style="color:#D4D4D4">, </span><span style="color:#569CD6">true</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">            //  -----  no pintar una tabla  -----</span></span>
 <span class="line"><span style="color:#C586C0">            return</span><span style="color:#D4D4D4">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D4D4D4">        }</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A9955">        /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {MysqlQueryResponse}</span><span style="color:#6A9955"> - `cuerpo json de la consulta` */</span></span>
+<span class="line"><span style="color:#6A9955">        /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {NodeMysqlQueryResponse}</span><span style="color:#6A9955"> - `cuerpo json de la consulta` */</span></span>
 <span class="line"><span style="color:#569CD6">        const</span><span style="color:#4FC1FF"> body</span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#9CDCFE"> response</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">json</span><span style="color:#D4D4D4">();</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">        //  -----  mostrar el fallo devuelto por el servidor  -----</span></span>
@@ -234,7 +234,7 @@
 <span class="line"><span style="color:#C586C0">export</span><span style="color:#569CD6"> const</span><span style="color:#DCDCAA"> mount</span><span style="color:#D4D4D4"> = () </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    /** </span><span style="color:#569CD6">@type</span><span style="color:#4EC9B0"> {HTMLFormElement|null}</span><span style="color:#6A9955"> - `formulario de la consulta` */</span></span>
-<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> form</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-mysql-query-form]'</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#569CD6">    const</span><span style="color:#4FC1FF"> form</span><span style="color:#D4D4D4"> = </span><span style="color:#9CDCFE">document</span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA">querySelector</span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">'[data-node-mysql-query-form]'</span><span style="color:#D4D4D4">);</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#6A9955">    //  -----  salir si esta ruta no está montada  -----</span></span>
 <span class="line"><span style="color:#C586C0">    if</span><span style="color:#D4D4D4"> (!(</span><span style="color:#9CDCFE">form</span><span style="color:#569CD6"> instanceof</span><span style="color:#4EC9B0"> HTMLFormElement</span><span style="color:#D4D4D4">))</span></span>
