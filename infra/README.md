@@ -13,7 +13,7 @@ infra/
 
 | Carpeta | Qué es | Cuándo corre |
 |---|---|---|
-| `api/` | runtime Node: routers compartidos, servidor standalone y dependencias propias | dev (`pnpm dev`) y prod (systemd `jquery-node`) |
+| `api/` | runtime Node: routers compartidos, servidor standalone y dependencias del paquete | dev (`pnpm dev`) y prod (systemd `jquery-node`) |
 | `server/` | runtime de desarrollo y preview (Node, php-cgi). Preview no monta `/api` | solo local |
 | `src/services/` | endpoints PHP (viajan en el build) | dev (php-cgi) y prod (PHP-FPM) |
 | `infra/` | configuración del proceso Node de producción | solo en el VPS |
@@ -33,6 +33,6 @@ infra/
 
 1. Como root, con esta carpeta presente: `bash infra/provision/provision-node-api.sh`.
 2. Pegar `nginx/jquery.antonydev.tech-api.conf` dentro del `server {}` de `jquery.antonydev.tech`. `nginx -t` y recargar.
-3. `./deploy.sh` sube `api/` a `/opt/jquery-node-api`, instala dependencias de producción y hace `systemctl restart jquery-node`.
+3. `./deploy.sh` arma el artefacto del API con `pnpm deploy`, lo sube a `/opt/jquery-node-api` e hace `systemctl restart jquery-node`. El VPS no instala dependencias.
 
 El provision no instala ni reemplaza el motor de base de datos.

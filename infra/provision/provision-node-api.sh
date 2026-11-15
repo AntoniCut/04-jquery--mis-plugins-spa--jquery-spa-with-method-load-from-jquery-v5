@@ -8,6 +8,8 @@
 #  No instala ni reemplaza MySQL. No pega el fragmento de nginx:
 #  ese location va a mano dentro del server {} del sitio.
 #  El 3100 lo usa javascript-node. Este proceso usa el 3200.
+#  No instala pnpm: deploy.sh envía el artefacto de `pnpm deploy`
+#  con sus node_modules ya resueltos. El VPS solo ejecuta Node.
 # ==============================================================
 set -euo pipefail
 
@@ -23,10 +25,6 @@ if [ "$NODE_MAJOR" -lt 24 ]; then
   apt-get install -y nodejs
 fi
 
-echo "==> Habilitando pnpm con corepack..."
-corepack enable
-corepack prepare pnpm@latest --activate
-
 echo "==> Creando el directorio del API Node..."
 install -d -o www-data -g www-data -m 755 "$API_NODE_DIR"
 
@@ -39,7 +37,7 @@ echo "==> Recordatorio manual (no automatizado):"
 echo "    1. Pegar infra/nginx/jquery.antonydev.tech-api.conf dentro del server {}."
 echo "       El location es {SITE_BASE}/api/, no /api/ en la raíz del dominio."
 echo "       nginx -t && systemctl reload nginx"
-echo "    2. Subir api/ y el .env de producción a $API_NODE_DIR con deploy.sh."
+echo "    2. Ejecutar deploy.sh: sube el artefacto del API y el .env de producción a $API_NODE_DIR."
 echo "    3. Verificar: systemctl is-active jquery-node"
 echo "       curl -s http://127.0.0.1:3200/health"
 

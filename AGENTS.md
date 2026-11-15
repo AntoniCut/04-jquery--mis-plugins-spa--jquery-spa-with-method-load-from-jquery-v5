@@ -68,6 +68,14 @@ La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al 
 - VPS: el MySQL del sistema en el puerto **3306**, la misma base y el usuario `jquery_user` del curso. Las credenciales van en `.env.production`. La plantilla versionada es `.env.production.example`. `deploy.sh` lo sube como `.env` con modo `640` y grupo `www-data`, al web root de PHP y a `/opt/jquery-node-api/.env`. Sin ese grupo, PHP-FPM no lo lee y conecta al 3307 (`Connection refused`).
 - No uses la base `jquery_escuelait_classicmodels` para esta página.
 
+### Dependencias de `api/`
+
+`api/` es miembro del workspace de `pnpm-workspace.yaml`. Las versiones compartidas con la raíz se declaran **solo** en el bloque `catalog` de ese archivo y los manifiestos las referencian con `"catalog:"`. Así dev y producción resuelven la misma versión y no hay dos listas que sincronizar a mano.
+
+- `pnpm install` en la raíz cubre las dos zonas: hay un único `pnpm-lock.yaml` versionado.
+- `allowBuilds` del workspace deja correr los scripts de `sharp` y `@parcel/watcher`. pnpm 10+ los bloquea por defecto y sin ellos falla el build.
+- El proceso de producción no instala nada: `deploy.sh` arma el artefacto con `pnpm --filter jquery-node-api deploy .deploy-api --prod` y sube ese directorio, `node_modules` incluido.
+
 ## Demos PHP y Express
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
@@ -111,7 +119,8 @@ El detalle de cada script está en `package.json` → `scriptsDoc` y en el READM
 
 - No editar `app/`, `dist/` ni el HTML de `src/markdown-shiki/`.
 - No añadir dependencias npm si no se piden.
-- No commitear `.env`, `.env.production`, `deploy.sh`, `node_modules/` ni `prompts/`.
+- No declarar `express`, `dotenv` ni `mysql2` fuera del `catalog` de `pnpm-workspace.yaml`. Si una zona necesita otra versión, se añade una entrada al catalog y ambas la referencian.
+- No commitear `.env`, `.env.production`, `deploy.sh`, `node_modules/` ni `prompts/`. El `pnpm-lock.yaml` sí se versiona.
 - No cambiar `base` en un solo archivo.
 - No duplicar lógica de navbar o de carga de rutas fuera del plugin que ya la posee.
 - No dar por hecho que el curso `escuelait` y este prototipo deben quedar idénticos: si se trae una mejora, se adapta a la estructura de v5.
