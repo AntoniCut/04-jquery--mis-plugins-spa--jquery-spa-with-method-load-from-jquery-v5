@@ -22,7 +22,7 @@ const {
     styles,
     scripts,
     markdownShikiHtml,
-    pluginsSource
+    jqSpaCorePlugins,
 } = paths;
 
 
@@ -49,7 +49,7 @@ export const routeHome = {
             {
                 fileName: 'jquery.spa-with-method-load-from-jquery-v5.html',
                 fileExtension: 'js',
-                urlInput: `${pluginsSource}/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js`,
+                urlInput: `${jqSpaCorePlugins}/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js`,
                 urlOutput: `${markdownShikiHtml}/plugins/v5`,
                 target: '[data-shiki="plugins"]',
             },

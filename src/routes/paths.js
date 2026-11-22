@@ -33,5 +33,6 @@ export const paths = {
     scssPages: `${base}/src/scss/pages`,
     scripts: `${base}/app/js`,
     markdownShikiHtml: `${base}/app/markdown-shiki`,
-    pluginsSource: `${base}/src/plugins`
+    pluginsSource: `${base}/src/plugins`,
+    jqSpaCorePlugins: `${base}/packages/jq-spa-core/src/plugins`,
 }

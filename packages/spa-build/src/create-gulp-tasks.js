@@ -663,9 +663,14 @@ const copyFonts = createCopyTask('copyFonts', { glob: paths.src.fonts, checkPath
  * --------------------------
  * -----  `copyLibs()`  -----
  * --------------------------
- * - Copia src/libs/ a app/libs/.
+ * - Copia packages/jq-spa-core/src/libs/ a app/libs/ (SPEC 04).
  */
-const copyLibs = createCopyTask('copyLibs', { glob: paths.src.libs, checkPath: paths.src.libsDir, binary: true });
+const copyLibs = createCopyTask('copyLibs', {
+    glob: paths.jqSpaCore.libs,
+    checkPath: paths.jqSpaCore.libsDir,
+    base: paths.jqSpaCore.root,
+    binary: true,
+});
 
 
 
@@ -716,6 +721,20 @@ const copyPdfs = createCopyTask('copyPdfs', { glob: paths.src.pdfs, checkPath: p
  * - Copia src/plugins/ a app/plugins/.
  */
 const copyPlugins = createCopyTask('copyPlugins', { glob: paths.src.plugins, checkPath: paths.src.pluginsDir });
+
+
+
+/**
+ * -----------------------------------------
+ * -----  `copyJqSpaCorePlugins()`  -----
+ * -----------------------------------------
+ * - Copia el plugin SPA v5 del paquete jq-spa-core a app/plugins/.
+ */
+const copyJqSpaCorePlugins = createCopyTask('copyJqSpaCorePlugins', {
+    glob: paths.jqSpaCore.plugins,
+    checkPath: paths.jqSpaCore.pluginsDir,
+    base: paths.jqSpaCore.root,
+});
 
 
 
@@ -998,6 +1017,7 @@ const buildSources = parallel(
     copyPagesComponents,
     copyPdfs,
     copyPlugins,
+    copyJqSpaCorePlugins,
     copyRoutes,
     copySpa,
     copyServices,
@@ -1056,7 +1076,8 @@ const watchTask = () => {
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],
-        [paths.src.libs, copyLibs],
+        [paths.jqSpaCore.libs, copyLibs],
+        [paths.jqSpaCore.plugins, copyJqSpaCorePlugins],
         [['package.json', 'pnpm-lock.yaml'], copyVendorModules],
         [paths.src.markdownShiki, copyMarkdownShiki],
         [paths.src.pages, copyPages],
@@ -1425,6 +1446,7 @@ const build = series(
         copyPagesComponents,
         copyPdfs,
         copyPlugins,
+        copyJqSpaCorePlugins,
         copyRoutes,
         copySpa,
         copyServices,

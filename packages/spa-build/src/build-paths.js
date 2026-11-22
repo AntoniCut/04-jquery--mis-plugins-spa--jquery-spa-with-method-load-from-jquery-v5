@@ -49,6 +49,9 @@ export const buildPaths = (config) => {
     /** - `raíz de jquery-ui en node_modules` */
     const jqueryUIDir = path.join('node_modules', 'jquery-ui');
 
+    /** - `raíz publicable del core del navegador (SPEC 04)` */
+    const jqSpaCoreRoot = config.framework?.jqSpaCore ?? 'packages/jq-spa-core/src';
+
     //  -----  devolver el mapa de rutas del pipeline  -----
     return {
 
@@ -157,6 +160,20 @@ export const buildPaths = (config) => {
             scssPages: path.posix.join(src, 'scss', 'pages', '**/*.scss'),
 
             scssAll: path.posix.join(src, 'scss', '**/*.scss'),
+
+        },
+
+        jqSpaCore: {
+
+            root: jqSpaCoreRoot,
+
+            libsDir: path.join(jqSpaCoreRoot, 'libs'),
+
+            libs: path.posix.join(jqSpaCoreRoot, 'libs', '**/*'),
+
+            pluginsDir: path.join(jqSpaCoreRoot, 'plugins'),
+
+            plugins: path.posix.join(jqSpaCoreRoot, 'plugins', '**/*'),
 
         },
 

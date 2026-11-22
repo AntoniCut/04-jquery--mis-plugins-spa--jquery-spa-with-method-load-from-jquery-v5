@@ -15,7 +15,7 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | `app/` | Salida de Gulp. No se edita a mano |
 | `dist/` | Build de producción. No se edita a mano |
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
-| `src/libs/jquery/`, `src/libs/jquery-module/`, plugins `*.min.js` | Vendors. No se reformatean ni se comentan |
+| `packages/jq-spa-core/src/libs/`, vendors `*.min.js` en el core | Vendors del core. No se reformatean ni se comentan |
 | `prompts/` | Notas locales. No forman parte del producto |
 
 Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tener `pnpm dev` en marcha para ver el cambio.
@@ -46,7 +46,7 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 
 ## Plugin y arranque
 
-- El motor es `src/plugins/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js`.
+- El motor es `packages/jq-spa-core/src/plugins/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js`.
 - La configuración de este sitio es solo `src/spa/spa.js`. No metas opciones de proyecto dentro del plugin.
 - `defaultSettings` define los valores por defecto. `$.extend({}, defaultSettings, options)` produce `settings`.
 - `src/main.js` arranca en modo módulo (`isJQueryModule = true`): import ESM, registro del plugin, `spa()` y precarga de jQuery UI tras `window load`. El fallback CDN → local es el otro camino.

@@ -78,6 +78,16 @@
 
 
 /**
+ * ----------------------------------
+ * -----  `SpaBuildFramework`  -----
+ * ----------------------------------
+ * @typedef {Object} SpaBuildFramework - Fuentes del runtime del navegador en workspace (SPEC 04).
+ * @property {string} jqSpaCore - Raíz publicable bajo packages/jq-spa-core/src (libs y plugin SPA).
+ */
+
+
+
+/**
  * ------------------------------------
  * -----  `SpaBuildExtraCopyEntry`  -----
  * ------------------------------------
@@ -100,5 +110,6 @@
  * @property {SpaBuildRoot} root - index.html y .htaccess.
  * @property {SpaBuildConvertImages} convertImages - Conversión AVIF de capturas.
  * @property {SpaBuildVendor} vendor - Vendors copiados desde node_modules.
+ * @property {SpaBuildFramework} [framework] - Runtime jq-spa-core hasta copyFramework (SPEC 04 paso 4).
  * @property {SpaBuildExtraCopyEntry[]} extraCopy - Copias opcionales; vacío en el piloto.
  */
