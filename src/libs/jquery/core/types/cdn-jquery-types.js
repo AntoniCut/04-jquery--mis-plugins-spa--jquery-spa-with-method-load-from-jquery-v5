@@ -4,9 +4,6 @@
     *  ---------------------------------------------------------------------------------------  *
 */
 
-//  ----------  Esto asegura que VS Code lo trate como módulo  ----------
-export {}; 
-
 
 /**
  * -----  `Configuración del CDN de jQuery`  -----
