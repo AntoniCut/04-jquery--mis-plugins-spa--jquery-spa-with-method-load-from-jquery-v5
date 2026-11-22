@@ -133,22 +133,6 @@ const paths = {
     },
 
     /**
-     * -----------------------
-     * -----  `root {}`  -----
-     * -----------------------
-     * - Archivos de la raíz del proyecto.
-     */
-    root: {
-
-        /** - `carpeta de estáticos de la raíz` */
-        assetsDir: path.join('assets'),
-
-        /** - `estáticos de la raíz` */
-        assets: path.posix.join('assets', '**/*'),
-
-    },
-
-    /**
      * ----------------------
      * -----  `src {}`  -----
      * ----------------------
@@ -1528,35 +1512,6 @@ export const copyStaticAssetsToDist = () => {
 
 
 /**
- * --------------------------------------
- * -----  `copyRootAssetsToDist()`  -----
- * --------------------------------------
- * - Copia assets/ de la raíz del proyecto a dist/assets.
- * @return {NodeJS.ReadWriteStream | Promise<void>} - `Stream de copia, o una promesa vacía si no hay assets/`.
- */
-export const copyRootAssetsToDist = () => {
-
-    //  -----  si no hay assets en la raíz, no copiar  -----
-    if (!existsDir(paths.root.assetsDir))
-        //  -----  terminar sin hacer nada  -----
-        return Promise.resolve();
-
-    //  -----  copiar los assets de la raíz a dist  -----
-    return src(
-        paths.root.assets, 
-        { 
-            base: '.', 
-            allowEmpty: true, 
-            encoding: false 
-        })
-        .pipe(safePipe())
-        .pipe(validateFiles('copyRootAssetsToDist'))
-        .pipe(dest(paths.distRoot));
-};
-
-
-
-/**
  * --------------------------------
  * -----  `addTsNoCheck(cb)`  -----
  * --------------------------------
@@ -1627,7 +1582,7 @@ addTsNoCheck.displayName = 'addTsNoCheck';
 export const build = series(
     parallel(cleanDist, cleanApp, cleanMarkdownShiki),
     copyAll,
-    parallel(minifyAllJs, minifyAllCss, minifyRootIndex, htaccessToDist, minifyHtml, minifyServices, copyStaticAssetsToDist, copyRootAssetsToDist),
+    parallel(minifyAllJs, minifyAllCss, minifyRootIndex, htaccessToDist, minifyHtml, minifyServices, copyStaticAssetsToDist),
 );
 
 
