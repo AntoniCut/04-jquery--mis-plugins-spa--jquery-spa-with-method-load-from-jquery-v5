@@ -55,7 +55,7 @@ import { base } from '@antonydev/spa-server/site-base.js';
 
 
 //  -----  tipos de tareas gulp y vinyl  -----
-/// <reference path="../../../types/gulp-task.d.js" />
+/// <reference path="../types/gulp-task.d.js" />
 
 
 /** - `métodos de gulp usados en las tareas` */
@@ -79,7 +79,7 @@ const sassOptions = {
  * -----  `createGulpTasks(options)`  -----
  * ----------------------------------------
  * - Registra las tareas Gulp del sitio según spa.config.js.
- * @param {{ projectRoot: string, config: import('../../../types/spa-build-config.d.js').SpaBuildConfig }} options - Raíz del proyecto y configuración.
+ * @param {{ projectRoot: string, config: import('../types/spa-build-config.d.js').SpaBuildConfig }} options - Raíz del proyecto y configuración.
  * @return {Record<string, import('gulp').TaskFunction> & { build: import('gulp').TaskFunction }} - `Tareas exportadas por el gulpfile del proyecto`.
  */
 export const createGulpTasks = ({ projectRoot, config }) => {

@@ -6,10 +6,10 @@
 
 
 //  -----  tipos del paquete jq-spa-core  -----
-/// <reference path="../types/jq-spa-core-package.d.ts" />
+/// <reference path="../packages/jq-spa-core/types/jq-spa-core-package.d.ts" />
 
 //  -----  tipos del paquete spa-loading-effect  -----
-/// <reference path="../types/spa-loading-effect-package.d.ts" />
+/// <reference path="../packages/spa-loading-effect/types/spa-loading-effect-package.d.ts" />
 
 //  -----  efecto de carga inicial (framework spa-loading-effect)  -----
 import { effectLoadingPage } from '@antonydev/spa-loading-effect';

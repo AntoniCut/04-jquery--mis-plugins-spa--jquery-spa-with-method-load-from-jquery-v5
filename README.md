@@ -194,7 +194,7 @@ La configuración del sitio está en `src/spa/spa.js` (exporta `spa()` e importa
 
 `id`, `path`, `pageTitle`, `headerTitle`, `favicon`, `components`, `pagesComponents`, `MarkdownShikiHtml`, `styles`, `scripts`, `libs`.
 
-Los tipos JSDoc viven en `types/`. `Route` está en `types/route.d.js` y las opciones del plugin en `types/config-options-spa.d.js`.
+Los tipos JSDoc del sitio viven en `types/` (`Route` en `route.d.js`, opciones del plugin en `config-options-spa.d.js`). Cada paquete del workspace lleva los suyos en `packages/<paquete>/types/`.
 
 #### `components`
 
@@ -257,13 +257,13 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── dist/                             # Build de producción minificado
 ├── docker/mysql/init/                # SQL del primer arranque del contenedor local
 ├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
-├── types/                            # Tipos JSDoc del dominio
+├── types/                            # Tipos JSDoc del dominio del sitio (rutas, plugin…)
 ├── api/                              # Runtime Node de producción (health, MySQL, tareas)
 ├── infra/                            # systemd, nginx y provision de jquery-node
 ├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
-├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki y conversión AVIF
-├── packages/jq-spa-core/             # @antonydev/jq-spa-core → app/framework/jq-spa-core/
-├── packages/spa-loading-effect/      # @antonydev/spa-loading-effect → app/framework/spa-loading-effect/
+├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki, types/
+├── packages/jq-spa-core/             # @antonydev/jq-spa-core → app/framework/jq-spa-core/, types/
+├── packages/spa-loading-effect/      # @antonydev/spa-loading-effect → app/framework/, types/
 ├── spa.config.js                     # Carpetas, framework.* y vendors (plantilla: .example)
 └── gulpfile.js                       # Registro fino: dotenv + spa.config + @antonydev/spa-build
 ```

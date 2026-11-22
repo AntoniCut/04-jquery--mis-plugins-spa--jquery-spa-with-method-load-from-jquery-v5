@@ -7,7 +7,7 @@
 
 
 //  -----  tipos de arranque del core  -----
-/// <reference path="../../../types/jq-spa-core-start.d.js" />
+/// <reference path="../types/jq-spa-core-start.d.js" />
 
 //  -----  globals jQuery tras los loaders  -----
 /// <reference path="./libs/jquery/jquery-global.d.ts" />

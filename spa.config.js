@@ -37,7 +37,7 @@ const jqueryUiWidgets = [
  * -----------------------------
  * -----  `spaBuildConfig`  -----
  * -----------------------------
- * @type {import('./types/spa-build-config.d.js').SpaBuildConfig}
+ * @type {import('./packages/spa-build/types/spa-build-config.d.js').SpaBuildConfig}
  * - Valores por defecto del prototipo; @antonydev/spa-build los consumirá desde SPEC 03 paso 4.
  */
 const spaBuildConfig = {

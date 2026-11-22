@@ -31,6 +31,6 @@ declare module '@antonydev/jq-spa-core/start.js' {
 declare module '@antonydev/jq-spa-core/libs/jquery-module/loader/load-jquery-ui-by-import.js' {
 
     /** - `carga bajo demanda de un módulo jQuery UI` */
-    export function loadJQueryUILib(name: string): Promise<unknown>;
+    export function loadJQueryUILib(name: string): Promise<void>;
 
 }

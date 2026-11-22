@@ -42,7 +42,7 @@ El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`
 5. Las URLs de la ruta salen de `paths` en `src/routes/paths.js`. Apuntan a `app/`, no a `src/`.
 6. Si la ruta declara `MarkdownShikiHtml`, regenerar con `pnpm code-highlight`.
 
-Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/config-options-spa.d.js`. Un campo nuevo del dominio se documenta ahí con `@typedef` antes de usarlo.
+Los tipos del **proyecto** están en `types/route.d.js`, `types/route-manifest.d.js` y `types/config-options-spa.d.js`. Los de cada paquete en `packages/<paquete>/types/` (mismo nivel que `src/`). Un campo nuevo del dominio se documenta con `@typedef` antes de usarlo.
 
 ## Plugin y arranque
 
@@ -98,7 +98,7 @@ Al crear o editar `.js` y `.html` de este repo (no vendors):
 - HTML de páginas y componentes: etiquetas semánticas en los `.html` de `src/`. El feedback visual va al DOM, no a diálogos nativos.
 - Una línea en blanco entre instrucciones y entre variables hermanas. Tres líneas en blanco entre función y función.
 - Comentarios en español, en minúsculas salvo nombres propios, describiendo lo que hace esa línea.
-- Tipos de dominio en `types/*.d.js`. Referencia con `/// <reference path="..." />` cuando el archivo los necesite.
+- Tipos de dominio del sitio en `types/*.d.js`; tipos de paquete en `packages/<paquete>/types/`. Referencia con `/// <reference path="..." />` cuando el archivo los necesite.
 - `jsconfig.json` ya incluye `src/`, `types/`, `packages/spa-server/`, `packages/spa-build/`, `spa.config.js`, `api/` y el `gulpfile.js` fino. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
 - El pipeline Gulp vive en `packages/spa-build/`; el `gulpfile.js` raíz solo registra tareas. Opciones de carpetas y vendors: `spa.config.js` (plantilla `spa.config.js.example`). En la raíz quedan `gulp` (CLI) y `dotenv` porque el `gulpfile.js` los importa directamente; el resto de dependencias de build están en el manifiesto de `@antonydev/spa-build`.
 
