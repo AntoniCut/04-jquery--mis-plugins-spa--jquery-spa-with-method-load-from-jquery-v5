@@ -94,7 +94,7 @@ pnpm install
 | `pnpm stop:dev` | Cierra el servidor de desarrollo de este proyecto si sigue en marcha |
 | `pnpm stop:preview` | Cierra el servidor de preview de este proyecto si sigue en marcha |
 | `pnpm code-highlight` | Genera los bloques HTML de Shiki en `src/markdown-shiki/` |
-| `pnpm convert-images` | Convierte las capturas PNG de `assets/img/clase-*` a AVIF |
+| `pnpm convert-images` | Convierte las capturas PNG de `src/assets/img/clase-*` a AVIF |
 | `pnpm build` | Limpia `dist/`, `app/` y markdown-shiki, regenera `app/` y minifica a `dist/` |
 | `pnpm preview` | Sirve `dist/` en local. El puerto de `.env` es el de partida |
 | `pnpm add:ts-nocheck` | Añade `// @ts-nocheck` a los JS de desarrollo que lo necesiten |
@@ -238,6 +238,7 @@ jquery-spa-with-method-load-from-jquery-v5/
 │   ├── components/                   # Header, navbar, footer y botones
 │   ├── scripts/                      # JS por página (Gulp lo publica en app/js)
 │   ├── scss/                         # Estilos (globals + páginas)
+│   ├── assets/                       # Imágenes, fuentes y favicons (Gulp lo publica en app/assets)
 │   ├── effects/effect-loading-page.js
 │   ├── libs/                         # jQuery clásico, themes y carga por módulo ESM
 │   ├── markdown-shiki/               # HTML Shiki generado (no editar a mano)
@@ -245,7 +246,6 @@ jquery-spa-with-method-load-from-jquery-v5/
 │
 ├── app/                              # Copia de desarrollo generada por Gulp
 ├── dist/                             # Build de producción minificado
-├── assets/                           # Imágenes, fuentes y favicons
 ├── docker/mysql/init/                # SQL del primer arranque del contenedor local
 ├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
 ├── types/                            # Tipos JSDoc del dominio

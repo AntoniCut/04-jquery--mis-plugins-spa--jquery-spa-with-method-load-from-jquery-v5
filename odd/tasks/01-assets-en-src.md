@@ -18,7 +18,7 @@ Rama: `spec-01-assets-en-src`. Entrega: una PR. Verificación: `pnpm refresh`, `
 - [x] T2 — S2 — inline — `spec-01-step-02`
 - [x] T3 — S3 — inline — `spec-01-step-03`
 - [x] T4 — S4 — inline — `spec-01-step-04`
-- [ ] T5 — S5 — inline
+- [x] T5 — S5 — inline — `spec-01-step-05`
 - [ ] T6 — S6 — inline
 
 ## Log
@@ -29,3 +29,4 @@ Rama: `spec-01-assets-en-src`. Entrega: una PR. Verificación: `pnpm refresh`, `
 - L4 (2026-11-22): el usuario reporta "no se ven los logos del header" tras T2. Era el estado intermedio esperado: se corrige en T3.
 - L5 (2026-11-22): T3. 16 URLs cambiadas (7 en el header, 7 en el footer, 2 en el navbar de themes). Tras recargar `pnpm dev`: 0 errores en consola, los 7 logos del layout responden desde `app/assets/img/logos/...` y cada URL se pide una sola vez. Dos `<img loading="lazy">` de `#linksThemesContainer` quedan sin descargar porque ese menú está cerrado; su URL es la correcta.
 - L6 (2026-11-22): T4. Eliminé el bloque `paths.root` entero (solo tenía `assetsDir` y `assets`), la tarea `copyRootAssetsToDist` y su uso en `build`, y `'assets/**/*'` de `BROWSER_SYNC_FILES`. `node --check` pasa en los dos archivos. `pnpm build` termina con código 0, `diff -rq src/assets dist/app/assets` no muestra diferencias y `dist/assets/` no existe.
+- L7 (2026-11-22): T5. `pnpm code-highlight` genera 59 bloques sin diferencias con lo commiteado. La única aparición de `assets/` en `src/markdown-shiki/` es el comentario del plugin, que queda fuera de alcance. README: `assets/` pasa al árbol de `src/` y el comando `convert-images` apunta a `src/assets/img/clase-*`. Lo mismo en `scriptsDoc.convert-images` de `package.json`.
