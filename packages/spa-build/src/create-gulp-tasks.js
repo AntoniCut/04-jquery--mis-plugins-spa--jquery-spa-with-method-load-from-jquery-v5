@@ -1280,7 +1280,7 @@ const minifyAllJs = () => {
     //  -----  minificar el javascript de app  -----
     return src([paths.app.js, paths.app.jsNoMap], { base: '.', allowEmpty: true })
         .pipe(safePipe())
-        .pipe(/** @type {import('stream').Transform} */ (terser(/** @type {Record<string, never>} */ ({}), /** @type {Record<string, never>} */ ({}))))
+        .pipe(terser())
         .pipe(validateFiles('minifyAllJs'))
         .pipe(dest(paths.distRoot));
 };
