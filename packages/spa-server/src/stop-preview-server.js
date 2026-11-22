@@ -18,8 +18,8 @@ const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 8765);
 /** - `puertos candidatos: el de partida y los siguientes que prueba preview-server.js si está ocupado` */
 const PREVIEW_SERVER_PORTS = getPortRange(PREVIEW_SERVER_PORT);
 
-/** - `guion del servidor de preview dentro de server/` */
-const PREVIEW_SERVER_SCRIPT = 'server/preview-server.js';
+/** - `fragmento del comando que identifica preview-server en el proceso` */
+const PREVIEW_SERVER_SCRIPT = 'packages/spa-server/src/preview-server.js';
 
 /** - `etiqueta legible de la instancia para los mensajes` */
 const PREVIEW_SERVER_LABEL = 'preview';
@@ -33,7 +33,7 @@ const PROJECT_ROOT = process.cwd();
  * ----------------------
  * -----  `main()`  -----
  * ----------------------
- * - Detiene la instancia activa de server/preview-server.js asociada al entorno local.
+ * - Detiene la instancia activa de preview-server.js asociada al entorno local.
  * @return {Promise<void>}
  */
 const main = async () => {

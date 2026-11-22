@@ -18,8 +18,8 @@ const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 9876);
 /** - `puertos candidatos: el de partida y los siguientes que prueba dev-server.js si está ocupado` */
 const DEV_SERVER_PORTS = getPortRange(DEV_SERVER_PORT);
 
-/** - `guion del servidor de desarrollo dentro de server/` */
-const DEV_SERVER_SCRIPT = 'server/dev-server.js';
+/** - `fragmento del comando que identifica dev-server en el proceso` */
+const DEV_SERVER_SCRIPT = 'packages/spa-server/src/dev-server.js';
 
 /** - `etiqueta legible de la instancia para los mensajes` */
 const DEV_SERVER_LABEL = 'desarrollo';
@@ -33,7 +33,7 @@ const PROJECT_ROOT = process.cwd();
  * ----------------------
  * -----  `main()`  -----
  * ----------------------
- * - Detiene la instancia activa de server/dev-server.js asociada al entorno local.
+ * - Detiene la instancia activa de dev-server.js asociada al entorno local.
  * @return {Promise<void>}
  */
 const main = async () => {

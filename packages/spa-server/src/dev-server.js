@@ -14,12 +14,6 @@ import browserSync from 'browser-sync';
 //  -----  servidor http  -----
 import express from 'express';
 
-//  -----  health y consulta mysql, el mismo router que producción  -----
-import { createApiRouter } from '../../../api/src/mysql-query.js';
-
-//  -----  crud en memoria de la página express  -----
-import { createTasksRouter } from '../../../api/src/tasks-router.js';
-
 //  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
 
@@ -28,6 +22,9 @@ import fs from 'node:fs';
 
 //  -----  unir rutas  -----
 import path from 'node:path';
+
+//  -----  convertir rutas absolutas a url para import dinámico  -----
+import { pathToFileURL } from 'node:url';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
 import { base } from './site-base.js';
@@ -42,11 +39,43 @@ const DEV_ROUTE_BASE = base;
 /** - `puerto público de BrowserSync` */
 const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 9876);
 
-/** - `raíz del proyecto` */
+/** - `raíz del proyecto donde corre pnpm dev (process.cwd())` */
 const PROJECT_ROOT = process.cwd();
 
 /** - `entrada principal de la SPA` */
 const SPA_ENTRY_FILE = path.join(PROJECT_ROOT, 'index.html');
+
+
+
+/**
+ * ---------------------------------------------------
+ * -----  `loadProjectApiRouters(projectRoot)`  -----
+ * ---------------------------------------------------
+ * - Carga los routers demo de `api/` del proyecto sin importar desde `src/`.
+ * @param {string} projectRoot - Raíz del proyecto consumidor.
+ * @return {Promise<{ createApiRouter: () => import('express').Router, createTasksRouter: () => import('express').Router }>} - Fábricas de routers del demo.
+ */
+const loadProjectApiRouters = async (projectRoot) => {
+
+    /** - `url del módulo mysql-query del proyecto` */
+    const mysqlQueryModuleUrl = pathToFileURL(path.join(projectRoot, 'api/src/mysql-query.js')).href;
+
+    /** - `url del módulo tasks-router del proyecto` */
+    const tasksRouterModuleUrl = pathToFileURL(path.join(projectRoot, 'api/src/tasks-router.js')).href;
+
+    /** - `módulo de consulta mysql del demo` */
+    const mysqlQueryModule = await import(mysqlQueryModuleUrl);
+
+    /** - `módulo crud de tareas del demo` */
+    const tasksRouterModule = await import(tasksRouterModuleUrl);
+
+    //  -----  devolver las fábricas que exporta cada módulo  -----
+    return {
+
+        createApiRouter: mysqlQueryModule.createApiRouter,
+        createTasksRouter: tasksRouterModule.createTasksRouter,
+    };
+};
 
 /** 
  * -------------------------------------
@@ -468,6 +497,10 @@ if (devServerPort !== DEV_SERVER_PORT) {
     //  -----  mostrar el puerto ocupado y el puerto que se usa  -----
     console.log(`El puerto ${DEV_SERVER_PORT} está ocupado. Se usa el ${devServerPort}.`);
 }
+
+
+/** - `routers de api del proyecto, cargados desde projectRoot` */
+const { createApiRouter, createTasksRouter } = await loadProjectApiRouters(PROJECT_ROOT);
 
 
 

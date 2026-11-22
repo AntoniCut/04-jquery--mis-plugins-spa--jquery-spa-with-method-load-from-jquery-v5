@@ -33,8 +33,11 @@ const DEV_ROUTE_BASE = base;
 /** - `puerto público del preview` */
 const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 8765);
 
+/** - `raíz del proyecto donde corre pnpm preview (process.cwd())` */
+const PROJECT_ROOT = process.cwd();
+
 /** - `raíz del build de producción` */
-const DIST_ROOT = path.join(process.cwd(), 'dist');
+const DIST_ROOT = path.join(PROJECT_ROOT, 'dist');
 
 /** - `index compilado de la SPA` */
 const DIST_INDEX_FILE = path.join(DIST_ROOT, 'index.html');
