@@ -1,6 +1,6 @@
 # SPEC 05 — `@antonydev/spa-loading-effect`
 
-> **Estado:** Borrador
+> **Estado:** Implementado
 > **Depende de:** SPEC 04 implementada (`specs/04-jq-spa-core.md`)
 > **Referencia:** SPEC 05 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22
@@ -8,7 +8,7 @@
 
 ## Por qué existe
 
-Tras SPEC 04, el arranque jQuery/SPA vive en jq-spa-core, pero el **loader inicial** sigue en `src/effects/effect-loading-page.js` y se copia a `app/effects/`. Es el mismo patrón que el core: motor reutilizable que el desarrollador no debería duplicar en cada proyecto copiado del prototipo.
+Tras SPEC 04, el arranque jQuery/SPA vive en jq-spa-core. El **loader inicial** sigue el mismo patrón: paquete `@antonydev/spa-loading-effect`, runtime en `app/framework/spa-loading-effect/` e import map (ya no `src/effects/` ni `app/effects/`).
 
 El efecto depende del DOM de `index.html` (`#loader`, `#layout`) y de los eventos que emite el plugin SPA (`spa:first-route-loaded`, `spa:route-load-error`). Esa dependencia es contractual, no un acoplamiento de imports entre paquetes.
 
@@ -67,14 +67,24 @@ El efecto depende del DOM de `index.html` (`#loader`, `#layout`) y de los evento
 
 ## Criterios de aceptación
 
-- [ ] Existe `packages/spa-loading-effect/` como `@antonydev/spa-loading-effect` en el workspace.
-- [ ] No queda `src/effects/effect-loading-page.js` (carpeta `src/effects/` vacía o eliminada).
-- [ ] `src/main.js` importa `effectLoadingPage` solo por `@antonydev/spa-loading-effect`.
-- [ ] `index.html` incluye la entrada del import map antes de `app/main.js`.
-- [ ] Tras `pnpm refresh`, existe `app/framework/spa-loading-effect/` y el loader se oculta al cargar la primera ruta (o por timeout/error).
-- [ ] `pnpm dev` y `pnpm preview` (tras `build`): misma UX del loader que antes de SPEC 05.
-- [ ] `pnpm build` incluye el framework en `dist/app/framework/spa-loading-effect/`.
-- [ ] Ningún archivo del paquete importa estáticamente rutas bajo `src/` del proyecto.
+- [x] Existe `packages/spa-loading-effect/` como `@antonydev/spa-loading-effect` en el workspace.
+- [x] No queda `src/effects/effect-loading-page.js` (carpeta `src/effects/` vacía o eliminada).
+- [x] `src/main.js` importa `effectLoadingPage` solo por `@antonydev/spa-loading-effect`.
+- [x] `index.html` incluye la entrada del import map antes de `app/main.js`.
+- [x] Tras `pnpm refresh`, existe `app/framework/spa-loading-effect/` y el loader se oculta al cargar la primera ruta (o por timeout/error).
+- [x] `pnpm dev` y `pnpm preview` (tras `build`): misma UX del loader que antes de SPEC 05.
+- [x] `pnpm build` incluye el framework en `dist/app/framework/spa-loading-effect/`.
+- [x] Ningún archivo del paquete importa estáticamente rutas bajo `src/` del proyecto.
+
+## Verificación (paso 5)
+
+| Comando / comprobación | Resultado (2026-11-22) |
+|---|---|
+| `pnpm refresh` | `app/framework/spa-loading-effect/effect-loading-page.js`; sin `app/effects/` |
+| `pnpm build` | `dist/index.html` conserva `importmap` con `@antonydev/spa-loading-effect`; `dist/app/framework/spa-loading-effect/` presente |
+| `rg "from ['\\\"].*src/" packages/spa-loading-effect` | Sin coincidencias |
+| `src/main.js` / `index.html` | Import y map alineados con la spec |
+| Dev / preview en navegador | Validar que el loader se oculta al cargar la primera ruta (manual) |
 
 ## Decisiones
 

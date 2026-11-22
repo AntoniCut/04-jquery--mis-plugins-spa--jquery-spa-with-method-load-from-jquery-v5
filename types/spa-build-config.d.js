@@ -84,6 +84,8 @@
  * @typedef {Object} SpaBuildFramework - Fuentes del runtime del navegador en workspace (SPEC 04).
  * @property {string} jqSpaCore - Raíz publicable bajo packages/jq-spa-core/src (libs y plugin SPA).
  * @property {string} [jqSpaCoreApp] - Destino bajo app/ (p. ej. app/framework/jq-spa-core).
+ * @property {string} [spaLoadingEffect] - Raíz publicable del paquete spa-loading-effect (SPEC 05).
+ * @property {string} [spaLoadingEffectApp] - Destino bajo app/framework/spa-loading-effect/.
  */
 
 

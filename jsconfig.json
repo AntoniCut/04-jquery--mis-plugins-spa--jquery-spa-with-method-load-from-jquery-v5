@@ -21,6 +21,7 @@
         "packages/spa-server",
         "packages/spa-build",
         "packages/jq-spa-core",
+        "packages/spa-loading-effect",
         "api"
     ],
     "exclude": [

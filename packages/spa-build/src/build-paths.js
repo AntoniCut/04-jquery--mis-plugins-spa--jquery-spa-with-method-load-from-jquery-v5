@@ -55,6 +55,12 @@ export const buildPaths = (config) => {
     /** - `destino del framework en app/ para el import map` */
     const jqSpaCoreApp = config.framework?.jqSpaCoreApp ?? path.join(app, 'framework', 'jq-spa-core');
 
+    /** - `raíz publicable del loading effect (SPEC 05)` */
+    const spaLoadingEffectRoot = config.framework?.spaLoadingEffect ?? 'packages/spa-loading-effect/src';
+
+    /** - `destino del loading effect en app/framework` */
+    const spaLoadingEffectApp = config.framework?.spaLoadingEffectApp ?? path.join(app, 'framework', 'spa-loading-effect');
+
     //  -----  devolver el mapa de rutas del pipeline  -----
     return {
 
@@ -103,10 +109,6 @@ export const buildPaths = (config) => {
             componentsDir: path.join(src, 'components'),
 
             components: path.posix.join(src, 'components', '**/*'),
-
-            effectsDir: path.join(src, 'effects'),
-
-            effects: path.posix.join(src, 'effects', '**/*'),
 
             fontsDir: path.join(src, 'fonts'),
 
@@ -185,6 +187,16 @@ export const buildPaths = (config) => {
             vendorJqueryDest: path.posix.join(jqSpaCoreApp, 'libs', 'jquery-module', 'jquery'),
 
             vendorJqueryUiDest: path.posix.join(jqSpaCoreApp, 'libs', 'jquery-module', 'jquery-ui'),
+
+        },
+
+        spaLoadingEffect: {
+
+            root: spaLoadingEffectRoot,
+
+            appDir: spaLoadingEffectApp,
+
+            publish: path.posix.join(spaLoadingEffectRoot, '**/*'),
 
         },
 

@@ -31,7 +31,7 @@ export const {
     copyAssets,
     copyConfig,
     copyComponents,
-    copyEffects,
+    copyFrameworkSpaLoadingEffect,
     copyFonts,
     copyLibs,
     copyMarkdownShiki,

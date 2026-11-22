@@ -85,6 +85,8 @@ const spaBuildConfig = {
     framework: {
         jqSpaCore: 'packages/jq-spa-core/src',
         jqSpaCoreApp: 'app/framework/jq-spa-core',
+        spaLoadingEffect: 'packages/spa-loading-effect/src',
+        spaLoadingEffectApp: 'app/framework/spa-loading-effect',
     },
 
     extraCopy: [],

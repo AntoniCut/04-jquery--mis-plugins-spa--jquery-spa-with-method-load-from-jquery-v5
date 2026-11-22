@@ -47,8 +47,9 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 ## Plugin y arranque
 
 - El motor del navegador es **`@antonydev/jq-spa-core`** (`packages/jq-spa-core/`). Fuente en workspace; runtime en **`app/framework/jq-spa-core/`** tras `pnpm refresh` (`copyFrameworkJqSpaCore` + vendor jQuery/UI dentro del framework).
-- `index.html` lleva **import map** antes de `<script type="module" src="app/main.js">` (`@antonydev/jq-spa-core` → `app/framework/jq-spa-core/start.js` y subpath `/`).
-- `src/main.js` llama a `start({ isJQueryModule, initSpa: spa })`; la lógica de carga jQuery/plugin está en `packages/jq-spa-core/src/start.js`.
+- El loader inicial es **`@antonydev/spa-loading-effect`** (`packages/spa-loading-effect/`). Runtime en **`app/framework/spa-loading-effect/`** tras `pnpm refresh` (`copyFrameworkSpaLoadingEffect`). No existe `src/effects/` ni copia a `app/effects/`.
+- `index.html` lleva **import map** antes de `<script type="module" src="app/main.js">` (`@antonydev/jq-spa-core` → `./app/framework/jq-spa-core/start.js`, subpath `/`, y `@antonydev/spa-loading-effect` → `./app/framework/spa-loading-effect/effect-loading-page.js`; URLs con `./` respecto al `<base>`).
+- `src/main.js` llama primero `effectLoadingPage()` (import map) y después `start({ isJQueryModule, initSpa: spa })`; la lógica de carga jQuery/plugin está en `packages/jq-spa-core/src/start.js`.
 - La configuración del sitio es solo `src/spa/spa.js`. No metas opciones de proyecto dentro del plugin. `loadJQueryUILib` se importa por el import map (`@antonydev/jq-spa-core/libs/...`).
 - `defaultSettings` define los valores por defecto. `$.extend({}, defaultSettings, options)` produce `settings`.
 - Tras inyectar `components`, `actionsNavbar()` (dentro del plugin SPA) abre y cierra el menú principal y el de themes. El HTML y el SCSS están en `src/components/layout/layout-navbar.html` y `src/scss/components/layout/_layout-navbar.scss`. Themes CSS: `app/framework/jq-spa-core/libs/jquery/ui/themes/`.

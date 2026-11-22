@@ -640,12 +640,17 @@ const copyComponents = createCopyTask('copyComponents', { glob: paths.src.compon
 
 
 /**
- * -----------------------------
- * -----  `copyEffects()`  -----
- * -----------------------------
- * - Copia src/effects/ a app/effects/.
+ * ----------------------------------------
+ * -----  `copyFrameworkSpaLoadingEffect()`  -----
+ * ----------------------------------------
+ * - Copia packages/spa-loading-effect/src/ a app/framework/spa-loading-effect/ (SPEC 05).
  */
-const copyEffects = createCopyTask('copyEffects', { glob: paths.src.effects, checkPath: paths.src.effectsDir });
+const copyFrameworkSpaLoadingEffect = createCopyTask('copyFrameworkSpaLoadingEffect', {
+    glob: paths.spaLoadingEffect.publish,
+    checkPath: paths.spaLoadingEffect.root,
+    base: paths.spaLoadingEffect.root,
+    destDir: paths.spaLoadingEffect.appDir,
+});
 
 
 
@@ -996,9 +1001,9 @@ const buildSources = parallel(
     copyAssets,
     copyConfig,
     copyComponents,
-    copyEffects,
     copyFonts,
     copyFrameworkJqSpaCore,
+    copyFrameworkSpaLoadingEffect,
     copyVendorModules,
     copyPages,
     copyPagesComponents,
@@ -1060,8 +1065,8 @@ const watchTask = () => {
         [paths.src.assets, copyAssets],
         [[paths.packages.spaServerSiteBaseFile, paths.src.config], copyConfig],
         [paths.src.components, copyComponents],
-        [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],
+        [paths.spaLoadingEffect.publish, copyFrameworkSpaLoadingEffect],
         [paths.jqSpaCore.publish, copyFrameworkJqSpaCore],
         [['package.json', 'pnpm-lock.yaml'], copyVendorModules],
         [paths.src.markdownShiki, copyMarkdownShiki],
@@ -1423,9 +1428,9 @@ const build = series(
         copyAssets,
         copyConfig,
         copyComponents,
-        copyEffects,
         copyFonts,
         copyFrameworkJqSpaCore,
+        copyFrameworkSpaLoadingEffect,
         copyMarkdownShiki,
         copyPages,
         copyPagesComponents,

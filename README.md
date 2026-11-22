@@ -148,24 +148,28 @@ Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo res
 
 ## Uso del plugin
 
-El **motor** (jQuery, loaders, plugin SPA v5 y bootstrap) vive en `@antonydev/jq-spa-core` (`packages/jq-spa-core/`). Gulp lo publica en `app/framework/jq-spa-core/` y `index.html` declara un **import map** antes de `app/main.js`:
+El **motor** (jQuery, loaders, plugin SPA v5 y bootstrap) vive en `@antonydev/jq-spa-core` (`packages/jq-spa-core/`). Gulp lo publica en `app/framework/jq-spa-core/`. El **loader** inicial vive en `@antonydev/spa-loading-effect` (`packages/spa-loading-effect/`) y se publica en `app/framework/spa-loading-effect/`. `index.html` declara un **import map** antes de `app/main.js`:
 
 ```html
 <script type="importmap">
 {
     "imports": {
         "@antonydev/jq-spa-core": "./app/framework/jq-spa-core/start.js",
-        "@antonydev/jq-spa-core/": "./app/framework/jq-spa-core/"
+        "@antonydev/jq-spa-core/": "./app/framework/jq-spa-core/",
+        "@antonydev/spa-loading-effect": "./app/framework/spa-loading-effect/effect-loading-page.js"
     }
 }
 </script>
 ```
 
-`src/main.js` solo aplica el loader visual, reexporta `base` y delega en `start()`:
+`src/main.js` aplica el loader, reexporta `base` y delega en `start()`:
 
 ```javascript
+import { effectLoadingPage } from '@antonydev/spa-loading-effect';
 import { start } from '@antonydev/jq-spa-core';
 import { spa } from './spa/spa.js';
+
+effectLoadingPage();
 
 start({ isJQueryModule: true, initSpa: spa });
 ```
@@ -246,7 +250,6 @@ jquery-spa-with-method-load-from-jquery-v5/
 │   ├── scripts/                      # JS por página (Gulp lo publica en app/js)
 │   ├── scss/                         # Estilos (globals + páginas)
 │   ├── assets/                       # Imágenes, fuentes y favicons (Gulp lo publica en app/assets)
-│   ├── effects/effect-loading-page.js
 │   ├── markdown-shiki/               # HTML Shiki generado (no editar a mano)
 │   └── services/                     # PHP de la consulta MySQL (load-env.php, mysql/query.php)
 │
@@ -260,7 +263,8 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
 ├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki y conversión AVIF
 ├── packages/jq-spa-core/             # @antonydev/jq-spa-core → app/framework/jq-spa-core/
-├── spa.config.js                     # Carpetas, framework.jqSpaCore y vendors (plantilla: .example)
+├── packages/spa-loading-effect/      # @antonydev/spa-loading-effect → app/framework/spa-loading-effect/
+├── spa.config.js                     # Carpetas, framework.* y vendors (plantilla: .example)
 └── gulpfile.js                       # Registro fino: dotenv + spa.config + @antonydev/spa-build
 ```
 

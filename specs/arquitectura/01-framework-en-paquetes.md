@@ -23,7 +23,7 @@ El día que se publiquen en npm solo cambia esa versión.
 |---|---|---|
 | `@antonydev/spa-server` | `server/` (dev, preview, stop, puerto libre) y `src/config/site-base.js` | Node, solo local |
 | `@antonydev/spa-build` | Tareas de `gulpfile.js` y motor de `generate-markdown-shiki.js` | Node, build |
-| `@antonydev/spa-loading-effect` | `src/effects/effect-loading-page.js` | Navegador |
+| `@antonydev/spa-loading-effect` | `packages/spa-loading-effect/src/` → `app/framework/spa-loading-effect/` | Navegador |
 | `@antonydev/jq-spa-core` | `packages/jq-spa-core/src/` (libs jQuery, loaders ESM, plugin SPA v5, `start()`) → `app/framework/jq-spa-core/` | Navegador |
 
 `spa-server`, `spa-build` y `spa-loading-effect` no dependen de jQuery y se diseñan para que JS-SPA-V5 los consuma igual.

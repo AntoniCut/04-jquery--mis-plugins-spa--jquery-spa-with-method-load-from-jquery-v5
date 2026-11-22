@@ -8,8 +8,11 @@
 //  -----  tipos del paquete jq-spa-core  -----
 /// <reference path="../types/jq-spa-core-package.d.ts" />
 
-//  -----  efecto de carga inicial (SPEC 05 moverá esto)  -----
-import { effectLoadingPage } from './effects/effect-loading-page.js';
+//  -----  tipos del paquete spa-loading-effect  -----
+/// <reference path="../types/spa-loading-effect-package.d.ts" />
+
+//  -----  efecto de carga inicial (framework spa-loading-effect)  -----
+import { effectLoadingPage } from '@antonydev/spa-loading-effect';
 
 //  -----  arranque del motor en el framework  -----
 import { start } from '@antonydev/jq-spa-core';
