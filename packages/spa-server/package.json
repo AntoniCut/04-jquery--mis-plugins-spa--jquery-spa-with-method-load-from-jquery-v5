@@ -1,0 +1,22 @@
+{
+    "name": "@antonydev/spa-server",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Servidores de desarrollo y preview locales para la SPA (piloto del workspace)",
+    "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        "./site-base.js": "./src/site-base.js",
+        "./dev-server.js": "./src/dev-server.js",
+        "./preview-server.js": "./src/preview-server.js"
+    },
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "browser-sync": "catalog:",
+        "dotenv": "catalog:",
+        "express": "catalog:"
+    }
+}
