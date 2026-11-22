@@ -57,7 +57,6 @@ const SPA_ENTRY_FILE = path.join(PROJECT_ROOT, 'index.html');
 const BROWSER_SYNC_FILES = [
     'index.html',
     'app/**/*',
-    'assets/**/*',
     '!app/**/*.map',
 ];
 

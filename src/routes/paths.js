@@ -19,7 +19,7 @@ export { base };
  * - `path para las rutas de la SPA` 
  */
 export const paths = {
-    favicon: `${base}/assets/favicon`,
+    favicon: `${base}/app/assets/favicon`,
     layoutHeader: `${base}/app/components/layout/layout-header.html`,
     btnNavbar: `${base}/app/components/buttons/btn-navbar.html`,
     btnNavbarThemesJQueryUI: `${base}/app/components/buttons/btn-navbar-themes-jquery-ui.html`,

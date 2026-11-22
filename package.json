@@ -29,7 +29,7 @@
         "stop:dev": "Cierra el servidor de desarrollo si sigue en marcha.",
         "server": "Alias de serve:dev.",
         "code-highlight": "Genera los bloques HTML de Shiki en src/markdown-shiki/ a partir de las rutas.",
-        "convert-images": "Convierte las capturas PNG de assets/img/clase-* a AVIF.",
+        "convert-images": "Convierte las capturas PNG de src/assets/img/clase-* a AVIF.",
         "build": "Limpia dist/, app/ y markdown-shiki, regenera app/ y minifica a dist/ para producción.",
         "preview": "Sirve dist/ en local y abre el navegador.",
         "stop:preview": "Cierra el servidor de preview si sigue en marcha.",
