@@ -7,7 +7,7 @@
 
 import { base } from '../routes/paths.js';
 import { routeManifest } from '../routes/route-manifest.js';
-import { loadJQueryUILib } from '../libs/jquery-module/loader/load-jquery-ui-by-import.js';
+import { loadJQueryUILib } from '@antonydev/jq-spa-core/libs/jquery-module/loader/load-jquery-ui-by-import.js';
 
 
 

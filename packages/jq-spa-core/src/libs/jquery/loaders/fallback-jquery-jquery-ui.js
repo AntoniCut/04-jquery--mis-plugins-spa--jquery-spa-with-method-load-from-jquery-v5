@@ -24,14 +24,14 @@ const cdnJQuery = cdnJQuery_4_0_0_min;
 
 
 /** @type {string}  `-----  Rutas locales  -  Utilizar Path Absoluto  -----`  */
-const localJQuery = "/app/libs/jquery/local/jquery-4.0.0-beta.min.js";
+const localJQuery = 'app/framework/jq-spa-core/libs/jquery/core/local/jquery-4.0.0-beta.min.js';
 
 
 /** `-----  Configuración de CDN de jQuery UI  -----` */
 const cdnJQueryUI = cdnJQueryUI_1_14_1_min;
 
 /** @type {string}  `-----  Rutas locales  -  Utilizar Path Absoluto  -----`  */
-const localJQueryUI = "/app/libs/jquery-ui/local/jquery-ui-1.14.1.min.js";
+const localJQueryUI = 'app/framework/jq-spa-core/libs/jquery/ui/local/jquery-ui-1.14.1.min.js';
 
 
 /**

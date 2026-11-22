@@ -663,12 +663,13 @@ const copyFonts = createCopyTask('copyFonts', { glob: paths.src.fonts, checkPath
  * --------------------------
  * -----  `copyLibs()`  -----
  * --------------------------
- * - Copia packages/jq-spa-core/src/libs/ a app/libs/ (SPEC 04).
+ * - Copia packages/jq-spa-core/src/ a app/framework/jq-spa-core/ (SPEC 04 paso 4).
  */
-const copyLibs = createCopyTask('copyLibs', {
-    glob: paths.jqSpaCore.libs,
-    checkPath: paths.jqSpaCore.libsDir,
+const copyFrameworkJqSpaCore = createCopyTask('copyFrameworkJqSpaCore', {
+    glob: paths.jqSpaCore.publish,
+    checkPath: paths.jqSpaCore.root,
     base: paths.jqSpaCore.root,
+    destDir: paths.jqSpaCore.appDir,
     binary: true,
 });
 
@@ -721,20 +722,6 @@ const copyPdfs = createCopyTask('copyPdfs', { glob: paths.src.pdfs, checkPath: p
  * - Copia src/plugins/ a app/plugins/.
  */
 const copyPlugins = createCopyTask('copyPlugins', { glob: paths.src.plugins, checkPath: paths.src.pluginsDir });
-
-
-
-/**
- * -----------------------------------------
- * -----  `copyJqSpaCorePlugins()`  -----
- * -----------------------------------------
- * - Copia el plugin SPA v5 del paquete jq-spa-core a app/plugins/.
- */
-const copyJqSpaCorePlugins = createCopyTask('copyJqSpaCorePlugins', {
-    glob: paths.jqSpaCore.plugins,
-    checkPath: paths.jqSpaCore.pluginsDir,
-    base: paths.jqSpaCore.root,
-});
 
 
 
@@ -802,13 +789,13 @@ const copyScripts = createCopyTask('copyScripts', {
  * ----------------------------------
  * -----  `copyVendorJQuery()`  -----
  * ----------------------------------
- * - Copia el módulo minificado de jQuery a app/libs/jquery-module/jquery/.
+ * - Copia el módulo minificado de jQuery al árbol framework/jq-spa-core.
  */
 const copyVendorJQuery = createCopyTask('copyVendorJQuery', {
     glob: paths.vendor.jqueryDistModule,
     checkPath: paths.vendor.jqueryDistModuleDir,
     base: paths.vendor.jqueryDistModuleDir,
-    destDir: path.posix.join(paths.appRoot, 'libs', 'jquery-module', 'jquery'),
+    destDir: paths.jqSpaCore.vendorJqueryDest,
 });
 
 
@@ -817,13 +804,13 @@ const copyVendorJQuery = createCopyTask('copyVendorJQuery', {
  * ------------------------------------
  * -----  `copyVendorJQueryUI()`  -----
  * ------------------------------------
- * - Copia los módulos de jQuery UI usados por draggable y tooltip a app/libs/jquery-module/jquery-ui/.
+ * - Copia los módulos jQuery UI usados al árbol framework/jq-spa-core.
  */
 const copyVendorJQueryUI = createCopyTask('copyVendorJQueryUI', {
     glob: paths.vendor.jqueryUIUi,
     checkPath: paths.vendor.jqueryUIUiDir,
     base: paths.vendor.jqueryUIDir,
-    destDir: path.posix.join(paths.appRoot, 'libs', 'jquery-module', 'jquery-ui'),
+    destDir: paths.jqSpaCore.vendorJqueryUiDest,
 });
 
 
@@ -1011,13 +998,12 @@ const buildSources = parallel(
     copyComponents,
     copyEffects,
     copyFonts,
-    copyLibs,
+    copyFrameworkJqSpaCore,
     copyVendorModules,
     copyPages,
     copyPagesComponents,
     copyPdfs,
     copyPlugins,
-    copyJqSpaCorePlugins,
     copyRoutes,
     copySpa,
     copyServices,
@@ -1076,8 +1062,7 @@ const watchTask = () => {
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],
-        [paths.jqSpaCore.libs, copyLibs],
-        [paths.jqSpaCore.plugins, copyJqSpaCorePlugins],
+        [paths.jqSpaCore.publish, copyFrameworkJqSpaCore],
         [['package.json', 'pnpm-lock.yaml'], copyVendorModules],
         [paths.src.markdownShiki, copyMarkdownShiki],
         [paths.src.pages, copyPages],
@@ -1440,13 +1425,12 @@ const build = series(
         copyComponents,
         copyEffects,
         copyFonts,
-        copyLibs,
+        copyFrameworkJqSpaCore,
         copyMarkdownShiki,
         copyPages,
         copyPagesComponents,
         copyPdfs,
         copyPlugins,
-        copyJqSpaCorePlugins,
         copyRoutes,
         copySpa,
         copyServices,

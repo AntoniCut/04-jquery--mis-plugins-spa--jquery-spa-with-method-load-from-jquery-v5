@@ -52,6 +52,9 @@ export const buildPaths = (config) => {
     /** - `raíz publicable del core del navegador (SPEC 04)` */
     const jqSpaCoreRoot = config.framework?.jqSpaCore ?? 'packages/jq-spa-core/src';
 
+    /** - `destino del framework en app/ para el import map` */
+    const jqSpaCoreApp = config.framework?.jqSpaCoreApp ?? path.join(app, 'framework', 'jq-spa-core');
+
     //  -----  devolver el mapa de rutas del pipeline  -----
     return {
 
@@ -167,6 +170,10 @@ export const buildPaths = (config) => {
 
             root: jqSpaCoreRoot,
 
+            appDir: jqSpaCoreApp,
+
+            publish: path.posix.join(jqSpaCoreRoot, '**/*'),
+
             libsDir: path.join(jqSpaCoreRoot, 'libs'),
 
             libs: path.posix.join(jqSpaCoreRoot, 'libs', '**/*'),
@@ -174,6 +181,10 @@ export const buildPaths = (config) => {
             pluginsDir: path.join(jqSpaCoreRoot, 'plugins'),
 
             plugins: path.posix.join(jqSpaCoreRoot, 'plugins', '**/*'),
+
+            vendorJqueryDest: path.posix.join(jqSpaCoreApp, 'libs', 'jquery-module', 'jquery'),
+
+            vendorJqueryUiDest: path.posix.join(jqSpaCoreApp, 'libs', 'jquery-module', 'jquery-ui'),
 
         },
 

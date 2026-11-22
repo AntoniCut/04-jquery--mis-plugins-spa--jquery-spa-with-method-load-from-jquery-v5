@@ -84,6 +84,7 @@ const spaBuildConfig = {
 
     framework: {
         jqSpaCore: 'packages/jq-spa-core/src',
+        jqSpaCoreApp: 'app/framework/jq-spa-core',
     },
 
     extraCopy: [],
