@@ -509,22 +509,6 @@ export const clean = parallel(cleanDist, cleanApp, cleanMarkdownShiki);
 
 
 /**
- * ------------------------------------
- * -----  type `CopyTaskOptions`  -----
- * ------------------------------------
- * @typedef {Object} CopyTaskOptions
- * @property {string | string[]} glob - Glob o globs de origen.
- * @property {string} checkPath - Ruta que debe existir antes de copiar.
- * @property {string} [base] - Base de gulp.src. Por defecto paths.srcRoot.
- * @property {string} [destDir] - Directorio destino. Por defecto paths.appRoot.
- * @property {boolean} [binary] - Lee el archivo sin codificación de texto.
- * @property {boolean} [isFile] - checkPath es un archivo, no un directorio.
- * @property {string | string[]} [exclude] - Globs que no se copian.
- */
-
-
-
-/**
  * ------------------------------------------
  * -----  `createCopyTask(name, opts)`  -----
  * ------------------------------------------
@@ -584,17 +568,6 @@ const createCopyTask = (name, opts) => {
     *  -----------------------------------  *
 */
 
-
-
-/**
- * ----------------------------------
- * -----  type `ImageAvifSize`  -----
- * ----------------------------------
- * - Tamaños AVIF generados por cada PNG.
- * @typedef {Object} ImageAvifSize
- * @property {number} width - Ancho máximo de salida.
- * @property {number} height - Alto máximo de salida.
- */
 
 
 /**

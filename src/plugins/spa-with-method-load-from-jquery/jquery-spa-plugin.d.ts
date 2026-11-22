@@ -6,12 +6,7 @@
 */
 
 
-import $ from "jquery";
-
-
-declare global {
-    
-    interface JQuery {
+interface JQuery {
         
         /**
          * ----------------------------------------------------
@@ -22,7 +17,5 @@ declare global {
          * @returns {JQuery} - `Retorna el objeto jQuery para encadenamiento`.
          */
         spaWithMethodLoadFromJQuery(options: ConfigOptionsSPA): JQuery;
-
-    }
 
 }

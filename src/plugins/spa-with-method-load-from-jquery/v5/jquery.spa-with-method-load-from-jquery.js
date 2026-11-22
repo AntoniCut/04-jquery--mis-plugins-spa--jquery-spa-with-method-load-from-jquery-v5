@@ -968,18 +968,6 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
 
 
             /**
-             * --------------------------------------
-             * -----  `RoutePreloadPayload` {}  -----
-             * --------------------------------------
-             * @typedef {Object} RoutePreloadPayload - Contenido HTML precargado por `preloadRouteContent` (FASE 1),
-             *   listo para inyectar de forma síncrona en `applyPreloadedContent` (FASE 2).
-             * @property {Array<{selector: string, hide: true} | {selector: string, url: string, html: string, hide?: false}>} components
-             * @property {Array<{target: string, url: string, html: string}>} pagesComponents
-             * @property {Array<{target: string, url: string, html: string}>} markdownShikiHtml
-             */
-
-
-            /**
              * ------------------------------------------
              * -----  `preloadRouteContent(route)`  -----
              * ------------------------------------------
