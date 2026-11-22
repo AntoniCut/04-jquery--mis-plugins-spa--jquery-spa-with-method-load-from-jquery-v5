@@ -12,7 +12,7 @@
         "serve:dev": "node packages/spa-server/src/dev-server.js",
         "stop:dev": "node packages/spa-server/src/stop-dev-server.js",
         "server": "pnpm run serve:dev",
-        "code-highlight": "node generate-markdown-shiki.js",
+        "code-highlight": "node packages/spa-build/src/generate-markdown-shiki.js",
         "convert-images": "gulp convertImages",
         "build": "gulp build",
         "preview": "node packages/spa-server/src/preview-server.js --open",

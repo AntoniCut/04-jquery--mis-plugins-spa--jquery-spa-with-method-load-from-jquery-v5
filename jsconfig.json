@@ -15,7 +15,6 @@
         "types",
         "src",
         "src/libs/jquery/**/cdn/*.min.js",
-        "generate-markdown-shiki.js",
         "gulpfile.js",
         "spa.config.js",
         "spa.config.js.example",

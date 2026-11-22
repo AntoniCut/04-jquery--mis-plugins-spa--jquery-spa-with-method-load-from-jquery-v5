@@ -48,7 +48,10 @@ import path from 'node:path';
 import sharp from 'sharp';
 
 //  -----  generar el html resaltado con shiki  -----
-import { generateMarkdownShiki } from './generate-markdown-shiki.js';
+import { generateMarkdownShiki } from '@antonydev/spa-build/generate-markdown-shiki.js';
+
+//  -----  opciones de build del proyecto  -----
+import spaConfig from './spa.config.js';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
 import { base } from '@antonydev/spa-server/site-base.js';
@@ -1173,7 +1176,7 @@ export const styles = parallel(css, cssPages);
 const generateShiki = async () => {
 
     //  -----  generar los bloques html de shiki  -----
-    await generateMarkdownShiki();
+    await generateMarkdownShiki({ projectRoot: process.cwd(), config: spaConfig });
 
 };
 
