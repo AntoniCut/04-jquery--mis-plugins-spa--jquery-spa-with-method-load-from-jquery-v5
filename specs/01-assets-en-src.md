@@ -1,6 +1,6 @@
 # SPEC 01 — `assets/` dentro de `src/`
 
-> **Estado:** Aprovado
+> **Estado:** AproBado
 > **Depende de:** ninguna (primera spec de `specs/arquitectura/01-framework-en-paquetes.md`)
 > **Fecha:** 2026-11-22
 > **Objetivo:** Mover `assets/` a `src/assets/` para que Gulp lo copie a `app/assets/` y todas las URLs de estáticos apunten a `app/`.
