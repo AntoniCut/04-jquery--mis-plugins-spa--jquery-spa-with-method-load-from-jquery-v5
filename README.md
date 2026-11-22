@@ -154,8 +154,8 @@ El **motor** (jQuery, loaders, plugin SPA v5 y bootstrap) vive en `@antonydev/jq
 <script type="importmap">
 {
     "imports": {
-        "@antonydev/jq-spa-core": "app/framework/jq-spa-core/start.js",
-        "@antonydev/jq-spa-core/": "app/framework/jq-spa-core/"
+        "@antonydev/jq-spa-core": "./app/framework/jq-spa-core/start.js",
+        "@antonydev/jq-spa-core/": "./app/framework/jq-spa-core/"
     }
 }
 </script>

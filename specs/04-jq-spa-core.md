@@ -87,7 +87,7 @@ El HTML del desarrollador declara algo equivalente (rutas relativas al `<base>`)
 <script type="importmap">
 {
     "imports": {
-        "@antonydev/jq-spa-core": "app/framework/jq-spa-core/start.js"
+        "@antonydev/jq-spa-core": "./app/framework/jq-spa-core/start.js"
     }
 }
 </script>
