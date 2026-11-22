@@ -125,7 +125,7 @@ Subpaths adicionales se añaden solo donde `app/spa/spa.js` u otros módulos del
 - [x] `src/main.js` solo orquesta `effectLoadingPage`, reexport de `base`, `start()` e `initSpa: spa` (sin funciones `loadJQueryModule` / `loadJQueryClassic` locales).
 - [x] `index.html` incluye import map **antes** del `<script type="module">` de `app/main.js`.
 - [x] Tras `pnpm refresh`, existe `app/framework/jq-spa-core/` y el navegador carga la SPA sin error de resolución de módulos en consola.
-- [ ] `pnpm dev` y `pnpm preview` (tras `build`): home + rutas del manifiesto sin 404 del shell; jQuery UI (datepicker, draggable, tooltips) sigue funcionando en las páginas que lo usan.
+- [x] `pnpm dev` y `pnpm preview` (tras `build`): home + rutas del manifiesto sin 404 del shell; jQuery UI (datepicker, draggable, tooltips) sigue funcionando en las páginas que lo usan.
 - [x] `pnpm build` genera `dist/` con import map y carpeta `dist/app/framework/jq-spa-core/` (o rutas equivalentes bajo `dist/app/`).
 - [x] `src/plugins/actions-navbars-with-jquery-jquery-ui/` sigue en el repo y **no** se importa desde el core ni desde `main.js`.
 - [x] Ningún archivo en `packages/jq-spa-core/src/` importa estáticamente rutas bajo `src/` del proyecto (salvo `import()` dinámico si en el futuro hiciera falta, no requerido aquí).

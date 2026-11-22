@@ -95,7 +95,7 @@ La ejecución de cada spec se sigue con ODD en `odd/tasks/<spec>.md`, que refere
 
 ## Decisiones pendientes
 
-- `src/plugins/actions-navbars-with-jquery-jquery-ui/`: la SPA v5 no lo importa. Se decide en SPEC 04 si queda como ejemplo de plugin de terceros o se elimina.
+- `src/plugins/actions-navbars-with-jquery-jquery-ui/`: **resuelto en SPEC 04** — queda en `src/plugins/` como ejemplo; no lo importa `main.js`.
 
 ## Riesgos
 
