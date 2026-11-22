@@ -1,6 +1,6 @@
 /*
     *  ------------------------------------------------------------------------  *
-    *  -----  stop-preview-server.js  --  /server/stop-preview-server.js  -----  *
+    *  -----  stop-preview-server.js  --  packages/spa-server/src/stop-preview-server.js  -----  *
     *  ------------------------------------------------------------------------  *
 */
 

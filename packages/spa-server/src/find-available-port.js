@@ -1,6 +1,6 @@
 /*
     *  ------------------------------------------------------------------------  *
-    *  -----  find-available-port.js  --  /server/find-available-port.js  -----  *
+    *  -----  find-available-port.js  --  packages/spa-server/src/find-available-port.js  -----  *
     *  ------------------------------------------------------------------------  *
 */
 

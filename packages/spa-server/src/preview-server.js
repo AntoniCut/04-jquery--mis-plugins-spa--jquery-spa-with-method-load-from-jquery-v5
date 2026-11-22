@@ -1,6 +1,6 @@
 /*
     *  --------------------------------------------------------------  *
-    *  -----  preview-server.js  --  /server/preview-server.js  -----  *
+    *  -----  preview-server.js  --  packages/spa-server/src/preview-server.js  -----  *
     *  --------------------------------------------------------------  *
 */
 
@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
-import { base } from '../src/config/site-base.js';
+import { base } from './site-base.js';
 
 //  -----  primer puerto libre a partir del de partida  -----
 import { findAvailablePort } from './find-available-port.js';

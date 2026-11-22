@@ -1,6 +1,6 @@
 /*
     *  ------------------------------------------------------------------------  *
-    *  -----  stop-server-helpers.js  --  /server/stop-server-helpers.js  -----  *
+    *  -----  stop-server-helpers.js  --  packages/spa-server/src/stop-server-helpers.js  -----  *
     *  ------------------------------------------------------------------------  *
 */
 

@@ -1,6 +1,6 @@
 /*
     *  ----------------------------------------------------------------  *
-    *  -----  stop-dev-server.js  --  /server/stop-dev-server.js  -----  *
+    *  -----  stop-dev-server.js  --  packages/spa-server/src/stop-dev-server.js  -----  *
     *  ----------------------------------------------------------------  *
 */
 

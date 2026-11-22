@@ -1,6 +1,6 @@
 /*
     *  ------------------------------------------------------  *
-    *  -----  dev-server.js  --  /server/dev-server.js  -----  *
+    *  -----  dev-server.js  --  packages/spa-server/src/dev-server.js  -----  *
     *  ------------------------------------------------------  *
 */
 
@@ -15,10 +15,10 @@ import browserSync from 'browser-sync';
 import express from 'express';
 
 //  -----  health y consulta mysql, el mismo router que producción  -----
-import { createApiRouter } from '../api/src/mysql-query.js';
+import { createApiRouter } from '../../../api/src/mysql-query.js';
 
 //  -----  crud en memoria de la página express  -----
-import { createTasksRouter } from '../api/src/tasks-router.js';
+import { createTasksRouter } from '../../../api/src/tasks-router.js';
 
 //  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
@@ -30,7 +30,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
-import { base } from '../src/config/site-base.js';
+import { base } from './site-base.js';
 
 //  -----  primer puerto libre a partir del de partida  -----
 import { findAvailablePort } from './find-available-port.js';
