@@ -51,8 +51,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { base } from '@antonydev/spa-server/site-base.js';
 
 
-//  -----  tipos del config y de las rutas del proyecto  -----
-/// <reference path="../../../types/spa-build-config.d.js" />
+//  -----  tipos de las rutas del proyecto  -----
 /// <reference path="../../../types/route.d.js" />
 /// <reference path="../../../types/markdown-shiki-gen.d.js" />
 
@@ -264,7 +263,7 @@ const stripHeaderBanner = (code) => {
  * -----  `generateMarkdownShiki()`  -----
  * ---------------------------------------
  * - Genera los bloques HTML resaltados con Shiki bajo config.dirs.markdownShiki.
- * @param {{ projectRoot: string, config: SpaBuildConfig }} options - Raíz del sitio y spa.config.js.
+ * @param {{ projectRoot: string, config: import('../../../types/spa-build-config.d.js').SpaBuildConfig }} options - Raíz del sitio y spa.config.js.
  * @return {Promise<{ generated: number, skipped: number }>} - `Cuántos bloques se generaron y cuántos se omitieron`.
  */
 export const generateMarkdownShiki = async ({ projectRoot, config }) => {
@@ -426,7 +425,7 @@ if (process.argv[1] === __filename) {
     //  -----  url del spa.config.js del proyecto  -----
     const spaConfigUrl = pathToFileURL(join(projectRoot, 'spa.config.js')).href;
 
-    /** @type {{ default: SpaBuildConfig }} - `config del sitio` */
+    /** @type {{ default: import('../../../types/spa-build-config.d.js').SpaBuildConfig }} - `config del sitio` */
     const spaConfigModule = await import(spaConfigUrl);
 
     //  -----  generar los html de shiki  -----

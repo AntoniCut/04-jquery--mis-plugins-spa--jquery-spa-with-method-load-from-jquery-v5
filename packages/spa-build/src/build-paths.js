@@ -10,9 +10,6 @@
 import path from 'node:path';
 
 
-//  -----  tipos del config del sitio  -----
-/// <reference path="../../../types/spa-build-config.d.js" />
-
 
 
 /**
@@ -20,8 +17,8 @@ import path from 'node:path';
  * -----  `buildPaths(config)`  -----
  * --------------------------------
  * - Construye el objeto paths de Gulp a partir de spa.config.js.
- * @param {SpaBuildConfig} config - Configuración del proyecto.
- * @return {object} - `Rutas de origen y destino usadas por las tareas Gulp`.
+ * @param {import('../../../types/spa-build-config.d.js').SpaBuildConfig} config - Configuración del proyecto.
+ * @return {import('../../../types/spa-build-paths.d.js').SpaBuildPaths} - `Rutas de origen y destino usadas por las tareas Gulp`.
  */
 export const buildPaths = (config) => {
 

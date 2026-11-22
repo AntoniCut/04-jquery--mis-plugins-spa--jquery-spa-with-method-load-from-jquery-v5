@@ -106,7 +106,7 @@
  * -----------------------------
  * -----  `SpaBuildConfig`  -----
  * -----------------------------
- * @typedef {Object} SpaBuildConfig - Configuración de @antonydev/spa-build leída desde spa.config.js.
+ * @typedef {Object} SpaBuildConfig - Configuración del paquete spa-build leída desde spa.config.js.
  * @property {SpaBuildDirs} dirs - Carpetas del pipeline Gulp.
  * @property {SpaBuildShiki} shiki - Generación de bloques resaltados.
  * @property {SpaBuildSiteBase} siteBase - Publicación de site-base.js.
@@ -116,3 +116,8 @@
  * @property {SpaBuildFramework} [framework] - Runtime jq-spa-core hasta copyFramework (SPEC 04 paso 4).
  * @property {SpaBuildExtraCopyEntry[]} extraCopy - Copias opcionales; vacío en el piloto.
  */
+
+
+
+//  -----  convierte los @typedef en tipos importables con import('...').Nombre  -----
+export {};

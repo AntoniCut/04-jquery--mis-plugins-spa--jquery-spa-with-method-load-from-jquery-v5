@@ -54,8 +54,8 @@ import { buildPaths } from './build-paths.js';
 import { base } from '@antonydev/spa-server/site-base.js';
 
 
-//  -----  tipos del config del sitio  -----
-/// <reference path="../../../types/spa-build-config.d.js" />
+//  -----  tipos de tareas gulp y vinyl  -----
+/// <reference path="../../../types/gulp-task.d.js" />
 
 
 /** - `métodos de gulp usados en las tareas` */
@@ -79,7 +79,7 @@ const sassOptions = {
  * -----  `createGulpTasks(options)`  -----
  * ----------------------------------------
  * - Registra las tareas Gulp del sitio según spa.config.js.
- * @param {{ projectRoot: string, config: SpaBuildConfig }} options - Raíz del proyecto y configuración.
+ * @param {{ projectRoot: string, config: import('../../../types/spa-build-config.d.js').SpaBuildConfig }} options - Raíz del proyecto y configuración.
  * @return {Record<string, import('gulp').TaskFunction> & { build: import('gulp').TaskFunction }} - `Tareas exportadas por el gulpfile del proyecto`.
  */
 export const createGulpTasks = ({ projectRoot, config }) => {
@@ -184,7 +184,7 @@ const validateFiles = (taskName) => {
         objectMode: true,
 
         /**
-         * @param {import('vinyl')} file - Archivo del stream.
+         * @param {import('vinyl').Vinyl} file - Archivo del stream.
          * @param {BufferEncoding} _enc - Codificación, sin uso en modo objeto.
          * @param {import('stream').TransformCallback} cb - `'callback' para continuar el stream`.
          */
@@ -846,7 +846,7 @@ const phpMinifyTransform = () => {
         objectMode: true,
 
         /**
-         * @param {import('vinyl')} file - Archivo PHP del stream.
+         * @param {import('vinyl').Vinyl} file - Archivo PHP del stream.
          * @param {BufferEncoding} _enc - Codificación, sin uso en modo objeto.
          * @param {import('stream').TransformCallback} cb - `'callback' para continuar el stream`.
          */
@@ -858,7 +858,7 @@ const phpMinifyTransform = () => {
                 return cb(null, file);
 
             //  -----  si el contenido es un buffer, minificar el php  -----
-            if (file.isBuffer()) {
+            if (file.isBuffer() && file.contents) {
 
                 /** @type {string} - `php leído del archivo` */
                 let content = file.contents.toString('utf8');
@@ -1156,14 +1156,14 @@ const replaceSiteBase = () => new Transform({
     objectMode: true,
 
     /**
-     * @param {import('vinyl')} file - Archivo del stream.
+     * @param {import('vinyl').Vinyl} file - Archivo del stream.
      * @param {BufferEncoding} _enc - Codificación, sin uso en modo objeto.
      * @param {import('stream').TransformCallback} cb - Callback para continuar el stream.
      */
     transform(file, _enc, cb) {
 
         //  -----  solo procesa archivos con contenido  -----
-        if (file.isBuffer()) {
+        if (file.isBuffer() && file.contents) {
 
             //  -----  reemplaza todas las apariciones del marcador  -----
             file.contents = Buffer.from(file.contents.toString('utf-8').replaceAll('%SITE_BASE%', base));
@@ -1280,7 +1280,7 @@ const minifyAllJs = () => {
     //  -----  minificar el javascript de app  -----
     return src([paths.app.js, paths.app.jsNoMap], { base: '.', allowEmpty: true })
         .pipe(safePipe())
-        .pipe(terser())
+        .pipe(/** @type {import('stream').Transform} */ (terser(/** @type {Record<string, never>} */ ({}), /** @type {Record<string, never>} */ ({}))))
         .pipe(validateFiles('minifyAllJs'))
         .pipe(dest(paths.distRoot));
 };

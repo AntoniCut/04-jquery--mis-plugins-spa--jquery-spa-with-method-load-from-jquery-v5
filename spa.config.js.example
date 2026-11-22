@@ -19,7 +19,6 @@
 
 
 //  -----  tipos del config de spa-build  -----
-/// <reference path="./types/spa-build-config.d.js" />
 
 
 
@@ -55,7 +54,7 @@ const jqueryUiWidgets = [
  * -----------------------------
  * -----  `spaBuildConfig`  -----
  * -----------------------------
- * @type {SpaBuildConfig}
+ * @type {import('./types/spa-build-config.d.js').SpaBuildConfig}
  */
 const spaBuildConfig = {
 

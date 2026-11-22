@@ -6,6 +6,7 @@
 
 
 //  -----  resolución de tipos para imports @antonydev/spa-build/* en checkJs  -----
+/// <reference path="./spa-build-config.d.js" />
 
 
 declare module '@antonydev/spa-build/generate-markdown-shiki.js' {
