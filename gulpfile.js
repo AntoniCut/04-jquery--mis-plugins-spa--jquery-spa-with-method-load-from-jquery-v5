@@ -146,9 +146,6 @@ const paths = {
         /** - `estáticos de la raíz` */
         assets: path.posix.join('assets', '**/*'),
 
-        /** - `png de captura en assets/img/clase-*` */
-        claseImagesPng: path.posix.join('assets', 'img', 'clase-*', '*.png'),
-
     },
 
     /**
@@ -158,6 +155,15 @@ const paths = {
      * - Fuentes que se copian o compilan hacia app/.
      */
     src: {
+
+        /** - `carpeta de estáticos (imágenes, fuentes y favicons)` */
+        assetsDir: path.join('src', 'assets'),
+
+        /** - `estáticos (imágenes, fuentes y favicons)` */
+        assets: path.posix.join('src', 'assets', '**/*'),
+
+        /** - `png de captura en src/assets/img/clase-*` */
+        claseImagesPng: path.posix.join('src', 'assets', 'img', 'clase-*', '*.png'),
 
         /** - `carpeta de la base del sitio` */
         configDir: path.join('src', 'config'),
@@ -586,13 +592,13 @@ const AVIF_VARIANTS = [
  * -------------------------------------
  * -----  `listClasePngSources()`  -----
  * -------------------------------------
- * - Lista los PNG de captura en assets/img/clase-*, sin los AVIF ya generados.
+ * - Lista los PNG de captura en src/assets/img/clase-*, sin los AVIF ya generados.
  * @return {string[]} - `Rutas de los PNG de origen`.
  */
 const listClasePngSources = () => {
 
     /** - `carpeta de imágenes` */
-    const imgRoot = path.join('assets', 'img');
+    const imgRoot = path.join(paths.src.assetsDir, 'img');
 
     //  -----  si no hay carpeta de imágenes, no hay capturas  -----
     if (!fs.existsSync(imgRoot))
@@ -742,7 +748,7 @@ export const convertImages = async () => {
     if (sources.length === 0) {
 
         //  -----  avisar de que no hay png  -----
-        console.log('ℹ️  No hay PNG en assets/img/clase-*');
+        console.log('ℹ️  No hay PNG en src/assets/img/clase-*');
 
         //  -----  terminar la tarea  -----
         return;
@@ -797,6 +803,16 @@ convertImages.displayName = 'convertImages';
     *  -----  copia de src a app  -----  *
     *  --------------------------------  *
 */
+
+
+
+/**
+ * -----------------------------
+ * -----  `copyAssets()`  -----
+ * -----------------------------
+ * - Copia src/assets/ a app/assets/.
+ */
+export const copyAssets = createCopyTask('copyAssets', { glob: paths.src.assets, checkPath: paths.src.assetsDir, binary: true });
 
 
 
@@ -1168,6 +1184,7 @@ generateShiki.displayName = 'generateShiki';
  * - Copia los fuentes y compila el SCSS en paralelo. El HTML de Shiki se copia después.
  */
 const buildSources = parallel(
+    copyAssets,
     copyConfig,
     copyComponents,
     copyEffects,
@@ -1231,6 +1248,7 @@ const watchTask = () => {
 
     /** @type {Array<[string | string[], import('gulp').TaskFunction]>} - `glob y tarea de cada observador` */
     const watchers = [
+        [paths.src.assets, copyAssets],
         [paths.src.config, copyConfig],
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
@@ -1248,7 +1266,7 @@ const watchTask = () => {
         [paths.src.scripts, copyScripts],
         [paths.src.main, copyMain],
         [paths.src.scssAll, series(styles, generateShiki, copyMarkdownShiki)],
-        [paths.root.claseImagesPng, convertImages],
+        [paths.src.claseImagesPng, convertImages],
     ];
 
     //  -----  registrar cada observador  -----
