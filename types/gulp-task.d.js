@@ -6,9 +6,9 @@
 
 
 /**
- * ----------------------------
+ * -------------------------------
  * -----  `CopyTaskOptions`  -----
- * ----------------------------
+ * -------------------------------
  * @typedef {Object} CopyTaskOptions - Origen, destino y opciones de una tarea de copia.
  * @property {string | string[]} glob - Glob o globs de origen.
  * @property {string} checkPath - Ruta que debe existir antes de copiar.
@@ -21,9 +21,9 @@
 
 
 /**
- * ---------------------------
+ * -----------------------------
  * -----  `ImageAvifSize`  -----
- * ---------------------------
+ * -----------------------------
  * @typedef {Object} ImageAvifSize - Tamaños AVIF generados por cada PNG.
  * @property {number} width - Ancho máximo de salida.
  * @property {number} height - Alto máximo de salida.
