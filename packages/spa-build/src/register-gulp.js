@@ -1,28 +1,31 @@
 /*
-    *  -----------------------------------------------------------------------  *
+    *  ---------------------------------------------------------------------  *
     *  -----  register-gulp.js  --  /packages/spa-build/src/register-gulp.js  -----  *
-    *  -----------------------------------------------------------------------  *
+    *  ---------------------------------------------------------------------  *
 */
 
 
-//  -----  tipos del config del sitio (raíz del proyecto)  -----
+
+//  -----  factoría de tareas gulp  -----
+import { createGulpTasks } from './create-gulp-tasks.js';
+
+
+//  -----  tipos del config del sitio  -----
 /// <reference path="../../../types/spa-build-config.d.js" />
 
 
 
 /**
- * -------------------------------------
- * -----  `registerGulp(options)`  -----
- * -------------------------------------
- * - Punto de entrada del pipeline Gulp (SPEC 03 paso 4).
+ * --------------------------------
+ * -----  `registerGulp()`  -----
+ * --------------------------------
+ * - Expone las tareas Gulp del sitio para el gulpfile.js de la raíz.
  * @param {{ projectRoot: string, config: SpaBuildConfig }} options - Raíz del proyecto y spa.config.js.
- * @return {never}
+ * @return {ReturnType<typeof createGulpTasks>} - `Mapa de tareas con el mismo contrato que el antiguo gulpfile`.
  */
 export const registerGulp = (options) => {
 
-    //  -----  construir el mensaje con la raíz del proyecto  -----
-    throw new Error(
-        `@antonydev/spa-build: registerGulp aún no está implementado (SPEC 03 paso 4). projectRoot=${options.projectRoot}`
-    );
+    //  -----  crear las tareas según el config del proyecto  -----
+    return createGulpTasks(options);
 
 };
