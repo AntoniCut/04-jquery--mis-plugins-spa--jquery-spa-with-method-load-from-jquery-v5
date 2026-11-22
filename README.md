@@ -275,7 +275,7 @@ La página `stack/php-mysql-page` no abre MySQL desde el navegador. El formulari
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php`. Ese PHP no usa base de datos y responde igual en `pnpm dev`, en preview y en el VPS.
 
-`stack/node-express-page` consume `api/tasks` y `stack/node-mysql-page` consume `api/mysql/query`, ambos relativos al `<base>`. Los routers viven en `api/src/` y los monta `pnpm dev` en `{SITE_BASE}/api`. El mismo proceso, en `127.0.0.1:3200`, lo levanta systemd (`jquery-node`) en el VPS. Nginx tiene que proxyar `{SITE_BASE}/api/` hacia ese puerto; el fragmento está en `infra/nginx/jquery.antonydev.tech-api.conf`. `pnpm preview` no monta `/api`: esas páginas muestran el fallo en el DOM.
+`stack/node-express-page` consume `api/tasks` y `stack/node-mysql-page` consume `api/mysql/query`, ambos relativos al `<base>`. Los routers viven en `api/src/` y los monta `pnpm dev` en `{SITE_BASE}/api`. El mismo proceso, en `127.0.0.1:3200`, lo levanta systemd (`jquery-node`) en el VPS. Nginx tiene que proxyar `{SITE_BASE}/api/` hacia ese puerto. El site file versionado es `infra/nginx/jquery.antonydev.tech.conf` e incluye el fragmento `infra/nginx/jquery.antonydev.tech-api.conf`. `pnpm preview` no monta `/api`: esas páginas muestran el fallo en el DOM.
 
 Ese PHP es el mismo en desarrollo y en el VPS. Sin el proceso Node, un `POST` a `api/mysql/query` cae en `index.html` y responde **405** con HTML.
 

@@ -34,3 +34,5 @@ prompts/
 workflow/
 
 .engram/
+# Local AI runtime state
+.atl/

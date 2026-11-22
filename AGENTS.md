@@ -61,7 +61,7 @@ La página `stack/php-mysql-page` hace `POST` a `app/services/mysql/query.php`. 
 La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `server/dev-server.js` y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
 
 - No cambies el `fetch` de la página PHP a `api/mysql/query`. Son dos entradas del mismo contrato.
-- En el VPS, Nginx solo llega al proceso Node si está pegado `infra/nginx/jquery.antonydev.tech-api.conf` dentro del `server {}`. El `location` es `{SITE_BASE}/api/`, no `/api/` en la raíz del dominio. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
+- En el VPS, Nginx llega al proceso Node por el `include` de `/etc/nginx/snippets/jquery.antonydev.tech-api.conf` que está en el site file `infra/nginx/jquery.antonydev.tech.conf`. El fragmento se copia a `snippets/` antes de reemplazar el site file. El `location` es `{SITE_BASE}/api/`, no `/api/` en la raíz del dominio. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
 - La validación de solo lectura vive en el PHP y en `api/src/mysql-query.js`. Si tocas uno, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o las páginas divergen.
 - `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
 - Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.

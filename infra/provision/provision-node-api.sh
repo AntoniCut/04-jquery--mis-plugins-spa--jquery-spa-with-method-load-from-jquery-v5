@@ -5,8 +5,9 @@
 #  Checklist ejecutable en el VPS, como root, desde el checkout:
 #      bash infra/provision/provision-node-api.sh
 #
-#  No instala ni reemplaza MySQL. No pega el fragmento de nginx:
-#  ese location va a mano dentro del server {} del sitio.
+#  No instala ni reemplaza MySQL. No copia nginx: el site file y el
+#  fragmento del API se aplican a mano. El fragmento va en
+#  /etc/nginx/snippets/ y el site file lo incluye.
 #  El 3100 lo usa javascript-node. Este proceso usa el 3200.
 #  No instala pnpm: deploy.sh envía el artefacto de `pnpm deploy`
 #  con sus node_modules ya resueltos. El VPS solo ejecuta Node.
@@ -34,7 +35,9 @@ systemctl daemon-reload
 systemctl enable jquery-node
 
 echo "==> Recordatorio manual (no automatizado):"
-echo "    1. Pegar infra/nginx/jquery.antonydev.tech-api.conf dentro del server {}."
+echo "    1. Copiar infra/nginx/jquery.antonydev.tech-api.conf a /etc/nginx/snippets/."
+echo "       Reemplazar /etc/nginx/sites-available/jquery.antonydev.tech"
+echo "       con infra/nginx/jquery.antonydev.tech.conf, tras un backup."
 echo "       El location es {SITE_BASE}/api/, no /api/ en la raíz del dominio."
 echo "       nginx -t && systemctl reload nginx"
 echo "    2. Ejecutar deploy.sh: sube el artefacto del API y el .env de producción a $API_NODE_DIR."
