@@ -15,6 +15,7 @@
 packages:
   - api
   - packages/spa-server
+  - packages/spa-build
 
 allowBuilds:
   '@parcel/watcher': true
@@ -22,6 +23,16 @@ allowBuilds:
 
 catalog:
   browser-sync: ^3.0.3
+  del: ^8.0.1
   dotenv: ^16.4.7
   express: ^5.1.0
+  gulp: ^5.0.1
+  gulp-clean-css: ^4.3.0
+  gulp-htmlmin: ^5.0.1
+  gulp-plumber: ^1.2.1
+  gulp-sass: ^6.0.1
+  gulp-terser: ^2.1.0
   mysql2: ^3.24.5
+  sass: ^1.97.3
+  sharp: ^0.34.5
+  shiki: ^4.1.0

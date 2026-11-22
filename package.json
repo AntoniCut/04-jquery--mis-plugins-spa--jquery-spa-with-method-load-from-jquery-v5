@@ -12,7 +12,7 @@
         "serve:dev": "node packages/spa-server/src/dev-server.js",
         "stop:dev": "node packages/spa-server/src/stop-dev-server.js",
         "server": "pnpm run serve:dev",
-        "code-highlight": "node generate-markdown-shiki.js",
+        "code-highlight": "node packages/spa-build/src/generate-markdown-shiki.js",
         "convert-images": "gulp convertImages",
         "build": "gulp build",
         "preview": "node packages/spa-server/src/preview-server.js --open",
@@ -48,6 +48,7 @@
         "node": ">=24.0.0"
     },
     "devDependencies": {
+        "@antonydev/spa-build": "workspace:*",
         "@antonydev/spa-server": "workspace:*",
         "@types/gulp": "^4.0.18",
         "@types/jquery": "^4.0.0",
@@ -55,22 +56,11 @@
         "@types/node": "^26.6.4",
         "concurrently": "^9.2.1",
         "cross-env": "^7.0.3",
-        "del": "^8.0.1",
         "dotenv": "catalog:",
-        "gulp": "^5.0.1",
-        "gulp-clean-css": "^4.3.0",
-        "gulp-htmlmin": "^5.0.1",
-        "gulp-plumber": "^1.2.1",
-        "gulp-sass": "^6.0.1",
-        "gulp-terser": "^2.1.0",
-        "sass": "^1.97.3",
-        "sharp": "^0.34.5"
+        "gulp": "catalog:"
     },
     "dependencies": {
         "jquery": "^4.0.0",
-        "jquery-ui": "^1.14.2",
-        "markdown-it": "^14.2.0",
-        "markdown-it-shiki": "^0.9.0",
-        "shiki": "^4.1.0"
+        "jquery-ui": "^1.14.2"
     }
 }

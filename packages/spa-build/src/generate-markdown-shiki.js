@@ -1,6 +1,6 @@
 /*
     *  -------------------------------------------------------------------------  *
-    *  -----  generate-markdown-shiki.js  --  /generate-markdown-shiki.js  -----  *
+    *  -----  generate-markdown-shiki.js  --  /packages/spa-build/src/...  -----  *
     *  -------------------------------------------------------------------------  *
 */
 
@@ -44,27 +44,24 @@ import {
 import { join, dirname } from 'node:path';
 
 //  -----  ruta de este módulo  -----
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
 import { base } from '@antonydev/spa-server/site-base.js';
 
 
-/** - `directorio de este script` */
-const __dirname = dirname(fileURLToPath(import.meta.url));
+//  -----  tipos del config y de las rutas del proyecto  -----
+/// <reference path="../../../types/spa-build-config.d.js" />
+/// <reference path="../../../types/route.d.js" />
+/// <reference path="../../../types/markdown-shiki-gen.d.js" />
 
-/** - `ruta absoluta de este script` */
+
+/** - `ruta absoluta de este módulo` */
 const __filename = fileURLToPath(import.meta.url);
 
 /** - `marca que separa la carpeta de salida en la url` */
 const MARKER = 'markdown-shiki/';
-
-/** - `tema de shiki para el resaltado` */
-const SHIKI_THEME = 'dark-plus';
-
-/** - `quitar el banner del inicio del fuente antes de resaltar` */
-const STRIP_HEADER_BANNER = true;
 
 /** - `patrón que marca un comentario banner` */
 const BANNER_PATTERN = /-----/;
@@ -129,15 +126,16 @@ const mapLang = (fileExtension) => {
  * ------------------------------
  * - Convierte una URL con base en una ruta absoluta de disco.
  * @param {string} url - URL del archivo, con la base del proyecto.
+ * @param {string} projectRoot - Raíz del proyecto (process.cwd() del sitio).
  * @return {string} - `Ruta absoluta en disco`.
  */
-const urlToDisk = (url) => {
+const urlToDisk = (url, projectRoot) => {
 
     /** - `ruta relativa al proyecto` */
     const rel = url.startsWith(base) ? url.slice(base.length) : url;
 
-    //  -----  unir la ruta relativa con el directorio del script  -----
-    return join(__dirname, rel);
+    //  -----  unir la ruta relativa con la raíz del proyecto  -----
+    return join(projectRoot, rel.replace(/^\//, ''));
 
 };
 
@@ -265,17 +263,27 @@ const stripHeaderBanner = (code) => {
  * ---------------------------------------
  * -----  `generateMarkdownShiki()`  -----
  * ---------------------------------------
- * - Genera los bloques HTML resaltados con Shiki en src/markdown-shiki/.
+ * - Genera los bloques HTML resaltados con Shiki bajo config.dirs.markdownShiki.
+ * @param {{ projectRoot: string, config: SpaBuildConfig }} options - Raíz del sitio y spa.config.js.
  * @return {Promise<{ generated: number, skipped: number }>} - `Cuántos bloques se generaron y cuántos se omitieron`.
  */
-export const generateMarkdownShiki = async () => {
+export const generateMarkdownShiki = async ({ projectRoot, config }) => {
 
     /** - `carpeta de los módulos de ruta` */
-    const routesDir = join(__dirname, 'src/routes');
+    const routesDir = join(projectRoot, config.dirs.routes);
+
+    /** - `tema de shiki del config` */
+    const shikiTheme = config.shiki.theme;
+
+    /** - `si quitar el banner del fuente antes de resaltar` */
+    const shouldStripHeaderBanner = config.shiki.stripHeaderBanner;
+
+    /** - `carpeta de salida del html generado` */
+    const markdownShikiRoot = join(projectRoot, config.dirs.markdownShiki);
 
     /** - `archivos de ruta, sin el manifiesto` */
     const routeFiles = readdirSync(routesDir).filter(
-        (f) => f.startsWith('route-') && f.endsWith('.js') && f !== 'route-manifest.js'
+        (f) => config.shiki.routeFilePattern.test(f) && f !== config.shiki.routeManifestFile
     );
 
     /** @type {MarkdownShikiEntry[]} - `entradas shiki recogidas de las rutas` */
@@ -284,8 +292,11 @@ export const generateMarkdownShiki = async () => {
     //  -----  recorrer los módulos de ruta  -----
     for (const file of routeFiles) {
 
+        /** - `url del módulo de ruta en disco` */
+        const routeModuleUrl = pathToFileURL(join(routesDir, file)).href;
+
         /** @type {RouteModule} - `módulo de la ruta importado` */
-        const mod = await import(`./src/routes/${file}`);
+        const mod = await import(routeModuleUrl);
 
         /** @type {Route | undefined} - `ruta que declara bloques markdown shiki` */
         const route = Object.values(mod).find(
@@ -333,16 +344,16 @@ export const generateMarkdownShiki = async () => {
             }
 
             /** - `ruta en disco del fuente` */
-            const srcPath = urlToDisk(urlInput);
+            const srcPath = urlToDisk(urlInput, projectRoot);
 
             /** - `ruta en disco del html generado` */
-            const outPath = join(__dirname, 'src/markdown-shiki', outDir, fileName);
+            const outPath = join(markdownShikiRoot, outDir, fileName);
 
             //  -----  si el fuente no existe, omitir la entrada  -----
             if (!existsSync(srcPath)) {
 
                 /** - `ruta del fuente relativa al proyecto` */
-                const rel = srcPath.replace(__dirname + '/', '');
+                const rel = srcPath.replace(projectRoot + '/', '');
 
                 //  -----  marcar la entrada como omitida  -----
                 return {
@@ -356,10 +367,10 @@ export const generateMarkdownShiki = async () => {
             const rawCode = readFileSync(srcPath, 'utf-8');
 
             /** - `código sin el banner inicial, si toca quitarlo` */
-            const code = STRIP_HEADER_BANNER ? stripHeaderBanner(rawCode) : rawCode;
+            const code = shouldStripHeaderBanner ? stripHeaderBanner(rawCode) : rawCode;
 
             /** - `html resaltado con shiki` */
-            const html = await codeToHtml(code, { lang, theme: SHIKI_THEME });
+            const html = await codeToHtml(code, { lang, theme: shikiTheme });
 
             //  -----  crear la carpeta de salida  -----
             mkdirSync(dirname(outPath), { recursive: true });
@@ -368,10 +379,10 @@ export const generateMarkdownShiki = async () => {
             writeFileSync(outPath, html, 'utf-8');
 
             /** - `salida relativa al proyecto` */
-            const relOut = outPath.replace(__dirname + '/', '');
+            const relOut = outPath.replace(projectRoot + '/', '');
 
             /** - `fuente relativo al proyecto` */
-            const relSrc = srcPath.replace(__dirname + '/', '');
+            const relSrc = srcPath.replace(projectRoot + '/', '');
 
             //  -----  marcar la entrada como generada  -----
             return {
@@ -409,7 +420,16 @@ export const generateMarkdownShiki = async () => {
 //  -----  si el script se ejecuta directamente, generar los bloques  -----
 if (process.argv[1] === __filename) {
 
+    /** - `raíz del proyecto donde corre pnpm code-highlight` */
+    const projectRoot = process.cwd();
+
+    //  -----  url del spa.config.js del proyecto  -----
+    const spaConfigUrl = pathToFileURL(join(projectRoot, 'spa.config.js')).href;
+
+    /** @type {{ default: SpaBuildConfig }} - `config del sitio` */
+    const spaConfigModule = await import(spaConfigUrl);
+
     //  -----  generar los html de shiki  -----
-    await generateMarkdownShiki();
+    await generateMarkdownShiki({ projectRoot, config: spaConfigModule.default });
 
 }
