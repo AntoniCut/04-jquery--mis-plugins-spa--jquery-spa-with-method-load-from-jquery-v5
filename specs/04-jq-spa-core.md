@@ -52,7 +52,7 @@ SPEC 04 unifica ese motor en un paquete workspace, alinea la arquitectura con **
 
 **Fuera de alcance (SPEC 05+):**
 
-- SPEC 05 — `@antonydev/spa-loading-effect` (`effectLoadingPage` sigue importado desde `src/effects/` en `main.js`).
+- SPEC 05 — `@antonydev/spa-loading-effect` (implementada; `effectLoadingPage` por import map).
 - Publicar en npm.
 - Bundler, Vite ni esbuild.
 - Cambiar el contrato del plugin (`load` / `.html()`), el manifiesto de rutas o las vistas.
