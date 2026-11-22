@@ -11,7 +11,7 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | Carpeta | Trato |
 |---|---|
 | `src/` | Origen de verdad. Aquí va el código nuevo |
-| `index.html`, `gulpfile.js`, `server/`, `api/`, `infra/`, `types/`, `generate-markdown-shiki.js` | Se editan cuando el cambio lo pide |
+| `index.html`, `gulpfile.js`, `packages/spa-server/`, `api/`, `infra/`, `types/`, `generate-markdown-shiki.js` | Se editan cuando el cambio lo pide |
 | `app/` | Salida de Gulp. No se edita a mano |
 | `dist/` | Build de producción. No se edita a mano |
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
@@ -24,7 +24,7 @@ Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tene
 
 El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`). No lo hardcodees.
 
-- Node lo lee con `src/config/site-base.js`. Gulp, los servidores y `generate-markdown-shiki.js` cargan `dotenv/config` antes de importarlo.
+- Node lo lee con `@antonydev/spa-server/site-base.js` (canónico en `packages/spa-server/`). `src/config/site-base.js` reexporta para `src/routes/paths.js`. Gulp copia el módulo a `app/config/`. Gulp, los servidores y `generate-markdown-shiki.js` cargan `dotenv/config` antes de importarlo.
 - El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`.
 - Sass usa `$base: site-base();`. Gulp registra esa función con el valor del `.env`.
 - `.htaccess` también lleva `%SITE_BASE%`. `htaccessToDist` escribe el valor real en `dist/.htaccess`.
@@ -58,7 +58,7 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 
 La página `stack/php-mysql-page` hace `POST` a `app/services/mysql/query.php`. Ese PHP está en `src/services/mysql/query.php` y Gulp lo copia a `app/services/` y luego a `dist/`. El navegador lo pide igual en `pnpm dev` y en Nginx.
 
-La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `server/dev-server.js` y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
+La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `packages/spa-server/src/dev-server.js` (import dinámico desde `api/`) y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
 
 - No cambies el `fetch` de la página PHP a `api/mysql/query`. Son dos entradas del mismo contrato.
 - En el VPS, Nginx llega al proceso Node por el `include` de `/etc/nginx/snippets/jquery.antonydev.tech-api.conf` que está en el site file `infra/nginx/jquery.antonydev.tech.conf`. El fragmento se copia a `snippets/` antes de reemplazar el site file. El `location` es `{SITE_BASE}/api/`, no `/api/` en la raíz del dominio. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
@@ -81,7 +81,7 @@ La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al 
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
 
-`stack/node-express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js`. `server/dev-server.js` lo monta en `{SITE_BASE}/api`. En producción lo sirve `jquery-node` detrás del fragmento nginx de `infra/`. Preview no ejecuta ese proceso: la página tiene que mostrar el fallo en el DOM.
+`stack/node-express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js`. `packages/spa-server/src/dev-server.js` lo monta en `{SITE_BASE}/api`. En producción lo sirve `jquery-node` detrás del fragmento nginx de `infra/`. Preview no ejecuta ese proceso: la página tiene que mostrar el fallo en el DOM.
 
 ## Convenciones de código
 
@@ -96,7 +96,7 @@ Al crear o editar `.js` y `.html` de este repo (no vendors):
 - Una línea en blanco entre instrucciones y entre variables hermanas. Tres líneas en blanco entre función y función.
 - Comentarios en español, en minúsculas salvo nombres propios, describiendo lo que hace esa línea.
 - Tipos de dominio en `types/*.d.js`. Referencia con `/// <reference path="..." />` cuando el archivo los necesite.
-- `jsconfig.json` ya incluye `src/`, `types/`, `server/`, `api/` y `gulpfile.js`. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
+- `jsconfig.json` ya incluye `src/`, `types/`, `packages/spa-server/`, `api/` y `gulpfile.js`. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
 
 Este repositorio no es un proyecto Astro. No añadas Prettier, `prettier-plugin-astro` ni `tsconfig` paths salvo que se pida.
 

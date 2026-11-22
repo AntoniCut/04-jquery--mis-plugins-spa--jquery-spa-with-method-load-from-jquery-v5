@@ -1,6 +1,6 @@
 # SPEC 02 — `@antonydev/spa-server`
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01 implementada (`specs/01-assets-en-src.md`)
 > **Referencia:** SPEC 02 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22
@@ -81,18 +81,18 @@ Contratos existentes:
 
 ## Criterios de aceptación
 
-- [ ] No existe la carpeta `server/` en la raíz del proyecto (salvo shims acordados en la raíz con otro nombre, sin duplicar lógica).
-- [ ] Existe `packages/spa-server/` publicado en el workspace como `@antonydev/spa-server`.
-- [ ] `pnpm install` en la raíz instala el workspace sin errores.
-- [ ] `git log --follow packages/spa-server/src/site-base.js` (o la ruta final) muestra historial previo al movimiento desde `src/config/site-base.js`.
-- [ ] `gulpfile.js` y `generate-markdown-shiki.js` importan `base` desde `@antonydev/spa-server/site-base.js`, no desde `src/config/site-base.js`.
-- [ ] `pnpm refresh` crea `app/config/site-base.js` con el mismo comportamiento (Sass `site-base()`, rutas del navegador).
-- [ ] `pnpm dev` arranca; la consola muestra la URL con `SITE_BASE`; BrowserSync recarga al cambiar `app/**/*`.
-- [ ] En `pnpm dev`, las páginas `stack/node-express-page` y `stack/node-mysql-page` siguen respondiendo en `/api` (mismo comportamiento que antes del refactor).
-- [ ] `pnpm preview` sirve `dist/` y no monta API; `stack/node-express-page` sigue mostrando el fallo esperado en el DOM.
-- [ ] `pnpm stop:dev` y `pnpm stop:preview` solo matan la instancia de **este** proyecto (`cwd`), no otra copia del repo en otro puerto.
-- [ ] Navegar todas las rutas del manifiesto en `pnpm dev` y `pnpm preview` no produce 404 de assets ni del shell.
-- [ ] `rg 'from \\.\\./src/config/site-base|from '\\''\\.\\./src/config/site-base' packages server'` no devuelve coincidencias (servidores y paquete no dependen del path viejo).
+- [x] No existe la carpeta `server/` en la raíz del proyecto (salvo shims acordados en la raíz con otro nombre, sin duplicar lógica).
+- [x] Existe `packages/spa-server/` publicado en el workspace como `@antonydev/spa-server`.
+- [x] `pnpm install` en la raíz instala el workspace sin errores.
+- [x] `git log --follow packages/spa-server/src/site-base.js` (o la ruta final) muestra historial previo al movimiento desde `src/config/site-base.js`.
+- [x] `gulpfile.js` y `generate-markdown-shiki.js` importan `base` desde `@antonydev/spa-server/site-base.js`, no desde `src/config/site-base.js`.
+- [x] `pnpm refresh` crea `app/config/site-base.js` con el mismo comportamiento (Sass `site-base()`, rutas del navegador).
+- [x] `pnpm dev` arranca; la consola muestra la URL con `SITE_BASE`; BrowserSync recarga al cambiar `app/**/*`.
+- [x] En `pnpm dev`, las páginas `stack/node-express-page` y `stack/node-mysql-page` siguen respondiendo en `/api` (mismo comportamiento que antes del refactor).
+- [x] `pnpm preview` sirve `dist/` y no monta API; `stack/node-express-page` sigue mostrando el fallo esperado en el DOM.
+- [x] `pnpm stop:dev` y `pnpm stop:preview` solo matan la instancia de **este** proyecto (`cwd`), no otra copia del repo en otro puerto.
+- [x] Navegar todas las rutas del manifiesto en `pnpm dev` y `pnpm preview` no produce 404 de assets ni del shell.
+- [x] `rg 'from \\.\\./src/config/site-base|from '\\''\\.\\./src/config/site-base' packages server'` no devuelve coincidencias (servidores y paquete no dependen del path viejo).
 
 ## Decisiones
 

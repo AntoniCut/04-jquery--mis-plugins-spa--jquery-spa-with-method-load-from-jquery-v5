@@ -17,7 +17,7 @@
         "src/libs/jquery/**/cdn/*.min.js",
         "generate-markdown-shiki.js",
         "gulpfile.js",
-        "server",
+        "packages/spa-server",
         "api"
     ],
     "exclude": [
