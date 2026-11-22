@@ -1,6 +1,6 @@
 # SPEC 03 — `@antonydev/spa-build`
 
-> **Estado:** En progreso (paso 4)
+> **Estado:** En progreso (paso 5, sin commit)
 > **Depende de:** SPEC 02 implementada (`specs/02-spa-server.md`)
 > **Referencia:** SPEC 03 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22
