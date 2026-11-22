@@ -1,36 +1,27 @@
 /*
-    *  ------------------------------------------------------  *
-    *  -----  dev-server.js  --  /server/dev-server.js  -----  *
-    *  ------------------------------------------------------  *
+    *  --------------------------------------------------------------  *
+    *  -----  preview-server.js  --  packages/spa-server/src/preview-server.js  -----  *
+    *  --------------------------------------------------------------  *
 */
 
 
 //  -----  cargar las variables de entorno  -----
 import 'dotenv/config';
 
-//  -----  recarga del navegador  -----
-import browserSync from 'browser-sync';
-
 //  -----  servidor http  -----
 import express from 'express';
-
-//  -----  health y consulta mysql, el mismo router que producción  -----
-import { createApiRouter } from '../api/src/mysql-query.js';
-
-//  -----  crud en memoria de la página express  -----
-import { createTasksRouter } from '../api/src/tasks-router.js';
 
 //  -----  lanzar php-cgi  -----
 import { spawn } from 'node:child_process';
 
-//  -----  comprobar archivos en disco  -----
+//  -----  comprobar el build en disco  -----
 import fs from 'node:fs';
 
 //  -----  unir rutas  -----
 import path from 'node:path';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
-import { base } from '../src/config/site-base.js';
+import { base } from './site-base.js';
 
 //  -----  primer puerto libre a partir del de partida  -----
 import { findAvailablePort } from './find-available-port.js';
@@ -39,75 +30,37 @@ import { findAvailablePort } from './find-available-port.js';
 /** - `prefijo URL que usa el base href del proyecto (SITE_BASE del .env)` */
 const DEV_ROUTE_BASE = base;
 
-/** - `puerto público de BrowserSync` */
-const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 9876);
+/** - `puerto público del preview` */
+const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 8765);
 
-/** - `raíz del proyecto` */
+/** - `raíz del proyecto donde corre pnpm preview (process.cwd())` */
 const PROJECT_ROOT = process.cwd();
 
-/** - `entrada principal de la SPA` */
-const SPA_ENTRY_FILE = path.join(PROJECT_ROOT, 'index.html');
+/** - `raíz del build de producción` */
+const DIST_ROOT = path.join(PROJECT_ROOT, 'dist');
 
-/** 
- * -------------------------------------
- * -----  `BROWSER_SYNC_FILES []`  -----
- * -------------------------------------
- * - `archivos que disparan el live reload` 
- */
-const BROWSER_SYNC_FILES = [
-    'index.html',
-    'app/**/*',
-    '!app/**/*.map',
-];
+/** - `index compilado de la SPA` */
+const DIST_INDEX_FILE = path.join(DIST_ROOT, 'index.html');
 
 
-/**
- * --------------------------------
- * -----  `WATCH_OPTIONS {}`  -----
- * --------------------------------
- * - `Opciones de sondeo para el watch de BrowserSync`
- */
-const WATCH_OPTIONS = {
+//  -----  si no hay build, no arrancar  -----
+if (!fs.existsSync(DIST_ROOT) || !fs.existsSync(DIST_INDEX_FILE)) {
 
-    /** - `usar polling si CHOKIDAR_USEPOLLING es true` */
-    usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
+    //  -----  pedir el build antes del preview  -----
+    console.error('No existe un build de producción en dist/. Ejecuta `pnpm run build` antes de `pnpm run preview`.');
 
-    /** - `intervalo de polling en milisegundos` */
-    interval: Number(process.env.CHOKIDAR_INTERVAL || 250),
+    //  -----  salir con error  -----
+    process.exit(1);
 
-};
+}
 
 
 /** - `aplicación Express` */
 const app = express();
 
-/** - `instancia de BrowserSync` */
-const bs = browserSync.create();
 
 //  -----  ocultar la cabecera X-Powered-By  -----
 app.disable('x-powered-by');
-
-
-
-/**
- * ---------------------------------
- * -----  `sendSpaEntry(res)`  -----
- * ---------------------------------
- * - Responde con index.html sustituyendo el marcador %SITE_BASE% por la base del .env.
- * @param {import('express').Response} res - Respuesta de Express.
- * @return {void}
- */
-const sendSpaEntry = (res) => {
-
-    /** - `contenido de index.html con el marcador sin resolver` */
-    const template = fs.readFileSync(SPA_ENTRY_FILE, 'utf-8');
-
-    /** - `contenido de index.html con la base real` */
-    const html = template.replaceAll('%SITE_BASE%', base);
-
-    //  -----  responder con el html ya resuelto  -----
-    res.type('html').send(html);
-};
 
 
 
@@ -122,18 +75,8 @@ const sendSpaEntry = (res) => {
  */
 const redirectRootToBase = (req, res, next) => {
 
-    //  -----  si piden la raíz o index.html, ir a la base de la SPA  -----
-    if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html`) {
-
-        //  -----  redirigir a la base con barra final  -----
-        res.redirect(302, `${DEV_ROUTE_BASE}/`);
-
-        //  -----  no seguir con la cadena  -----
-        return;
-    }
-
-    //  -----  si piden la base sin barra, añadirla  -----
-    if (req.path === DEV_ROUTE_BASE) {
+    //  -----  si piden la raíz, index.html o la base sin barra, ir a la base  -----
+    if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html` || req.path === DEV_ROUTE_BASE) {
 
         //  -----  redirigir a la base con barra final  -----
         res.redirect(302, `${DEV_ROUTE_BASE}/`);
@@ -153,7 +96,7 @@ const redirectRootToBase = (req, res, next) => {
  * ------------------------------------------------
  * -----  `serveSpaFallback(req, res, next)`  -----
  * ------------------------------------------------
- * - Sirve index.html cuando la ruta interna de la SPA no es un archivo.
+ * - Sirve el index compilado cuando la ruta interna no es un archivo.
  * @param {import('express').Request} req - Petición entrante.
  * @param {import('express').Response} res - Respuesta HTTP.
  * @param {import('express').NextFunction} next - Siguiente middleware.
@@ -173,31 +116,30 @@ const serveSpaFallback = (req, res, next) => {
     /** - `ruta dentro de la SPA, sin la base` */
     const relativePath = req.path.slice(DEV_ROUTE_BASE.length).replace(/^\//, '');
 
-    //  -----  si piden la base, servir el index  -----
+    //  -----  si piden la base, servir el index compilado  -----
     if (relativePath === '') {
 
-        //  -----  responder con index.html y la base ya sustituida  -----
-        sendSpaEntry(res);
+        //  -----  enviar el index de dist  -----
+        res.sendFile(DIST_INDEX_FILE);
 
         //  -----  no seguir  -----
         return;
-
     }
 
-    /** - `archivo pedido, resuelto en el proyecto` */
-    const requestedPath = path.join(PROJECT_ROOT, relativePath);
+    /** - `archivo pedido, resuelto dentro de dist` */
+    const requestedPath = path.join(DIST_ROOT, relativePath);
 
     /** - `si la ruta trae extensión de archivo` */
     const hasFileExtension = path.extname(relativePath) !== '';
 
-    /** - `si ese archivo existe en disco` */
+    /** - `si ese archivo existe en dist` */
     const fileExists = fs.existsSync(requestedPath);
 
     //  -----  si no es un archivo y no existe, servir el index  -----
     if (!hasFileExtension && !fileExists) {
 
-        //  -----  responder con index.html y la base ya sustituida  -----
-        sendSpaEntry(res);
+        //  -----  enviar el index de dist  -----
+        res.sendFile(DIST_INDEX_FILE);
 
         //  -----  no seguir  -----
         return;
@@ -214,7 +156,7 @@ const serveSpaFallback = (req, res, next) => {
  * ---------------------------------------------------
  * -----  `makePhpHandler(rootDir, serverPort)`  -----
  * ---------------------------------------------------
- * - Ejecuta los .php con php-cgi y devuelve la respuesta CGI.
+ * - Ejecuta los .php del build con php-cgi y devuelve la respuesta CGI.
  * @param {string} rootDir - Directorio donde se resuelven los PHP.
  * @param {number} serverPort - Puerto que php-cgi ve como SERVER_PORT.
  * @return {import('express').RequestHandler} - Middleware de PHP.
@@ -222,6 +164,9 @@ const serveSpaFallback = (req, res, next) => {
 const makePhpHandler = (rootDir, serverPort) => {
 
     /**
+     * -----------------------------------------
+     * -----  `handlePhp(req, res, next)`  -----
+     * -----------------------------------------
      * @param {import('express').Request} req - Petición entrante.
      * @param {import('express').Response} res - Respuesta HTTP.
      * @param {import('express').NextFunction} next - Siguiente middleware.
@@ -265,7 +210,7 @@ const makePhpHandler = (rootDir, serverPort) => {
          * -------------------------
          * -----  `cgiEnv {}`  -----
          * -------------------------
-         * - `Variables CGI que recibe php-cgi`
+         * - Variables CGI que recibe php-cgi.
          */
         const cgiEnv = {
 
@@ -348,11 +293,11 @@ const makePhpHandler = (rootDir, serverPort) => {
         php.on('close', () => {
 
             //  -----  si php escribió en stderr, mostrarlo  -----
-            if (stderr)
+            if (stderr) 
                 //  -----  escribir el error de php  -----
                 console.error(`[php-cgi] ${stderr.trim()}`);
 
-            /** - `posición del separador de cabeceras` */
+            /** @type {number} - `posición del separador de cabeceras` */
             let sepIndex = stdout.indexOf('\r\n\r\n');
 
             /** - `longitud del separador CRLF` */
@@ -391,11 +336,9 @@ const makePhpHandler = (rootDir, serverPort) => {
                 const colonIndex = line.indexOf(':');
 
                 //  -----  si la línea no es una cabecera, saltarla  -----
-                if (colonIndex === -1) {
-
+                if (colonIndex === -1)
                     //  -----  pasar a la siguiente línea  -----
                     continue;
-                }
 
                 /** - `nombre de la cabecera` */
                 const name = line.slice(0, colonIndex).trim();
@@ -404,17 +347,15 @@ const makePhpHandler = (rootDir, serverPort) => {
                 const value = line.slice(colonIndex + 1).trim();
 
                 //  -----  si php manda Status, usarlo como código HTTP  -----
-                if (name.toLowerCase() === 'status') {
-
+                if (name.toLowerCase() === 'status')
                     //  -----  fijar el código de estado  -----
                     res.status(parseInt(value, 10));
-                }
 
                 //  -----  el resto de cabeceras se copian tal cual  -----
                 else
                     //  -----  copiar la cabecera  -----
                     res.setHeader(name, value);
-
+                
             }
 
             //  -----  enviar el cuerpo  -----
@@ -427,6 +368,7 @@ const makePhpHandler = (rootDir, serverPort) => {
 
             //  -----  avisar de que falta php-cgi  -----
             res.status(500).send('Error interno: php-cgi no está disponible. Instálalo con: sudo apt install php-cgi');
+
         });
 
         //  -----  pasar el cuerpo de la petición a php  -----
@@ -441,14 +383,20 @@ const makePhpHandler = (rootDir, serverPort) => {
 
 
 
-/** @type {number} - `puerto público real: el primero libre a partir de DEV_SERVER_PORT` */
-let devServerPort;
+/** - `host donde escucha el servidor de previsualización` */
+const PREVIEW_SERVER_HOST = '127.0.0.1';
 
-//  -----  resolver el puerto público antes de registrar middlewares, porque php-cgi necesita el puerto real  -----
+/** @type {number} - `puerto real de previsualización: el primero libre a partir de PREVIEW_SERVER_PORT` */
+let previewServerPort;
+
+//  -----  resolver el puerto antes de registrar middlewares, porque php-cgi necesita el puerto real  -----
 try {
 
-    //  -----  buscar el primer puerto libre desde el de partida  -----
-    devServerPort = await findAvailablePort(DEV_SERVER_PORT, { envName: 'DEV_SERVER_PORT' });
+    //  -----  buscar el primer puerto libre desde el de partida, probando en el mismo host que usará listen  -----
+    previewServerPort = await findAvailablePort(PREVIEW_SERVER_PORT, {
+        host: PREVIEW_SERVER_HOST,
+        envName: 'PREVIEW_SERVER_PORT',
+    });
 
 }
 
@@ -463,10 +411,10 @@ catch (error) {
 }
 
 //  -----  avisar cuando el puerto cambia respecto al configurado  -----
-if (devServerPort !== DEV_SERVER_PORT) {
+if (previewServerPort !== PREVIEW_SERVER_PORT) {
 
     //  -----  mostrar el puerto ocupado y el puerto que se usa  -----
-    console.log(`El puerto ${DEV_SERVER_PORT} está ocupado. Se usa el ${devServerPort}.`);
+    console.log(`El puerto ${PREVIEW_SERVER_PORT} está ocupado. Se usa el ${previewServerPort}.`);
 }
 
 
@@ -474,19 +422,13 @@ if (devServerPort !== DEV_SERVER_PORT) {
 //  -----  redirigir la raíz a la base de la SPA  -----
 app.use(redirectRootToBase);
 
-//  -----  ejecutar los php con php-cgi  -----
-app.use(makePhpHandler(PROJECT_ROOT, devServerPort));
+//  -----  ejecutar los php del build con php-cgi  -----
+app.use(makePhpHandler(DIST_ROOT, previewServerPort));
 
-//  -----  montar health y la consulta mysql bajo la base del sitio  -----
-app.use(`${DEV_ROUTE_BASE}/api`, createApiRouter());
+//  -----  servir dist bajo la base, sin index automático  -----
+app.use(DEV_ROUTE_BASE, express.static(DIST_ROOT, { index: false }));
 
-//  -----  montar el crud de tareas bajo la base del sitio  -----
-app.use(`${DEV_ROUTE_BASE}/api`, createTasksRouter());
-
-//  -----  servir estáticos bajo la base, sin index automático  -----
-app.use(DEV_ROUTE_BASE, express.static(PROJECT_ROOT, { index: false }));
-
-//  -----  caer en index.html en las rutas internas  -----
+//  -----  caer en el index compilado en las rutas internas  -----
 app.use(serveSpaFallback);
 
 //  -----  responder 404 al resto de rutas  -----
@@ -503,44 +445,23 @@ app.use((
 });
 
 
-/** 
- * ------------------------------
- * -----  `internalServer`  -----
- * ------------------------------
- * - `servidor Express interno, en un puerto libre`
+
+/**
+ * -----------------------------
+ * -----  `previewServer`  -----
+ * -----------------------------
+ * - `servidor de preview del build`
  */
-const internalServer = app.listen(0, '127.0.0.1', () => {
-
-    /** - `dirección real del servidor interno` */
-    const address = internalServer.address();
-
-    //  -----  si la dirección no es un puerto, abortar  -----
-    if (!address || typeof address === 'string')
-        //  -----  no se puede montar el proxy  -----
-        throw new Error('No se pudo resolver el puerto interno del servidor Express.');
+const previewServer = app.listen(previewServerPort, PREVIEW_SERVER_HOST, () => {
 
     //  -----  separar el aviso en consola  -----
     console.log('\n');
 
-    //  -----  mostrar la dirección interna  -----
-    console.log(`Servidor de desarrollo Express escuchando en http://${address.address}:${address.port}\n`);
+    //  -----  mostrar la url del preview  -----
+    console.log(`Preview disponible en http://localhost:${previewServerPort}${DEV_ROUTE_BASE}/`);
 
     //  -----  separar el aviso en consola  -----
     console.log('\n');
-
-    //  -----  publicar el proxy y el live reload  -----
-    bs.init({
-
-        proxy: `http://127.0.0.1:${address.port}`,
-        port: devServerPort,
-        open: false,
-        notify: false,
-        ui: false,
-        startPath: `${DEV_ROUTE_BASE}/`,
-        files: BROWSER_SYNC_FILES,
-        watchOptions: WATCH_OPTIONS,
-
-    });
 
 });
 
@@ -550,15 +471,12 @@ const internalServer = app.listen(0, '127.0.0.1', () => {
  * --------------------------
  * -----  `shutdown()`  -----
  * --------------------------
- * - Cierra BrowserSync y el servidor Express.
+ * - Cierra el servidor de preview.
  */
 const shutdown = () => {
 
-    //  -----  cerrar BrowserSync  -----
-    bs.exit();
-
     //  -----  cerrar Express y terminar el proceso  -----
-    internalServer.close(() => {
+    previewServer.close(() => {
 
         //  -----  salir cuando el servidor ya cerró  -----
         process.exit(0);

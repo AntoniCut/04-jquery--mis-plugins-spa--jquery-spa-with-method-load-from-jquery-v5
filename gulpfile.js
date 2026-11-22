@@ -51,7 +51,7 @@ import sharp from 'sharp';
 import { generateMarkdownShiki } from './generate-markdown-shiki.js';
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
-import { base } from './src/config/site-base.js';
+import { base } from '@antonydev/spa-server/site-base.js';
 
 
 /** - `métodos de gulp usados en las tareas` */
@@ -133,6 +133,22 @@ const paths = {
     },
 
     /**
+     * ----------------------------
+     * -----  `packages {}`  -----
+     * ----------------------------
+     * - Fuentes del workspace que Gulp publica en app/.
+     */
+    packages: {
+
+        /** - `site-base canónico del paquete spa-server` */
+        spaServerSiteBaseFile: path.join('packages', 'spa-server', 'src', 'site-base.js'),
+
+        /** - `carpeta del site-base en el paquete` */
+        spaServerSiteBaseDir: path.join('packages', 'spa-server', 'src'),
+
+    },
+
+    /**
      * ----------------------
      * -----  `src {}`  -----
      * ----------------------
@@ -149,10 +165,10 @@ const paths = {
         /** - `png de captura en src/assets/img/clase-*` */
         claseImagesPng: path.posix.join('src', 'assets', 'img', 'clase-*', '*.png'),
 
-        /** - `carpeta de la base del sitio` */
+        /** - `reexport de SITE_BASE para paths.js en src/` */
         configDir: path.join('src', 'config'),
 
-        /** - `módulo isomórfico de SITE_BASE` */
+        /** - `reexport isomórfico hacia el paquete spa-server` */
         config: path.posix.join('src', 'config', '**/*'),
 
         /** - `carpeta de componentes` */
@@ -804,9 +820,15 @@ export const copyAssets = createCopyTask('copyAssets', { glob: paths.src.assets,
  * -----------------------------
  * -----  `copyConfig()`  -----
  * -----------------------------
- * - Copia src/config/ a app/config/ para que el navegador importe site-base.js.
+ * - Copia site-base.js del paquete spa-server a app/config/ para el navegador.
  */
-export const copyConfig = createCopyTask('copyConfig', { glob: paths.src.config, checkPath: paths.src.configDir });
+export const copyConfig = createCopyTask('copyConfig', {
+    glob: paths.packages.spaServerSiteBaseFile,
+    checkPath: paths.packages.spaServerSiteBaseFile,
+    isFile: true,
+    base: paths.packages.spaServerSiteBaseDir,
+    destDir: path.join(paths.appRoot, 'config'),
+});
 
 
 
@@ -1233,7 +1255,7 @@ const watchTask = () => {
     /** @type {Array<[string | string[], import('gulp').TaskFunction]>} - `glob y tarea de cada observador` */
     const watchers = [
         [paths.src.assets, copyAssets],
-        [paths.src.config, copyConfig],
+        [[paths.packages.spaServerSiteBaseFile, paths.src.config], copyConfig],
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],

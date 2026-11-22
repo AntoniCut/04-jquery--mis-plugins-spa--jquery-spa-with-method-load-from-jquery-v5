@@ -142,7 +142,7 @@ Desarrollo: [http://localhost:9876/mis-plugins-spa/jquery-spa-with-method-load-f
 
 Preview: [http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
 
-Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. `src/config/site-base.js` lo lee en Node. En el navegador sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`.
+Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo resuelve `@antonydev/spa-server` (`packages/spa-server/src/site-base.js`); Gulp lo copia a `app/config/site-base.js` para el navegador. `src/config/site-base.js` es solo un reexport para `paths.js` en `src/`. En el navegador también sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`.
 
 ---
 
@@ -251,7 +251,7 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── types/                            # Tipos JSDoc del dominio
 ├── api/                              # Runtime Node de producción (health, MySQL, tareas)
 ├── infra/                            # systemd, nginx y provision de jquery-node
-├── server/                           # dev-server y preview-server
+├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
 ├── gulpfile.js
 └── generate-markdown-shiki.js
 ```

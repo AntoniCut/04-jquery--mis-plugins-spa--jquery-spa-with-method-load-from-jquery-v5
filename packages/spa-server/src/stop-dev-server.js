@@ -1,7 +1,7 @@
 /*
-    *  ------------------------------------------------------------------------  *
-    *  -----  stop-preview-server.js  --  /server/stop-preview-server.js  -----  *
-    *  ------------------------------------------------------------------------  *
+    *  ----------------------------------------------------------------  *
+    *  -----  stop-dev-server.js  --  packages/spa-server/src/stop-dev-server.js  -----  *
+    *  ----------------------------------------------------------------  *
 */
 
 
@@ -12,17 +12,17 @@ import { stopServerInstance } from './stop-server-helpers.js';
 
 
 
-/** - `puerto de partida configurado para el preview (PREVIEW_SERVER_PORT del .env)` */
-const PREVIEW_SERVER_PORT = Number(process.env.PREVIEW_SERVER_PORT || 8765);
+/** - `puerto de partida configurado para BrowserSync (DEV_SERVER_PORT del .env)` */
+const DEV_SERVER_PORT = Number(process.env.DEV_SERVER_PORT || 9876);
 
-/** - `puertos candidatos: el de partida y los siguientes que prueba preview-server.js si está ocupado` */
-const PREVIEW_SERVER_PORTS = getPortRange(PREVIEW_SERVER_PORT);
+/** - `puertos candidatos: el de partida y los siguientes que prueba dev-server.js si está ocupado` */
+const DEV_SERVER_PORTS = getPortRange(DEV_SERVER_PORT);
 
-/** - `guion del servidor de preview dentro de server/` */
-const PREVIEW_SERVER_SCRIPT = 'server/preview-server.js';
+/** - `fragmento del comando que identifica dev-server en el proceso` */
+const DEV_SERVER_SCRIPT = 'packages/spa-server/src/dev-server.js';
 
 /** - `etiqueta legible de la instancia para los mensajes` */
-const PREVIEW_SERVER_LABEL = 'preview';
+const DEV_SERVER_LABEL = 'desarrollo';
 
 /** - `directorio del proyecto actual; solo se detiene el servidor que corre desde aquí` */
 const PROJECT_ROOT = process.cwd();
@@ -33,7 +33,7 @@ const PROJECT_ROOT = process.cwd();
  * ----------------------
  * -----  `main()`  -----
  * ----------------------
- * - Detiene la instancia activa de server/preview-server.js asociada al entorno local.
+ * - Detiene la instancia activa de dev-server.js asociada al entorno local.
  * @return {Promise<void>}
  */
 const main = async () => {
@@ -41,9 +41,9 @@ const main = async () => {
     //  -----  detener la instancia con la lógica compartida  -----
     await stopServerInstance({
 
-        ports: PREVIEW_SERVER_PORTS,
-        serverScript: PREVIEW_SERVER_SCRIPT,
-        instanceLabel: PREVIEW_SERVER_LABEL,
+        ports: DEV_SERVER_PORTS,
+        serverScript: DEV_SERVER_SCRIPT,
+        instanceLabel: DEV_SERVER_LABEL,
         projectRoot: PROJECT_ROOT,
     });
 };

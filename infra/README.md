@@ -1,6 +1,6 @@
 # infra/ — configuración del servidor de producción
 
-El runtime de desarrollo sigue en `server/`. Esta carpeta describe el proceso Node que atiende `{SITE_BASE}/api` en el VPS. Nada de esto se ejecuta con `pnpm dev` ni con `pnpm preview`.
+El runtime de desarrollo y preview vive en `packages/spa-server/` (`@antonydev/spa-server`). Esta carpeta describe el proceso Node que atiende `{SITE_BASE}/api` en el VPS. Nada de `infra/` se ejecuta con `pnpm dev` ni con `pnpm preview`.
 
 ```
 infra/
@@ -15,7 +15,7 @@ infra/
 | Carpeta | Qué es | Cuándo corre |
 |---|---|---|
 | `api/` | runtime Node: routers compartidos, servidor standalone y dependencias del paquete | dev (`pnpm dev`) y prod (systemd `jquery-node`) |
-| `server/` | runtime de desarrollo y preview (Node, php-cgi). Preview no monta `/api` | solo local |
+| `packages/spa-server/` | runtime de desarrollo y preview (Node, php-cgi). Preview no monta `/api` | solo local |
 | `src/services/` | endpoints PHP (viajan en el build) | dev (php-cgi) y prod (PHP-FPM) |
 | `infra/` | configuración del proceso Node de producción | solo en el VPS |
 

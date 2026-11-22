@@ -14,12 +14,14 @@
 
 packages:
   - api
+  - packages/spa-server
 
 allowBuilds:
   '@parcel/watcher': true
   sharp: true
 
 catalog:
+  browser-sync: ^3.0.3
   dotenv: ^16.4.7
   express: ^5.1.0
   mysql2: ^3.24.5
