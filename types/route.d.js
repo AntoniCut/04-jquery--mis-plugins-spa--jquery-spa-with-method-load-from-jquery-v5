@@ -1,14 +1,61 @@
 /*
-    *  --------------------------------------------  *
+    *  ------------------------------------------------  *
     *  -----  /route.d.js  --  /types/route.d.js  -----  *
-    *  --------------------------------------------  *
+    *  ------------------------------------------------  *
 */
 
 
-/// <reference path="./route-components.d.js" />
-/// <reference path="./route-script.d.js" />
-/// <reference path="./route-style.d.js" />
-/// <reference path="./route-lib.d.js" />
+/**
+ * -------------------------------
+ * -----  `RouteComponents`  -----
+ * -------------------------------
+ * @typedef {Record<string, string|undefined>} RouteComponents
+ * - Mapa de componentes HTML a cargar dinámicamente.
+ * - Cada valor puede ser string o undefined.
+ * - Objeto dinámico donde la clave es el selector CSS
+ *   y el valor es la ruta al archivo HTML que se cargará en ese contenedor.
+ *
+ *     - Ejemplo:
+ *     - {
+ *         - "#layoutHeader": "/app/components/layout/header.html",
+ *         - "#layoutMain": "/app/pages/home.html",
+ *         - "#widgetPromo": "/app/components/widgets/promo.html"
+ *      - }
+ */
+
+
+
+/**
+ * ----------------------------------
+ * -----  `PageComponentEntry`  -----
+ * ----------------------------------
+ * @typedef {Object} PageComponentEntry - Entrada de componente HTML que se renderiza dentro de la propia página actual.
+ *                                        A diferencia de `components` (que pueblan regiones del layout mediante ID),
+ *                                        `pagesComponents` inyecta HTML en contenedores de la propia vista usando selectores CSS arbitrarios.
+ * @property {string} url - URL absoluta al archivo .html del componente de página.
+ * @property {string} target - Selector CSS del contenedor DOM donde se insertará el componente (p.ej. `'[data-component-page="htmlPage"]'`). Permite renderizar varios componentes en la misma página.
+ */
+
+
+
+/**
+ * --------------------------
+ * -----  `RouteStyle`  -----
+ * --------------------------
+ * @typedef {Object} RouteStyle - Representa una hoja de estilos que debe cargarse dinámicamente.
+ * @property {string} href - Ruta absoluta o relativa del archivo CSS.
+ */
+
+
+/**
+ * ---------------------------
+ * -----  `RouteScript`  -----
+ * ---------------------------
+ * @typedef {Object} RouteScript - Representa un script que debe cargarse dinámicamente.
+ * @property {string} src - Ruta absoluta o relativa del archivo JS.
+ * @property {'classic'|'module'} [type] - Tipo de carga del script. Por defecto `classic`.
+ * @property {string|null} [exportFunctionName] - Nombre de una función exportada a ejecutar tras importar un módulo.
+ */
 
 
 /**
@@ -23,17 +70,6 @@
  * @property {string} target - Selector CSS del contenedor DOM donde se insertará el HTML (p.ej. `'[data-shiki="codeHtml"]'`). Permite múltiples archivos del mismo tipo sin colisión de IDs.
  */
 
-
-/**
- * ---------------------------------
- * -----  `PageComponentEntry`  -----
- * ---------------------------------
- * @typedef {Object} PageComponentEntry - Entrada de componente HTML que se renderiza dentro de la propia página actual.
- *                                        A diferencia de `components` (que pueblan regiones del layout mediante ID),
- *                                        `pagesComponents` inyecta HTML en contenedores de la propia vista usando selectores CSS arbitrarios.
- * @property {string} url - URL absoluta al archivo .html del componente de página.
- * @property {string} target - Selector CSS del contenedor DOM donde se insertará el componente (p.ej. `'[data-component-page="htmlPage"]'`). Permite renderizar varios componentes en la misma página.
- */
 
 
 /**

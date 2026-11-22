@@ -4,7 +4,7 @@
     *  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------  *
 */
 
-//@ts-nocheck
+
 export const actionsNavbarsWithJQueryJQueryUIPlugins = () => {
 
     (($) => {
@@ -16,6 +16,7 @@ export const actionsNavbarsWithJQueryJQueryUIPlugins = () => {
                 menus: [],
                 openEffect: 'slideDown',
                 closeEffect: 'slideUp',
+                
                 duration: 250
             }, options);
 
@@ -80,16 +81,7 @@ export const actionsNavbarsWithJQueryJQueryUIPlugins = () => {
                 });
 
                 
-                /**
-                 * API object containing references to DOM elements and menu control functions.
-                 * @typedef {Object} API
-                 * @property {jQuery} container - jQuery object representing the menu container element
-                 * @property {jQuery} btnOpen - jQuery object representing the button that opens the menu
-                 * @property {jQuery} btnClose - jQuery object representing the button that closes the menu
-                 * @property {Function} openMenu - Function to open the menu
-                 * @property {Function} closeMenu - Function to close the menu
-                 */
-                
+                /** @type {ActionsNavbarApi} - referencias y acciones del menú */
                 const api = {
                     container: $container,
                     btnOpen: $btnOpen,

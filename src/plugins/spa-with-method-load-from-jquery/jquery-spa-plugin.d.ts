@@ -6,12 +6,7 @@
 */
 
 
-import $ from "jquery";
-
-
-declare global {
-    
-    interface JQuery {
+interface JQuery {
         
         /**
          * ----------------------------------------------------
@@ -23,8 +18,4 @@ declare global {
          */
         spaWithMethodLoadFromJQuery(options: ConfigOptionsSPA): JQuery;
 
-    }
-
 }
-
-export { };

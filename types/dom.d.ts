@@ -5,10 +5,6 @@
 */
 
 
-/// <reference lib="dom" />
-/// <reference lib="es2022" />
-
-
 /**
  * --------------------------------------------------------
  *  - Tipos DOM extendidos para compatibilidad

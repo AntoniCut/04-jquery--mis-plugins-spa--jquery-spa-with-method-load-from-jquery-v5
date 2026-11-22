@@ -15,7 +15,7 @@ import { loadJQueryUIByLocal } from './load-jquery-ui-by-local.js';
  * 
  *  - `Carga jQuery UI desde un CDN`.
  * 
- * @param {CDNJQueryUI} cdnJQueryUI - Configuración del CDN de jQuery UI
+ * @param {CDNScript} cdnJQueryUI - Configuración del CDN de jQuery UI
  * @param {string} localJQueryUI - Ruta local para cargar jQuery UI en caso de fallo del CDN.
  * @param {(jQuery: JQueryStatic) => void} resolve - Callback al cargarse jQuery UI
  * @param {(error: Error) => void} reject - Callback si ocurre un error

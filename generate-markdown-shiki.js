@@ -51,26 +51,6 @@ import { fileURLToPath } from 'node:url';
 import { base } from './src/config/site-base.js';
 
 
-/** 
- * --------------------------------
- * -----  type `RouteModule`  -----
- * --------------------------------
- *  - `Módulo de ruta: cada export es una Route`
- * @typedef {Record<string, Route>} RouteModule 
- */
-
-
-/**
- * -----------------------------------
- * -----  type `ShikiGenResult`  -----
- * -----------------------------------
- * - Resultado de la generación de un bloque markdown shiki.
- * @typedef {Object} ShikiGenResult
- * @property {'generated' | 'skipped'} status - `si el bloque se escribió o se omitió`
- * @property {string} message - `texto que se muestra en consola`
- */
-
-
 /** - `directorio de este script` */
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

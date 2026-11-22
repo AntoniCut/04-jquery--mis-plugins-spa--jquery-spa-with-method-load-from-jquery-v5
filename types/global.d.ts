@@ -4,20 +4,16 @@
     *  -------------------------------------------------  *
 */
 
-//  -----  Referencias a otros archivos de tipos  -----  //
-/// <reference path="./dom.d.ts" />
-
 
 //  -----  Declaración de tipos globales  -----  //
-declare global {
+interface Window {
     
-    interface Window {
-        __spaFirstRouteLoaded?: boolean;
-        $: JQueryStatic;
-        jQuery: JQueryStatic;
-    }
-       
+    /** - `Marca de la primera ruta` */
+    __spaFirstRouteLoaded?: boolean;
+    
+    /** - `JQuery` $ = jQuery*/
+    $: JQueryStatic;
+    
+    /** - `jQuery` jQuery = $*/
+    jQuery: JQueryStatic;
 }
-
-//  -----  Exportación de tipos globales  -----  //
-export {};

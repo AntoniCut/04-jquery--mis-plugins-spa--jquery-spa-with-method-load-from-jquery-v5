@@ -16,7 +16,7 @@ import { loadJQueryByLocal } from './load-jquery-by-local.js';
  * 
  *  - `Carga jQuery desde un CDN con fallback a local si falla`
  * 
- * @param {CDNJQuery|null|undefined} cdnJQuery - Objeto con la configuración del CDN de jQuery. 
+ * @param {CDNScript|null|undefined} cdnJQuery - Objeto con la configuración del CDN de jQuery. 
  * - Si es `null` o `undefined`, se cargará jQuery directamente desde la ruta local
  * @param {string} localJQuery - Ruta local (URL relativa o absoluta) del archivo jQuery a cargar en caso de que falle la carga desde el CDN
  * @returns {Promise<JQueryStatic>} - Promesa que se resuelve con el objeto `jQuery` cuando jQuery se ha cargado correctamente.
