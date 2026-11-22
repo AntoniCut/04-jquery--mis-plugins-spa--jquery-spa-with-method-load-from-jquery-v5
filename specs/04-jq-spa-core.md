@@ -1,6 +1,6 @@
 # SPEC 04 — `@antonydev/jq-spa-core`
 
-> **Estado:** En progreso (paso 5)
+> **Estado:** Implementado
 > **Depende de:** SPEC 03 implementada (`specs/03-spa-build.md`)
 > **Referencia:** SPEC 04 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22
@@ -102,6 +102,7 @@ Subpaths adicionales se añaden solo donde `app/spa/spa.js` u otros módulos del
 {
   "name": "@antonydev/jq-spa-core",
   "exports": {
+    ".": "./src/start.js",
     "./start.js": "./src/start.js",
     "./package.json": "./package.json"
   }
@@ -119,16 +120,26 @@ Subpaths adicionales se añaden solo donde `app/spa/spa.js` u otros módulos del
 
 ## Criterios de aceptación
 
-- [ ] Existe `packages/jq-spa-core/` como `@antonydev/jq-spa-core` en el workspace.
-- [ ] No queda el plugin v5 ni los árboles movidos bajo `src/libs/jquery/` o `src/libs/jquery-module/` (salvo carpetas vacías o notas si se dejan de transición).
-- [ ] `src/main.js` solo orquesta `effectLoadingPage`, reexport de `base`, `start()` e `initSpa: spa` (sin funciones `loadJQueryModule` / `loadJQueryClassic` locales).
-- [ ] `index.html` incluye import map **antes** del `<script type="module">` de `app/main.js`.
-- [ ] Tras `pnpm refresh`, existe `app/framework/jq-spa-core/` y el navegador carga la SPA sin error de resolución de módulos en consola.
+- [x] Existe `packages/jq-spa-core/` como `@antonydev/jq-spa-core` en el workspace.
+- [x] No queda el plugin v5 ni los árboles movidos bajo `src/libs/jquery/` o `src/libs/jquery-module/` (salvo carpetas vacías o notas si se dejan de transición).
+- [x] `src/main.js` solo orquesta `effectLoadingPage`, reexport de `base`, `start()` e `initSpa: spa` (sin funciones `loadJQueryModule` / `loadJQueryClassic` locales).
+- [x] `index.html` incluye import map **antes** del `<script type="module">` de `app/main.js`.
+- [x] Tras `pnpm refresh`, existe `app/framework/jq-spa-core/` y el navegador carga la SPA sin error de resolución de módulos en consola.
 - [ ] `pnpm dev` y `pnpm preview` (tras `build`): home + rutas del manifiesto sin 404 del shell; jQuery UI (datepicker, draggable, tooltips) sigue funcionando en las páginas que lo usan.
-- [ ] `pnpm build` genera `dist/` con import map y carpeta `dist/app/framework/jq-spa-core/` (o rutas equivalentes bajo `dist/app/`).
-- [ ] `src/plugins/actions-navbars-with-jquery-jquery-ui/` sigue en el repo y **no** se importa desde el core ni desde `main.js`.
-- [ ] Ningún archivo en `packages/jq-spa-core/src/` importa estáticamente rutas bajo `src/` del proyecto (salvo `import()` dinámico si en el futuro hiciera falta, no requerido aquí).
-- [ ] `rg 'jquery-module/jquery' app/` tras refresh: los entrypoints del core vienen de `app/framework/jq-spa-core/` o del map, no duplicados innecesarios en `app/libs/jquery-module/` por la misma versión vendor (criterio visual: una sola fuente de verdad documentada en AGENTS).
+- [x] `pnpm build` genera `dist/` con import map y carpeta `dist/app/framework/jq-spa-core/` (o rutas equivalentes bajo `dist/app/`).
+- [x] `src/plugins/actions-navbars-with-jquery-jquery-ui/` sigue en el repo y **no** se importa desde el core ni desde `main.js`.
+- [x] Ningún archivo en `packages/jq-spa-core/src/` importa estáticamente rutas bajo `src/` del proyecto (salvo `import()` dinámico si en el futuro hiciera falta, no requerido aquí).
+- [x] `rg 'jquery-module/jquery' app/` tras refresh: los entrypoints del core vienen de `app/framework/jq-spa-core/` o del map, no duplicados innecesarios en `app/libs/jquery-module/` por la misma versión vendor (criterio visual: una sola fuente de verdad documentada en AGENTS).
+
+## Verificación (paso 6)
+
+| Comando / comprobación | Resultado (2026-11-22) |
+|---|---|
+| `pnpm refresh` | `app/framework/jq-spa-core/start.js` y vendor bajo `app/framework/.../jquery-module/` |
+| `pnpm build` | `dist/index.html` conserva `importmap`; `dist/app/framework/jq-spa-core/` presente |
+| `rg 'jquery-module/jquery' app/` | Sin coincidencias en `app/libs/` (solo framework) |
+| `grep actions-navbars src/main.js` | Sin import |
+| Dev / preview en navegador | Validar home, `stack/jquery-ui-page` (datepicker, draggable, tooltips) y menú de themes |
 
 ## Decisiones
 

@@ -148,23 +148,31 @@ Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo res
 
 ## Uso del plugin
 
-`src/main.js` elige el modo de carga. Con `isJQueryModule = true` importa jQuery como módulo ESM, registra el plugin, arranca la SPA y precarga jQuery UI en background tras `window load`. Con `false` usa el fallback CDN → local de `fallbackJQueryJQueryUI()`.
+El **motor** (jQuery, loaders, plugin SPA v5 y bootstrap) vive en `@antonydev/jq-spa-core` (`packages/jq-spa-core/`). Gulp lo publica en `app/framework/jq-spa-core/` y `index.html` declara un **import map** antes de `app/main.js`:
 
-La configuración del sitio está en `src/spa/spa.js`:
+```html
+<script type="importmap">
+{
+    "imports": {
+        "@antonydev/jq-spa-core": "app/framework/jq-spa-core/start.js",
+        "@antonydev/jq-spa-core/": "app/framework/jq-spa-core/"
+    }
+}
+</script>
+```
+
+`src/main.js` solo aplica el loader visual, reexporta `base` y delega en `start()`:
 
 ```javascript
-import { spaWithMethodLoadFromJQueryPlugins } from './plugins/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js';
+import { start } from '@antonydev/jq-spa-core';
+import { spa } from './spa/spa.js';
 
-spaWithMethodLoadFromJQueryPlugins();
-
-$('#layout').spaWithMethodLoadFromJQuery({
-    routeManifest,
-    routeModulesBase: `${base}/app/routes`,
-    base,
-    draggable: true,
-    libLoader: loadJQueryUILib,
-});
+start({ isJQueryModule: true, initSpa: spa });
 ```
+
+Con `isJQueryModule: true`, el core carga jQuery ESM, registra el plugin, llama a `spa()` y precarga jQuery UI tras `window` `load`. Con `false`, usa fallback CDN → local.
+
+La configuración del sitio está en `src/spa/spa.js` (exporta `spa()` e importa `loadJQueryUILib` desde el map del core).
 
 `defaultSettings` del plugin deja `routeManifest` vacío, `draggable` en `false` y `libLoader` en `null`. `$.extend` las sustituye por las opciones del proyecto.
 
@@ -225,13 +233,12 @@ Array con `fileName`, `fileExtension`, `urlInput`, `urlOutput` y `target` (`[dat
 ```
 jquery-spa-with-method-load-from-jquery-v5/
 │
-├── index.html                        # Shell: <base>, #layout y entrada ESM
+├── index.html                        # Shell: <base>, import map, #layout y app/main.js
 ├── src/                              # Código fuente (origen de verdad)
-│   ├── main.js                       # Carga jQuery, registra el plugin y arranca la SPA
+│   ├── main.js                       # effectLoadingPage + start() del core
 │   ├── spa/spa.js                    # Opciones del plugin para este proyecto
 │   ├── plugins/
-│   │   ├── spa-with-method-load-from-jquery/v5/
-│   │   └── actions-navbars-with-jquery-jquery-ui/
+│   │   └── actions-navbars-with-jquery-jquery-ui/  # ejemplo; no lo usa main.js
 │   ├── routes/                       # paths.js, manifiesto y un módulo por ruta
 │   ├── pages/                        # Shell HTML por vista
 │   ├── pages-components/             # Fragmentos inyectados en cada vista
@@ -240,7 +247,6 @@ jquery-spa-with-method-load-from-jquery-v5/
 │   ├── scss/                         # Estilos (globals + páginas)
 │   ├── assets/                       # Imágenes, fuentes y favicons (Gulp lo publica en app/assets)
 │   ├── effects/effect-loading-page.js
-│   ├── libs/                         # jQuery clásico, themes y carga por módulo ESM
 │   ├── markdown-shiki/               # HTML Shiki generado (no editar a mano)
 │   └── services/                     # PHP de la consulta MySQL (load-env.php, mysql/query.php)
 │
@@ -253,7 +259,8 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── infra/                            # systemd, nginx y provision de jquery-node
 ├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
 ├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki y conversión AVIF
-├── spa.config.js                     # Carpetas del build y vendors (plantilla: spa.config.js.example)
+├── packages/jq-spa-core/             # @antonydev/jq-spa-core → app/framework/jq-spa-core/
+├── spa.config.js                     # Carpetas, framework.jqSpaCore y vendors (plantilla: .example)
 └── gulpfile.js                       # Registro fino: dotenv + spa.config + @antonydev/spa-build
 ```
 
@@ -268,7 +275,7 @@ El motor está en **`@antonydev/spa-build`** (`packages/spa-build/`). El proyect
 3. **`pnpm build`** — Limpia `dist/`, regenera `app/` y minifica HTML, CSS y JS hacia `dist/`.
 4. **`pnpm preview`** — Sirve `dist/` con fallback SPA.
 
-Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_modules` a `app/libs/jquery-module/` según `spa.config.js` → `vendor`. No se editan a mano.
+`copyFrameworkJqSpaCore` publica el árbol de `packages/jq-spa-core/src/` en `app/framework/jq-spa-core/`. El módulo ESM de jQuery y los widgets UI de `node_modules` se copian dentro de ese árbol (`spa.config.js` → `framework` y `vendor`). No se editan a mano en `app/`.
 
 ---
 

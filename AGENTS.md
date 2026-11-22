@@ -11,7 +11,7 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | Carpeta | Trato |
 |---|---|
 | `src/` | Origen de verdad. Aquí va el código nuevo |
-| `index.html`, `gulpfile.js`, `spa.config.js`, `packages/spa-server/`, `packages/spa-build/`, `api/`, `infra/`, `types/` | Se editan cuando el cambio lo pide |
+| `index.html`, `gulpfile.js`, `spa.config.js`, `packages/spa-server/`, `packages/spa-build/`, `packages/jq-spa-core/`, `api/`, `infra/`, `types/` | Se editan cuando el cambio lo pide |
 | `app/` | Salida de Gulp. No se edita a mano |
 | `dist/` | Build de producción. No se edita a mano |
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
@@ -46,13 +46,15 @@ Los tipos están en `types/route.d.js`, `types/route-manifest.d.js` y `types/con
 
 ## Plugin y arranque
 
-- El motor es `packages/jq-spa-core/src/plugins/spa-with-method-load-from-jquery/v5/jquery.spa-with-method-load-from-jquery.js`.
-- La configuración de este sitio es solo `src/spa/spa.js`. No metas opciones de proyecto dentro del plugin.
+- El motor del navegador es **`@antonydev/jq-spa-core`** (`packages/jq-spa-core/`). Fuente en workspace; runtime en **`app/framework/jq-spa-core/`** tras `pnpm refresh` (`copyFrameworkJqSpaCore` + vendor jQuery/UI dentro del framework).
+- `index.html` lleva **import map** antes de `<script type="module" src="app/main.js">` (`@antonydev/jq-spa-core` → `app/framework/jq-spa-core/start.js` y subpath `/`).
+- `src/main.js` llama a `start({ isJQueryModule, initSpa: spa })`; la lógica de carga jQuery/plugin está en `packages/jq-spa-core/src/start.js`.
+- La configuración del sitio es solo `src/spa/spa.js`. No metas opciones de proyecto dentro del plugin. `loadJQueryUILib` se importa por el import map (`@antonydev/jq-spa-core/libs/...`).
 - `defaultSettings` define los valores por defecto. `$.extend({}, defaultSettings, options)` produce `settings`.
-- `src/main.js` arranca en modo módulo (`isJQueryModule = true`): import ESM, registro del plugin, `spa()` y precarga de jQuery UI tras `window load`. El fallback CDN → local es el otro camino.
-- Tras inyectar `components`, `actionsNavbar()` (dentro del plugin SPA) abre y cierra el menú principal y el de themes. El HTML y el SCSS están en `src/components/layout/layout-navbar.html` y `src/scss/components/layout/_layout-navbar.scss`.
+- Tras inyectar `components`, `actionsNavbar()` (dentro del plugin SPA) abre y cierra el menú principal y el de themes. El HTML y el SCSS están en `src/components/layout/layout-navbar.html` y `src/scss/components/layout/_layout-navbar.scss`. Themes CSS: `app/framework/jq-spa-core/libs/jquery/ui/themes/`.
 - `src/plugins/actions-navbars-with-jquery-jquery-ui/` es una pieza aparte. La SPA v5 no la importa. El comportamiento activo es `actionsNavbar()`.
 - La inyección de vistas usa `jQuery.load()` y `.html()`. Ese es el contrato del plugin. No lo sustituyas por `createElement` ni por un router de terceros.
+- Una sola copia del vendor ESM: `app/framework/jq-spa-core/libs/jquery-module/jquery/` (no duplicar en `app/libs/jquery-module/`).
 
 ## Consulta MySQL
 
