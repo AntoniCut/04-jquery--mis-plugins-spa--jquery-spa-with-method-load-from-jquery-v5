@@ -54,9 +54,6 @@ importers:
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4
-      browser-sync:
-        specifier: 'catalog:'
-        version: 3.0.4(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.3
@@ -69,9 +66,6 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
-      express:
-        specifier: 'catalog:'
-        version: 5.2.1(supports-color@8.1.1)
       gulp:
         specifier: ^5.0.1
         version: 5.0.1

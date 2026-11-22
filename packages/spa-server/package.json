@@ -8,7 +8,9 @@
         "./package.json": "./package.json",
         "./site-base.js": "./src/site-base.js",
         "./dev-server.js": "./src/dev-server.js",
-        "./preview-server.js": "./src/preview-server.js"
+        "./preview-server.js": "./src/preview-server.js",
+        "./stop-dev-server.js": "./src/stop-dev-server.js",
+        "./stop-preview-server.js": "./src/stop-preview-server.js"
     },
     "engines": {
         "node": ">=24.0.0"
