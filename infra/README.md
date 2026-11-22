@@ -4,7 +4,8 @@ El runtime de desarrollo sigue en `server/`. Esta carpeta describe el proceso No
 
 ```
 infra/
-├── nginx/       Fragmento location de {SITE_BASE}/api/ para el server {} del dominio
+├── nginx/       Site file del dominio + fragmentos: estáticos de v5 y {SITE_BASE}/api Node
+├── php-fpm/     Notas operativas (dueño/permisos del .env)
 ├── systemd/     Unit jquery-node.service
 └── provision/   Node 24, directorio /opt y enable de la unit
 ```
@@ -17,6 +18,14 @@ infra/
 | `server/` | runtime de desarrollo y preview (Node, php-cgi). Preview no monta `/api` | solo local |
 | `src/services/` | endpoints PHP (viajan en el build) | dev (php-cgi) y prod (PHP-FPM) |
 | `infra/` | configuración del proceso Node de producción | solo en el VPS |
+
+## Site file del dominio
+
+- `nginx/jquery.antonydev.tech.conf` es el site file completo de `jquery.antonydev.tech`: va en `sites-available` con symlink en `sites-enabled`. No es un fragmento; reemplaza al archivo del VPS.
+- También sirve la raíz Astro, v4, udemy y escuelait. Un reemplazo pisa esas locations: el archivo del repo tiene que ser el del VPS, con el `listen` vigente.
+- El bloque estático de v5 vive además en `jquery.antonydev.tech-mis-plugins-spa.conf`. El API Node está solo en `jquery.antonydev.tech-api.conf`. El site file lo incluye desde `/etc/nginx/snippets/jquery.antonydev.tech-api.conf`.
+- No hay `location ^~ /api/` en la raíz del dominio.
+- Se aplica a mano: backup del site file, copia del fragmento a `snippets/`, reemplazo del site file, `nginx -t` y `systemctl reload nginx`. El `include` falla si el fragmento todavía no está en `snippets/`.
 
 ## API Node en producción
 
@@ -32,7 +41,7 @@ infra/
 ## Orden en el VPS
 
 1. Como root, con esta carpeta presente: `bash infra/provision/provision-node-api.sh`.
-2. Pegar `nginx/jquery.antonydev.tech-api.conf` dentro del `server {}` de `jquery.antonydev.tech`. `nginx -t` y recargar.
+2. Copiar `nginx/jquery.antonydev.tech-api.conf` a `/etc/nginx/snippets/`. Reemplazar el site file con `nginx/jquery.antonydev.tech.conf`. `nginx -t` y recargar.
 3. `./deploy.sh` arma el artefacto del API con `pnpm deploy`, lo sube a `/opt/jquery-node-api` e hace `systemctl restart jquery-node`. El VPS no instala dependencias.
 
 El provision no instala ni reemplaza el motor de base de datos.
