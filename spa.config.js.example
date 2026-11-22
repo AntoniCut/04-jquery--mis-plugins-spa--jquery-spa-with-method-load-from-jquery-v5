@@ -100,6 +100,12 @@ const spaBuildConfig = {
         jqueryUiWidgets,
     },
 
+    //  -----  framework: jq-spa-core (libs jquery y plugin SPA) hasta app/framework en paso 4  -----
+    framework: {
+        jqSpaCore: 'packages/jq-spa-core/src',
+        jqSpaCoreApp: 'app/framework/jq-spa-core',
+    },
+
     //  -----  extraCopy: globs adicionales src → app (vacío en el prototipo)  -----
     extraCopy: [],
 

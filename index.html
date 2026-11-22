@@ -27,9 +27,9 @@
     <!--  ----------  Configuración móvil  ----------  -->
     <meta name="theme-color" content="#c3c4f9">
         
-    <!--  -----  Themes jQuery UI  -----  -->
-    <link rel="preload" href="app/libs/jquery/ui/themes/base/jquery-ui.min.css" as="style">
-    <link rel="stylesheet" href="app/libs/jquery/ui/themes/base/jquery-ui.min.css" id="theme">
+    <!--  -----  Themes jQuery UI (framework jq-spa-core)  -----  -->
+    <link rel="preload" href="app/framework/jq-spa-core/libs/jquery/ui/themes/base/jquery-ui.min.css" as="style">
+    <link rel="stylesheet" href="app/framework/jq-spa-core/libs/jquery/ui/themes/base/jquery-ui.min.css" id="theme">
 
     <!--  -----  Styles Globales  -----  -----  -->
     <link rel="preload" href="app/css/globals.css" as="style">
@@ -114,6 +114,16 @@
         
     </div>
 
+
+    <!--  -----  Import map (antes del entry module; rutas relativas al base href)  -----  -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@antonydev/jq-spa-core": "./app/framework/jq-spa-core/start.js",
+            "@antonydev/jq-spa-core/": "./app/framework/jq-spa-core/"
+        }
+    }
+    </script>
 
     <!--  -----  Script Main  -----  -->
     <script type="module" src="app/main.js"> </script>

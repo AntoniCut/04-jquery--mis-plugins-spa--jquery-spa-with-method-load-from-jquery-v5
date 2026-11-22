@@ -16,6 +16,7 @@ packages:
   - api
   - packages/spa-server
   - packages/spa-build
+  - packages/jq-spa-core
 
 allowBuilds:
   '@parcel/watcher': true
