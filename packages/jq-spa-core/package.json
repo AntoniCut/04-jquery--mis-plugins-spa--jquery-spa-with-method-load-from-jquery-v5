@@ -1,0 +1,16 @@
+{
+    "name": "@antonydev/jq-spa-core",
+    "version": "0.0.0",
+    "private": true,
+    "description": "jQuery, loaders, plugin SPA v5 y start() para el navegador (piloto del workspace)",
+    "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": "./src/start.js",
+        "./start.js": "./src/start.js"
+    },
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "license": "ISC"
+}

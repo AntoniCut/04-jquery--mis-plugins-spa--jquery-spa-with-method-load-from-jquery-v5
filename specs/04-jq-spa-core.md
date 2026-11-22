@@ -1,6 +1,6 @@
 # SPEC 04 — `@antonydev/jq-spa-core`
 
-> **Estado:** Aprobado
+> **Estado:** En progreso (paso 1)
 > **Depende de:** SPEC 03 implementada (`specs/03-spa-build.md`)
 > **Referencia:** SPEC 04 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22

@@ -20,6 +20,7 @@
         "spa.config.js.example",
         "packages/spa-server",
         "packages/spa-build",
+        "packages/jq-spa-core",
         "api"
     ],
     "exclude": [
