@@ -1,6 +1,6 @@
 # SPEC 05 — `@antonydev/spa-loading-effect`
 
-> **Estado:** En progreso (paso 2)
+> **Estado:** En progreso (paso 4)
 > **Depende de:** SPEC 04 implementada (`specs/04-jq-spa-core.md`)
 > **Referencia:** SPEC 05 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22

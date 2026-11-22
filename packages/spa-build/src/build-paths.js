@@ -110,10 +110,6 @@ export const buildPaths = (config) => {
 
             components: path.posix.join(src, 'components', '**/*'),
 
-            effectsDir: path.join(src, 'effects'),
-
-            effects: path.posix.join(src, 'effects', '**/*'),
-
             fontsDir: path.join(src, 'fonts'),
 
             fonts: path.posix.join(src, 'fonts', '**/*'),
