@@ -1767,7 +1767,7 @@ export const spaWithMethodLoadFromJQueryPlugins = () => {
                     return;
 
                 /** @type {string} - `Path de las themes de jQuery UI` */
-                const pathThemes = `${settings.base}/app/libs/jquery/ui/themes`;
+                const pathThemes = `${settings.base}/app/framework/jq-spa-core/libs/jquery/ui/themes`;
 
                 //  -----  dejar en consola la path de las themes de jQuery UI  -----
                 console.log('\n');

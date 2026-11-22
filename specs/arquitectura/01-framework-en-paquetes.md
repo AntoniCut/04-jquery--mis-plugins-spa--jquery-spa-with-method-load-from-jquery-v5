@@ -24,7 +24,7 @@ El día que se publiquen en npm solo cambia esa versión.
 | `@antonydev/spa-server` | `server/` (dev, preview, stop, puerto libre) y `src/config/site-base.js` | Node, solo local |
 | `@antonydev/spa-build` | Tareas de `gulpfile.js` y motor de `generate-markdown-shiki.js` | Node, build |
 | `@antonydev/spa-loading-effect` | `src/effects/effect-loading-page.js` | Navegador |
-| `@antonydev/jq-spa-core` | `src/libs/jquery/`, `src/libs/jquery-module/`, plugin SPA v5 y `start()` (arranque de `src/main.js`) | Navegador |
+| `@antonydev/jq-spa-core` | `packages/jq-spa-core/src/` (libs jQuery, loaders ESM, plugin SPA v5, `start()`) → `app/framework/jq-spa-core/` | Navegador |
 
 `spa-server`, `spa-build` y `spa-loading-effect` no dependen de jQuery y se diseñan para que JS-SPA-V5 los consuma igual.
 
@@ -36,7 +36,7 @@ El día que se publiquen en npm solo cambia esa versión.
 | `src/main.js` | Desarrollador | Se reduce a importar `start()` y pasarle las opciones |
 | `src/routes/`, `src/pages/`, `src/pages-components/`, `src/components/`, `src/scss/`, `src/scripts/`, `src/services/` | Desarrollador | Contenido de la SPA |
 | `src/assets/` | Desarrollador | Imágenes, fuentes y favicons. Sale de la raíz en SPEC 01 |
-| `src/libs/`, `src/plugins/` | Desarrollador | Quedan para librerías y plugins de terceros |
+| `src/plugins/` (p. ej. actions-navbars) | Desarrollador | Plugins de terceros; el core SPA vive en jq-spa-core |
 | `spa.config.js` | Desarrollador | Carpetas extra para Gulp y opciones de Shiki |
 | `.env` | Desarrollador | Puertos y `SITE_BASE`. No se mueven a `spa.config.js` |
 | `index.html` | Desarrollador | Shell con `<base href>` y el import map |

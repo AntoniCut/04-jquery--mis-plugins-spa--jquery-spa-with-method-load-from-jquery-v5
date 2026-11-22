@@ -14,12 +14,13 @@
     "include": [
         "types",
         "src",
-        "src/libs/jquery/**/cdn/*.min.js",
+        "packages/jq-spa-core/src/libs/jquery/**/cdn/*.min.js",
         "gulpfile.js",
         "spa.config.js",
         "spa.config.js.example",
         "packages/spa-server",
         "packages/spa-build",
+        "packages/jq-spa-core",
         "api"
     ],
     "exclude": [

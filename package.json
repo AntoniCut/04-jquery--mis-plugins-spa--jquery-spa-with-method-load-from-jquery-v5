@@ -48,6 +48,7 @@
         "node": ">=24.0.0"
     },
     "devDependencies": {
+        "@antonydev/jq-spa-core": "workspace:*",
         "@antonydev/spa-build": "workspace:*",
         "@antonydev/spa-server": "workspace:*",
         "@types/gulp": "^4.0.18",

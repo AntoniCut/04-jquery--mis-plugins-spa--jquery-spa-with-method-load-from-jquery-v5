@@ -663,9 +663,15 @@ const copyFonts = createCopyTask('copyFonts', { glob: paths.src.fonts, checkPath
  * --------------------------
  * -----  `copyLibs()`  -----
  * --------------------------
- * - Copia src/libs/ a app/libs/.
+ * - Copia packages/jq-spa-core/src/ a app/framework/jq-spa-core/ (SPEC 04 paso 4).
  */
-const copyLibs = createCopyTask('copyLibs', { glob: paths.src.libs, checkPath: paths.src.libsDir, binary: true });
+const copyFrameworkJqSpaCore = createCopyTask('copyFrameworkJqSpaCore', {
+    glob: paths.jqSpaCore.publish,
+    checkPath: paths.jqSpaCore.root,
+    base: paths.jqSpaCore.root,
+    destDir: paths.jqSpaCore.appDir,
+    binary: true,
+});
 
 
 
@@ -783,13 +789,13 @@ const copyScripts = createCopyTask('copyScripts', {
  * ----------------------------------
  * -----  `copyVendorJQuery()`  -----
  * ----------------------------------
- * - Copia el módulo minificado de jQuery a app/libs/jquery-module/jquery/.
+ * - Copia el módulo minificado de jQuery al árbol framework/jq-spa-core.
  */
 const copyVendorJQuery = createCopyTask('copyVendorJQuery', {
     glob: paths.vendor.jqueryDistModule,
     checkPath: paths.vendor.jqueryDistModuleDir,
     base: paths.vendor.jqueryDistModuleDir,
-    destDir: path.posix.join(paths.appRoot, 'libs', 'jquery-module', 'jquery'),
+    destDir: paths.jqSpaCore.vendorJqueryDest,
 });
 
 
@@ -798,13 +804,13 @@ const copyVendorJQuery = createCopyTask('copyVendorJQuery', {
  * ------------------------------------
  * -----  `copyVendorJQueryUI()`  -----
  * ------------------------------------
- * - Copia los módulos de jQuery UI usados por draggable y tooltip a app/libs/jquery-module/jquery-ui/.
+ * - Copia los módulos jQuery UI usados al árbol framework/jq-spa-core.
  */
 const copyVendorJQueryUI = createCopyTask('copyVendorJQueryUI', {
     glob: paths.vendor.jqueryUIUi,
     checkPath: paths.vendor.jqueryUIUiDir,
     base: paths.vendor.jqueryUIDir,
-    destDir: path.posix.join(paths.appRoot, 'libs', 'jquery-module', 'jquery-ui'),
+    destDir: paths.jqSpaCore.vendorJqueryUiDest,
 });
 
 
@@ -992,7 +998,7 @@ const buildSources = parallel(
     copyComponents,
     copyEffects,
     copyFonts,
-    copyLibs,
+    copyFrameworkJqSpaCore,
     copyVendorModules,
     copyPages,
     copyPagesComponents,
@@ -1056,7 +1062,7 @@ const watchTask = () => {
         [paths.src.components, copyComponents],
         [paths.src.effects, copyEffects],
         [paths.src.fonts, copyFonts],
-        [paths.src.libs, copyLibs],
+        [paths.jqSpaCore.publish, copyFrameworkJqSpaCore],
         [['package.json', 'pnpm-lock.yaml'], copyVendorModules],
         [paths.src.markdownShiki, copyMarkdownShiki],
         [paths.src.pages, copyPages],
@@ -1419,7 +1425,7 @@ const build = series(
         copyComponents,
         copyEffects,
         copyFonts,
-        copyLibs,
+        copyFrameworkJqSpaCore,
         copyMarkdownShiki,
         copyPages,
         copyPagesComponents,
