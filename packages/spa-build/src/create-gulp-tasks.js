@@ -643,9 +643,14 @@ const copyComponents = createCopyTask('copyComponents', { glob: paths.src.compon
  * -----------------------------
  * -----  `copyEffects()`  -----
  * -----------------------------
- * - Copia src/effects/ a app/effects/.
+ * - Copia packages/spa-loading-effect/src/ a app/effects/ (hasta SPEC 05 paso 3 → framework).
  */
-const copyEffects = createCopyTask('copyEffects', { glob: paths.src.effects, checkPath: paths.src.effectsDir });
+const copyEffects = createCopyTask('copyEffects', {
+    glob: paths.spaLoadingEffect.publish,
+    checkPath: paths.spaLoadingEffect.root,
+    base: paths.spaLoadingEffect.root,
+    destDir: path.posix.join(paths.appRoot, 'effects'),
+});
 
 
 
@@ -1060,7 +1065,7 @@ const watchTask = () => {
         [paths.src.assets, copyAssets],
         [[paths.packages.spaServerSiteBaseFile, paths.src.config], copyConfig],
         [paths.src.components, copyComponents],
-        [paths.src.effects, copyEffects],
+        [paths.spaLoadingEffect.publish, copyEffects],
         [paths.src.fonts, copyFonts],
         [paths.jqSpaCore.publish, copyFrameworkJqSpaCore],
         [['package.json', 'pnpm-lock.yaml'], copyVendorModules],

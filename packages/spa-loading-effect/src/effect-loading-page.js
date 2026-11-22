@@ -1,8 +1,17 @@
 /*
-    *  -----------------------------------------------------------------------------  *
-    *  -----  effect-loading-page.js  --  /src/effects/effect-loading-page.js  -----  *
-    *  -----------------------------------------------------------------------------  *
+    *  ------------------------------------------------------------------------------------  *
+    *  -----  effect-loading-page.js  --  /packages/spa-loading-effect/src/effect-loading-page.js  -----  *
+    *  ------------------------------------------------------------------------------------  *
 */
+
+
+
+//  -----  tipos del efecto de loading  -----
+/// <reference path="../../../types/spa-loading-effect.d.js" />
+
+//  -----  tipos de espera de la primera ruta  -----
+/// <reference path="../../../types/spa-route-loaded-options.d.js" />
+
 
 
 /**

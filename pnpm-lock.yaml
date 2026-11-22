@@ -66,6 +66,9 @@ importers:
       '@antonydev/spa-build':
         specifier: workspace:*
         version: link:packages/spa-build
+      '@antonydev/spa-loading-effect':
+        specifier: workspace:*
+        version: link:packages/spa-loading-effect
       '@antonydev/spa-server':
         specifier: workspace:*
         version: link:packages/spa-server
@@ -146,6 +149,8 @@ importers:
       shiki:
         specifier: 'catalog:'
         version: 4.3.0
+
+  packages/spa-loading-effect: {}
 
   packages/spa-server:
     dependencies:
