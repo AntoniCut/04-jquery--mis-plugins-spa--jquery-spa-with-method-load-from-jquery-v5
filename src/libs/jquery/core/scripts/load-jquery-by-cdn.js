@@ -15,7 +15,7 @@ import { loadJQueryByLocal } from "./load-jquery-by-local.js";
  * 
  * - `Carga jQuery desde un CDN`
  * 
- * @param {CDNJQuery} cdnJQuery - Configuración del CDN de jQuery
+ * @param {CDNScript} cdnJQuery - Configuración del CDN de jQuery
  * @param {string} localJQuery - Ruta local para cargar jQuery en caso de fallo del CDN
  * @param {(jQuery: JQueryStatic) => void} resolve - Función que recibe el objeto jQuery
  * @param {(error: Error) => void} reject - Función que recibe un objeto Error
