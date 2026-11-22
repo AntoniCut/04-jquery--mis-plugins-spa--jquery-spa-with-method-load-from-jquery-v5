@@ -48,7 +48,7 @@ import { fileURLToPath } from 'node:url';
 
 
 //  -----  base pública del sitio, leída de SITE_BASE  -----
-import { base } from './src/config/site-base.js';
+import { base } from '@antonydev/spa-server/site-base.js';
 
 
 /** - `directorio de este script` */

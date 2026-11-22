@@ -8,7 +8,7 @@
 import { base } from '../config/site-base.js';
 
 
-/** - `base del proyecto: se reexporta desde src/config/site-base.js` */
+/** - `base del proyecto: reexport en src/config; el navegador lee app/config/site-base.js` */
 export { base };
 
 
