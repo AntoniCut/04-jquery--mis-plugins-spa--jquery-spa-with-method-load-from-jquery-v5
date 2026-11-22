@@ -1,6 +1,6 @@
 # SPEC 03 — `@antonydev/spa-build`
 
-> **Estado:** En progreso (paso 5, sin commit)
+> **Estado:** Implementado
 > **Depende de:** SPEC 02 implementada (`specs/02-spa-server.md`)
 > **Referencia:** SPEC 03 en `specs/arquitectura/01-framework-en-paquetes.md`
 > **Fecha:** 2026-11-22
@@ -139,19 +139,19 @@ Reglas:
 
 ## Criterios de aceptación
 
-- [ ] Existe `packages/spa-build/` como `@antonydev/spa-build` en el workspace.
-- [ ] Existe `spa.config.js` en la raíz y `spa.config.js.example` versionado; la doc explica cada sección usada en el piloto.
-- [ ] El `gulpfile.js` de la raíz no contiene lógica de tareas (solo registro + config); `rg` sobre helpers como `createCopyTask` en la raíz no devuelve coincidencias.
-- [ ] `pnpm install` en la raíz instala el workspace sin errores.
-- [ ] `git log --follow packages/spa-build/src/generate-markdown-shiki.js` muestra historial previo al movimiento desde la raíz.
-- [ ] `pnpm refresh` regenera `app/` y `app/config/site-base.js` igual que antes (Sass `site-base()`, rutas del navegador).
-- [ ] `pnpm code-highlight` genera `src/markdown-shiki/` con el mismo conteo de bloques que antes del refactor (misma condición de rutas con `MarkdownShikiHtml`).
-- [ ] `pnpm dev` / `pnpm dev:watch` recargan al cambiar `src/**/*` y `app/**/*` como antes.
-- [ ] `pnpm build` produce `dist/` con `index.html`, `.htaccess`, `app/**` minificado y `%SITE_BASE%` sustituido.
-- [ ] `pnpm convert-images` sigue convirtiendo PNG en `src/assets/img/clase-*`.
-- [ ] `pnpm preview` tras `pnpm build`: sin 404 en assets ni shell al recorrer el manifiesto.
-- [ ] Ningún archivo en `packages/spa-build/src/` contiene `import ... from '../../src/` ni rutas estáticas al `src/` del proyecto (solo `join(projectRoot, …)` e `import()` dinámico hacia rutas del sitio).
-- [ ] `rg 'gulp-sass|gulp-terser' package.json` en la raíz: las deps viven en `packages/spa-build/package.json` (salvo `@types/gulp` en raíz si el IDE lo exige).
+- [x] Existe `packages/spa-build/` como `@antonydev/spa-build` en el workspace.
+- [x] Existe `spa.config.js` en la raíz y `spa.config.js.example` versionado; la doc explica cada sección usada en el piloto.
+- [x] El `gulpfile.js` de la raíz no contiene lógica de tareas (solo registro + config); `rg` sobre helpers como `createCopyTask` en la raíz no devuelve coincidencias.
+- [x] `pnpm install` en la raíz instala el workspace sin errores.
+- [x] `git log --follow packages/spa-build/src/generate-markdown-shiki.js` muestra historial previo al movimiento desde la raíz.
+- [x] `pnpm refresh` regenera `app/` y `app/config/site-base.js` igual que antes (Sass `site-base()`, rutas del navegador).
+- [x] `pnpm code-highlight` genera `src/markdown-shiki/` con el mismo conteo de bloques que antes del refactor (misma condición de rutas con `MarkdownShikiHtml`).
+- [x] `pnpm dev` / `pnpm dev:watch` recargan al cambiar `src/**/*` y `app/**/*` como antes.
+- [x] `pnpm build` produce `dist/` con `index.html`, `.htaccess`, `app/**` minificado y `%SITE_BASE%` sustituido.
+- [x] `pnpm convert-images` sigue convirtiendo PNG en `src/assets/img/clase-*`.
+- [x] `pnpm preview` tras `pnpm build`: sin 404 en assets ni shell al recorrer el manifiesto.
+- [x] Ningún archivo en `packages/spa-build/src/` contiene `import ... from '../../src/` ni rutas estáticas al `src/` del proyecto (solo `join(projectRoot, …)` e `import()` dinámico hacia rutas del sitio).
+- [x] `rg 'gulp-sass|gulp-terser' package.json` en la raíz: las deps viven en `packages/spa-build/package.json` (salvo `@types/gulp` en raíz si el IDE lo exige).
 
 ## Decisiones
 

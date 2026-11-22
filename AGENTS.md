@@ -11,7 +11,7 @@ Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**
 | Carpeta | Trato |
 |---|---|
 | `src/` | Origen de verdad. Aquí va el código nuevo |
-| `index.html`, `gulpfile.js`, `packages/spa-server/`, `api/`, `infra/`, `types/`, `generate-markdown-shiki.js` | Se editan cuando el cambio lo pide |
+| `index.html`, `gulpfile.js`, `spa.config.js`, `packages/spa-server/`, `packages/spa-build/`, `api/`, `infra/`, `types/` | Se editan cuando el cambio lo pide |
 | `app/` | Salida de Gulp. No se edita a mano |
 | `dist/` | Build de producción. No se edita a mano |
 | `src/markdown-shiki/` | HTML generado por `pnpm code-highlight`. Se regenera, no se reescribe |
@@ -24,9 +24,9 @@ Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tene
 
 El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`). No lo hardcodees.
 
-- Node lo lee con `@antonydev/spa-server/site-base.js` (canónico en `packages/spa-server/`). `src/config/site-base.js` reexporta para `src/routes/paths.js`. Gulp copia el módulo a `app/config/`. Gulp, los servidores y `generate-markdown-shiki.js` cargan `dotenv/config` antes de importarlo.
+- Node lo lee con `@antonydev/spa-server/site-base.js` (canónico en `packages/spa-server/`). `src/config/site-base.js` reexporta para `src/routes/paths.js`. `@antonydev/spa-build` copia el módulo a `app/config/` según `spa.config.js` → `siteBase`. El `gulpfile.js` raíz y los scripts del paquete build cargan `dotenv/config` antes de importar `base`.
 - El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`.
-- Sass usa `$base: site-base();`. Gulp registra esa función con el valor del `.env`.
+- Sass usa `$base: site-base();`. `@antonydev/spa-build` registra esa función con el valor del `.env`.
 - `.htaccess` también lleva `%SITE_BASE%`. `htaccessToDist` escribe el valor real en `dist/.htaccess`.
 
 `src/routes/paths.js` reexporta `base`. `routeModulesBase` en `src/spa/spa.js` apunta a `${base}/app/routes` porque el navegador importa los módulos ya copiados.
@@ -96,7 +96,8 @@ Al crear o editar `.js` y `.html` de este repo (no vendors):
 - Una línea en blanco entre instrucciones y entre variables hermanas. Tres líneas en blanco entre función y función.
 - Comentarios en español, en minúsculas salvo nombres propios, describiendo lo que hace esa línea.
 - Tipos de dominio en `types/*.d.js`. Referencia con `/// <reference path="..." />` cuando el archivo los necesite.
-- `jsconfig.json` ya incluye `src/`, `types/`, `packages/spa-server/`, `api/` y `gulpfile.js`. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
+- `jsconfig.json` ya incluye `src/`, `types/`, `packages/spa-server/`, `packages/spa-build/`, `spa.config.js`, `api/` y el `gulpfile.js` fino. No conviertas el proyecto a TypeScript ni añadas alias `@/`.
+- El pipeline Gulp vive en `packages/spa-build/`; el `gulpfile.js` raíz solo registra tareas. Opciones de carpetas y vendors: `spa.config.js` (plantilla `spa.config.js.example`). En la raíz quedan `gulp` (CLI) y `dotenv` porque el `gulpfile.js` los importa directamente; el resto de dependencias de build están en el manifiesto de `@antonydev/spa-build`.
 
 Este repositorio no es un proyecto Astro. No añadas Prettier, `prettier-plugin-astro` ni `tsconfig` paths salvo que se pida.
 

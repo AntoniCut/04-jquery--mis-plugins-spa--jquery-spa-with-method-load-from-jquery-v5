@@ -252,20 +252,23 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── api/                              # Runtime Node de producción (health, MySQL, tareas)
 ├── infra/                            # systemd, nginx y provision de jquery-node
 ├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
-├── gulpfile.js
-└── generate-markdown-shiki.js
+├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki y conversión AVIF
+├── spa.config.js                     # Carpetas del build y vendors (plantilla: spa.config.js.example)
+└── gulpfile.js                       # Registro fino: dotenv + spa.config + @antonydev/spa-build
 ```
 
 ---
 
 ## Pipeline de build
 
+El motor está en **`@antonydev/spa-build`** (`packages/spa-build/`). El proyecto solo declara rutas y vendors en **`spa.config.js`** (copiar desde `spa.config.js.example`). El `gulpfile.js` de la raíz carga `.env`, importa ese config y registra las tareas del paquete. Puertos y `SITE_BASE` siguen en `.env`.
+
 1. **`pnpm dev`** — Gulp limpia, copia y compila `src/` → `app/`, regenera Shiki al cambiar SCSS y BrowserSync recarga.
-2. **`pnpm code-highlight`** — Genera bloques Shiki en `src/markdown-shiki/` a partir de las entradas `MarkdownShikiHtml` de las rutas.
+2. **`pnpm code-highlight`** — `@antonydev/spa-build` genera bloques Shiki en `src/markdown-shiki/` (entradas `MarkdownShikiHtml` de las rutas).
 3. **`pnpm build`** — Limpia `dist/`, regenera `app/` y minifica HTML, CSS y JS hacia `dist/`.
 4. **`pnpm preview`** — Sirve `dist/` con fallback SPA.
 
-Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_modules` a `app/libs/jquery-module/` durante el build. No se editan a mano.
+Los módulos de jQuery y jQuery UI que usa el navegador se copian desde `node_modules` a `app/libs/jquery-module/` según `spa.config.js` → `vendor`. No se editan a mano.
 
 ---
 
