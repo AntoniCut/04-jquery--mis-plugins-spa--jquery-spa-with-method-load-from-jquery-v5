@@ -30,7 +30,7 @@ const {
 export const routeHome = {
         id: 'home',
         favicon: `${favicon}/jquery-icon.svg`,
-        pageTitle: 'jQuery SPA With Method Load From jQuery v5',
+        pageTitle: 'Framework SPA With jQuery and Vanilla JS/TS',
         path: '',
         components: {
             "#layoutHeader": layoutHeader,
@@ -54,7 +54,7 @@ export const routeHome = {
                 target: '[data-shiki="plugins"]',
             },
         ],
-        headerTitle: 'Plugin jQuery SPA With Method Load From jQuery v5',
+        headerTitle: 'Framework SPA With jQuery and Vanilla JS/TS',
         styles: [
             { href: `${styles}/pages/home.css` },
         ],
