@@ -1,8 +1,8 @@
-# jQuery SPA with Method Load from jQuery — v5
+# Framework SPA with jQuery and Vanilla JS/TS
 
-Prototipo y referencia del plugin **`jquery.spa-with-method-load-from-jquery.js`**: una SPA sin frameworks que carga fragmentos HTML con **`jQuery.load()`**, enruta con un manifiesto ligero, integra **jQuery UI** bajo demanda, resalta código con **Markdown Shiki** y se construye con Gulp y servidores Express.
+Monorepo de referencia para sitios SPA sobre paquetes compartidos (`spa-build`, `spa-server`, `jq-spa-core`, `spa-loading-effect`). Incluye el plugin **`jquery.spa-with-method-load-from-jquery.js`** (carga con **`jQuery.load()`**), manifiesto de rutas, **jQuery UI**, **Markdown Shiki** y build con Gulp.
 
-Este repositorio es la base de los proyectos que usen este tipo de SPA. El código que se edita vive en `src/`. `app/` y `dist/` los genera Gulp.
+Este repositorio es la base de los plugins SPA jQuery y vanilla que consuman estos paquetes. El código que se edita vive en `src/`. `app/` y `dist/` los genera Gulp.
 
 **Autor:** Antonio Francisco Cutillas García — [AntonyDev](https://antonydev.tech)  
 **Licencia:** ISC
@@ -59,7 +59,7 @@ La vista de inicio documenta el plugin: `src/pages/home.html`, `src/pages-compon
 | Shiki | 4.x | Resaltado de código (Markdown Shiki) |
 | markdown-it | 14.x | Parser Markdown para generación Shiki |
 | sharp | 0.34.x | Optimización de imágenes |
-| pnpm | 9.x | Gestor de paquetes |
+| pnpm | 11.x | Gestor de paquetes |
 | Node.js | ESM | Runtime (`"type": "module"`) |
 
 ---
@@ -106,7 +106,7 @@ Los `.env` con secretos no se versionan (`.gitignore` ignora `.env` y `.env.*`).
 El servidor de desarrollo lee la base, los puertos de partida y el watch desde `.env`:
 
 ```dotenv
-SITE_BASE=/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5
+SITE_BASE=
 DEV_SERVER_PORT=9876        # Puerto de partida del servidor dev (BrowserSync)
 PREVIEW_SERVER_PORT=8765    # Puerto de partida del servidor preview
 CHOKIDAR_USEPOLLING=false   # true en WSL/Docker si el watch falla
@@ -132,17 +132,23 @@ Producción usa otro archivo, `.env.production`. La plantilla versionada es `.en
 
 ## URL base
 
-El proyecto se sirve bajo:
+Este demo se publica en la **raíz** del subdominio (sin subcarpeta en la URL):
 
+| Entorno | URL |
+|---|---|
+| Desarrollo | [http://localhost:9876/](http://localhost:9876/) |
+| Preview | [http://localhost:8765/](http://localhost:8765/) |
+| Producción | [https://mis-frameworks-spa.antonydev.tech/](https://mis-frameworks-spa.antonydev.tech/) |
+
+En `.env`:
+
+```dotenv
+SITE_BASE=
 ```
-/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/
-```
 
-Desarrollo: [http://localhost:9876/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:9876/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
+Vacío significa `<base href="/">` y rutas como `/stack/jquery-page`. Si copias el framework como **plantilla bajo otra ruta** (por ejemplo un v5 en subcarpeta), usa `SITE_BASE=/mis-plugins-spa/mi-proyecto` sin barra final.
 
-Preview: [http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/](http://localhost:8765/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/)
-
-Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo resuelve `@antonydev/spa-server` (`packages/spa-server/src/site-base.js`); Gulp lo copia a `app/config/site-base.js` para el navegador. `src/config/site-base.js` es solo un reexport para `paths.js` en `src/`. En el navegador también sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`.
+Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo resuelve `@antonydev/spa-server` (`packages/spa-server/src/site-base.js`); Gulp lo copia a `app/config/site-base.js` para el navegador. `src/config/site-base.js` es solo un reexport para `paths.js` en `src/`. En el navegador también sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`. Tras cambiar `SITE_BASE`, ejecuta `pnpm refresh` o `pnpm build`.
 
 ---
 
@@ -235,7 +241,7 @@ Array con `fileName`, `fileExtension`, `urlInput`, `urlOutput` y `target` (`[dat
 ## Estructura del proyecto
 
 ```
-jquery-spa-with-method-load-from-jquery-v5/
+framework-spa-with-jquery-and-vanilla-js-ts/
 │
 ├── index.html                        # Shell: <base>, import map, #layout y app/main.js
 ├── src/                              # Código fuente (origen de verdad)
@@ -259,7 +265,7 @@ jquery-spa-with-method-load-from-jquery-v5/
 ├── docker-compose.yml                # MySQL 8.4 local, puerto 3307
 ├── types/                            # Tipos JSDoc del dominio del sitio (rutas, plugin…)
 ├── api/                              # Runtime Node de producción (health, MySQL, tareas)
-├── infra/                            # systemd, nginx y provision de jquery-node
+├── infra/                            # systemd, nginx (subdominio mis-frameworks-spa) y provision del API
 ├── packages/spa-server/              # @antonydev/spa-server: dev, preview y SITE_BASE
 ├── packages/spa-build/               # @antonydev/spa-build: Gulp, Shiki, types/
 ├── packages/jq-spa-core/             # @antonydev/jq-spa-core → app/framework/jq-spa-core/, types/
@@ -289,7 +295,7 @@ La página `stack/php-mysql-page` no abre MySQL desde el navegador. El formulari
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php`. Ese PHP no usa base de datos y responde igual en `pnpm dev`, en preview y en el VPS.
 
-`stack/node-express-page` consume `api/tasks` y `stack/node-mysql-page` consume `api/mysql/query`, ambos relativos al `<base>`. Los routers viven en `api/src/` y los monta `pnpm dev` en `{SITE_BASE}/api`. El mismo proceso, en `127.0.0.1:3200`, lo levanta systemd (`jquery-node`) en el VPS. Nginx tiene que proxyar `{SITE_BASE}/api/` hacia ese puerto. El site file versionado es `infra/nginx/jquery.antonydev.tech.conf` e incluye el fragmento `infra/nginx/jquery.antonydev.tech-api.conf`. `pnpm preview` no monta `/api`: esas páginas muestran el fallo en el DOM.
+`stack/node-express-page` consume `api/tasks` y `stack/node-mysql-page` consume `api/mysql/query`, ambos relativos al `<base>`. Los routers viven en `api/src/` y los monta `pnpm dev` en `/api` (con `SITE_BASE` vacío). El mismo proceso, en `127.0.0.1:3200`, lo levanta systemd (`jquery-node`) en el VPS. Nginx en `mis-frameworks-spa.antonydev.tech` proxya `/api/` hacia ese puerto (`infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf`). `pnpm preview` no monta `/api`: esas páginas muestran el fallo en el DOM.
 
 Ese PHP es el mismo en desarrollo y en el VPS. Sin el proceso Node, un `POST` a `api/mysql/query` cae en `index.html` y responde **405** con HTML.
 
@@ -319,7 +325,7 @@ La base del curso, `jquery_escuelait_classicmodels`, no se usa aquí. En el VPS 
 
 `deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace tres pasos:
 
-1. `pnpm run build` y sube `dist/` a `/var/www/jquery.antonydev.tech/mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/`. El `rsync --delete` excluye `.env` para no borrarlo.
+1. `pnpm run build` (con `SITE_BASE=` en `.env`) y sube `dist/` a `/var/www/mis-frameworks-spa/`. El `rsync --delete` excluye `.env` para no borrarlo.
 2. `pnpm --filter jquery-node-api deploy .deploy-api --prod` arma el artefacto del API con sus `node_modules` ya resueltos desde el `pnpm-lock.yaml` del workspace, y lo sube a `/opt/jquery-node-api`. El VPS no ejecuta pnpm: recibe las mismas versiones que se probaron en local.
 3. Si existe `.env.production`, lo sube a esos directorios con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté. Después reinicia `jquery-node`.
 
@@ -327,31 +333,9 @@ PHP-FPM corre como `www-data`. Con dueño `root:root` no puede leer el `.env`, i
 
 El bloque que sirve el sitio usa `root`. Así `$request_filename` apunta al PHP de `app/services/`. Con `alias`, esa variable deja de coincidir con el archivo.
 
-```nginx
-location = /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5 {
-    return 301 /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/;
-}
+Site file versionado: `infra/nginx/mis-frameworks-spa.antonydev.tech.conf` (SPA + PHP-FPM + `deny` de `.env`). Fragmento API: `infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf`. Fusionar con el bloque SSL que dejó Certbot en el VPS, copiar el snippet a `/etc/nginx/snippets/`, `nginx -t` y recargar.
 
-location ^~ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/ {
-    root /var/www/jquery.antonydev.tech;
-    try_files $uri $uri/ /mis-plugins-spa/jquery-spa-with-method-load-from-jquery-v5/index.html;
-
-    location ~ /\.env {
-        deny all;
-        return 404;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $request_filename;
-        fastcgi_param QUERY_STRING    $query_string;
-    }
-}
-```
-
-El `location` de `\.env` todavía no está en el Nginx del VPS. Hay que añadirlo: el archivo está junto al `index.html` y, sin ese `deny`, se puede pedir por HTTP. PHP lo sigue leyendo del disco.
+`infra/nginx/jquery.antonydev.tech.conf` documenta **otro dominio** en el mismo VPS; no sirve este framework.
 
 ---
 

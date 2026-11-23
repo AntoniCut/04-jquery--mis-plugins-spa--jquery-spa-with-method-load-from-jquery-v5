@@ -1,4 +1,4 @@
-# PHP-FPM — notas de producción (jquery-spa-with-method-load-from-jquery-v5)
+# PHP-FPM — notas de producción (framework-spa-with-jquery-and-vanilla-js-ts)
 
 Resumen operativo de cómo PHP-FPM debe leer el `.env` en el VPS. No es
 configuración de pool: es la checklist que evita el fallo clásico de

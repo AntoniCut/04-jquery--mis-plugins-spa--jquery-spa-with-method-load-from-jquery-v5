@@ -35,11 +35,11 @@ systemctl daemon-reload
 systemctl enable jquery-node
 
 echo "==> Recordatorio manual (no automatizado):"
-echo "    1. Copiar infra/nginx/jquery.antonydev.tech-api.conf a /etc/nginx/snippets/."
-echo "       Reemplazar /etc/nginx/sites-available/jquery.antonydev.tech"
-echo "       con infra/nginx/jquery.antonydev.tech.conf, tras un backup."
-echo "       El location es {SITE_BASE}/api/, no /api/ en la raíz del dominio."
-echo "       nginx -t && systemctl reload nginx"
+echo "    1. Copiar infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf"
+echo "       a /etc/nginx/snippets/."
+echo "       Fusionar infra/nginx/mis-frameworks-spa.antonydev.tech.conf"
+echo "       con el site del subdominio (Certbot/SSL), tras un backup."
+echo "       proxy /api/ -> 127.0.0.1:3200; nginx -t && systemctl reload nginx"
 echo "    2. Ejecutar deploy.sh: sube el artefacto del API y el .env de producción a $API_NODE_DIR."
 echo "    3. Verificar: systemctl is-active jquery-node"
 echo "       curl -s http://127.0.0.1:3200/health"

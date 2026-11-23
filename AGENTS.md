@@ -4,7 +4,7 @@ Guía para agentes que editen este repositorio. El README describe el producto; 
 
 ## Qué es este repo
 
-Prototipo de referencia de la SPA **jQuery SPA with Method Load from jQuery v5**. Los proyectos nuevos de este tipo se copian desde aquí. Un cambio en el plugin, el navbar, el servidor o Gulp es un cambio de plantilla: mantenlo genérico y no lo ates a una sola vista.
+Monorepo **framework-spa-with-jquery-and-vanilla-js-ts**: paquetes compartidos (`spa-build`, `spa-server`, `jq-spa-core`, `spa-loading-effect`) y un sitio demo con el plugin **jQuery SPA with Method Load from jQuery v5**. Sirve de plantilla para futuros SPA jQuery o vanilla que consuman esos paquetes. Un cambio en un paquete, el navbar, el servidor o Gulp afecta a todos los consumidores: mantenlo genérico y no lo ates a una sola vista.
 
 ## Dónde se edita
 
@@ -24,14 +24,22 @@ Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tene
 
 El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`). No lo hardcodees.
 
+- **Este demo en producción** vive en el subdominio **`mis-frameworks-spa.antonydev.tech`**, servido en la **raíz** del dominio: `SITE_BASE=` vacío (o `SITE_BASE=/`, normalizado a cadena vacía). Desarrollo: `http://localhost:9876/`. Producción: `https://mis-frameworks-spa.antonydev.tech/`.
+- **Plantillas bajo subcarpeta** (v5 clásico, curso, otro path): `SITE_BASE=/mis-plugins-spa/mi-proyecto` (empieza por `/`, sin `/` final).
 - Node lo lee con `@antonydev/spa-server/site-base.js` (canónico en `packages/spa-server/`). `src/config/site-base.js` reexporta para `src/routes/paths.js`. `@antonydev/spa-build` copia el módulo a `app/config/` según `spa.config.js` → `siteBase`. El `gulpfile.js` raíz y los scripts del paquete build cargan `dotenv/config` antes de importar `base`.
-- El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`.
+- El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`. Con base vacía queda `<base href="/">`.
 - Sass usa `$base: site-base();`. `@antonydev/spa-build` registra esa función con el valor del `.env`.
 - `.htaccess` también lleva `%SITE_BASE%`. `htaccessToDist` escribe el valor real en `dist/.htaccess`.
 
 `src/routes/paths.js` reexporta `base`. `routeModulesBase` en `src/spa/spa.js` apunta a `${base}/app/routes` porque el navegador importa los módulos ya copiados.
 
 `DEV_SERVER_PORT` y `PREVIEW_SERVER_PORT` son puertos de partida. Si están ocupados, el servidor prueba los 19 siguientes. `pnpm stop:dev` y `pnpm stop:preview` solo matan el proceso cuyo `cwd` es este proyecto.
+
+## Infra y Nginx
+
+- **Framework (este repo):** `infra/nginx/mis-frameworks-spa.antonydev.tech.conf` y `mis-frameworks-spa.antonydev.tech-api.conf` (`/api/` → `127.0.0.1:3200`). Web root en el VPS: `/var/www/mis-frameworks-spa`.
+- **`jquery.antonydev.tech.conf`** en `infra/nginx/` es referencia del **otro dominio** (Astro, v4, udemy, escuelait). No despliega este framework; no borrarlo si ese sitio sigue en el mismo VPS.
+- No versionar fragmentos nginx obsoletos bajo path largo en `jquery.antonydev.tech`; el API del demo va solo en el subdominio.
 
 ## Añadir o cambiar una ruta
 
@@ -64,7 +72,7 @@ La página `stack/php-mysql-page` hace `POST` a `app/services/mysql/query.php`. 
 La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `packages/spa-server/src/dev-server.js` (import dinámico desde `api/`) y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
 
 - No cambies el `fetch` de la página PHP a `api/mysql/query`. Son dos entradas del mismo contrato.
-- En el VPS, Nginx llega al proceso Node por el `include` de `/etc/nginx/snippets/jquery.antonydev.tech-api.conf` que está en el site file `infra/nginx/jquery.antonydev.tech.conf`. El fragmento se copia a `snippets/` antes de reemplazar el site file. El `location` es `{SITE_BASE}/api/`, no `/api/` en la raíz del dominio. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
+- En el VPS, el subdominio `mis-frameworks-spa.antonydev.tech` incluye `infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf` como `location ^~ /api/` hacia `127.0.0.1:3200`. Con `SITE_BASE` vacío, dev y build usan la raíz del dominio; las páginas piden `api/...` relativo al `<base href="/">`. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
 - La validación de solo lectura vive en el PHP y en `api/src/mysql-query.js`. Si tocas uno, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o las páginas divergen.
 - `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
 - Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.
@@ -84,7 +92,7 @@ La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al 
 
 `stack/php-page` hace `POST` a `app/services/php/validate.php` (`src/services/php/validate.php`). Gulp lo copia igual que el PHP de MySQL. No usa `.env` ni la base.
 
-`stack/node-express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js`. `packages/spa-server/src/dev-server.js` lo monta en `{SITE_BASE}/api`. En producción lo sirve `jquery-node` detrás del fragmento nginx de `infra/`. Preview no ejecuta ese proceso: la página tiene que mostrar el fallo en el DOM.
+`stack/node-express-page` hace `GET`, `POST` y `DELETE` a `api/tasks`, relativo al `<base>`. El router está en `api/src/tasks-router.js`. `packages/spa-server/src/dev-server.js` lo monta en `{SITE_BASE}/api` (con `SITE_BASE` vacío, `/api`). En producción lo sirve `jquery-node` detrás del fragmento nginx del subdominio. Preview no ejecuta ese proceso: la página tiene que mostrar el fallo en el DOM.
 
 ## Convenciones de código
 

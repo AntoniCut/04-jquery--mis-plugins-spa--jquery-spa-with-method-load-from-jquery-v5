@@ -1,7 +1,7 @@
 {
-    "name": "jquery-spa-with-method-load-from-jquery-v5",
+    "name": "framework-spa-with-jquery-and-vanilla-js-ts",
     "version": "1.0.0",
-    "description": "Proyecto jQuery SPA con método load desde jQuery - v4",
+    "description": "Monorepo framework SPA: sitios con plugin jQuery o vanilla JS/TS sobre paquetes compartidos",
     "main": "index.js",
     "type": "module",
     "scripts": {
@@ -37,7 +37,9 @@
         "test": "Marcador: aún no hay tests."
     },
     "keywords": [
-        "jquery spa with method load from jquery v5",
+        "spa framework",
+        "jquery spa",
+        "vanilla javascript",
         "jquery",
         "jqueryui"
     ],
