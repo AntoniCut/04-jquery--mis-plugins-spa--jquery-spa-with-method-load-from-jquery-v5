@@ -1,7 +1,7 @@
 /*
-    *  ------------------------------------------------------  *
+    *  ----------------------------------------------------------------------  *
     *  -----  dev-server.js  --  packages/spa-server/src/dev-server.js  -----  *
-    *  ------------------------------------------------------  *
+    *  ---------------------------------------------------------------------- *
 */
 
 
@@ -150,6 +150,16 @@ const sendSpaEntry = (res) => {
  * @param {import('express').NextFunction} next - Siguiente middleware.
  */
 const redirectRootToBase = (req, res, next) => {
+
+    //  -----  con SITE_BASE vacío, / ya es la entrada: no redirigir a sí misma  -----
+    if (DEV_ROUTE_BASE === '') {
+
+        //  -----  pasar al static y al fallback de la SPA  -----
+        next();
+
+        //  -----  fin de la rama raíz  -----
+        return;
+    }
 
     //  -----  si piden la raíz o index.html, ir a la base de la SPA  -----
     if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html`) {

@@ -75,6 +75,16 @@ app.disable('x-powered-by');
  */
 const redirectRootToBase = (req, res, next) => {
 
+    //  -----  con SITE_BASE vacío, / ya es la entrada: no redirigir a sí misma  -----
+    if (DEV_ROUTE_BASE === '') {
+
+        //  -----  pasar al static y al fallback de la SPA  -----
+        next();
+
+        //  -----  fin de la rama raíz  -----
+        return;
+    }
+
     //  -----  si piden la raíz, index.html o la base sin barra, ir a la base  -----
     if (req.path === '/' || req.path === '/index.html' || req.path === `${DEV_ROUTE_BASE}/index.html` || req.path === DEV_ROUTE_BASE) {
 
