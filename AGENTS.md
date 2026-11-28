@@ -24,7 +24,7 @@ Tras tocar `src/`, el navegador lee `app/`. Hay que correr `pnpm refresh` o tene
 
 El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`). No lo hardcodees.
 
-- **Este demo en producción** vive en el subdominio **`mis-frameworks-spa.antonydev.tech`**, servido en la **raíz** del dominio: `SITE_BASE=` vacío (o `SITE_BASE=/`, normalizado a cadena vacía). Desarrollo: `http://localhost:9876/`. Producción: `https://mis-frameworks-spa.antonydev.tech/`.
+- **Este demo en producción** vive en **`https://mis-frameworks-spa.antonydev.tech/framework-spa-with-jquery-and-vanilla/`** con `SITE_BASE=/framework-spa-with-jquery-and-vanilla` (sin `/` final). La **raíz** del subdominio (`https://mis-frameworks-spa.antonydev.tech/`) es un hub aparte (`index.html` en el web root; pendiente). Desarrollo: `http://localhost:9876/` con el mismo `SITE_BASE` del `.env`.
 - **Plantillas bajo subcarpeta** (v5 clásico, curso, otro path): `SITE_BASE=/mis-plugins-spa/mi-proyecto` (empieza por `/`, sin `/` final).
 - Node lo lee con `@antonydev/spa-server/site-base.js` (canónico en `packages/spa-server/`). `src/config/site-base.js` reexporta para `src/routes/paths.js`. `@antonydev/spa-build` copia el módulo a `app/config/` según `spa.config.js` → `siteBase`. El `gulpfile.js` raíz y los scripts del paquete build cargan `dotenv/config` antes de importar `base`.
 - El navegador lo deduce de `<base href>` (`document.baseURI`). `index.html` guarda el marcador `%SITE_BASE%/`. Con base vacía queda `<base href="/">`.
@@ -37,7 +37,7 @@ El prefijo público vive en `.env` como `SITE_BASE` (plantilla en `.env.example`
 
 ## Infra y Nginx
 
-- **Framework (este repo):** `infra/nginx/mis-frameworks-spa.antonydev.tech.conf` y `mis-frameworks-spa.antonydev.tech-api.conf` (`/api/` → `127.0.0.1:3200`). Web root en el VPS: `/var/www/mis-frameworks-spa`.
+- **Framework (este repo):** `infra/nginx/mis-frameworks-spa.antonydev.tech.conf` y `mis-frameworks-spa.antonydev.tech-api.conf` (`/framework-spa-with-jquery-and-vanilla/api/` → `127.0.0.1:3200`). Web root en el VPS: `/var/www/mis-frameworks-spa.antonydev.tech`; el build de este demo va en la subcarpeta `framework-spa-with-jquery-and-vanilla/`.
 - **`jquery.antonydev.tech.conf`** en `infra/nginx/` es referencia del **otro dominio** (Astro, v4, udemy, escuelait). No despliega este framework; no borrarlo si ese sitio sigue en el mismo VPS.
 - No versionar fragmentos nginx obsoletos bajo path largo en `jquery.antonydev.tech`; el API del demo va solo en el subdominio.
 
@@ -72,7 +72,7 @@ La página `stack/php-mysql-page` hace `POST` a `app/services/mysql/query.php`. 
 La página `stack/node-mysql-page` hace `POST` a `api/mysql/query`, relativo al `<base>`. El handler vive en `api/src/mysql-query.js` y exporta `createApiRouter()`. `packages/spa-server/src/dev-server.js` (import dinámico desde `api/`) y el proceso de producción (`api/src/server.js`, puerto `3200`) montan ese router junto con `api/src/tasks-router.js`. `pnpm preview` no lo monta.
 
 - No cambies el `fetch` de la página PHP a `api/mysql/query`. Son dos entradas del mismo contrato.
-- En el VPS, el subdominio `mis-frameworks-spa.antonydev.tech` incluye `infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf` como `location ^~ /api/` hacia `127.0.0.1:3200`. Con `SITE_BASE` vacío, dev y build usan la raíz del dominio; las páginas piden `api/...` relativo al `<base href="/">`. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
+- En el VPS, el subdominio `mis-frameworks-spa.antonydev.tech` incluye `infra/nginx/mis-frameworks-spa.antonydev.tech-api.conf` como `location ^~ /framework-spa-with-jquery-and-vanilla/api/` hacia `127.0.0.1:3200`. Con el `SITE_BASE` de este demo, las páginas piden `api/...` relativo al `<base>`. Sin ese proceso, el `POST` cae en `index.html` y responde 405 con HTML.
 - La validación de solo lectura vive en el PHP y en `api/src/mysql-query.js`. Si tocas uno, deja el mismo contrato JSON (`ok`, `message`, `columns`, `rows`) o las páginas divergen.
 - `src/services/load-env.php` sube directorios hasta encontrar `.env`. En producción ese archivo está junto al `index.html`, no dentro de `app/`.
 - Local: Docker, `MYSQL_PORT=3307`, base `jquery_mis_plugins_spa`, archivo `.env`.

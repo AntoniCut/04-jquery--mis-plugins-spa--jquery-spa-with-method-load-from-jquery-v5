@@ -132,21 +132,21 @@ Producción usa otro archivo, `.env.production`. La plantilla versionada es `.en
 
 ## URL base
 
-Este demo se publica en la **raíz** del subdominio (sin subcarpeta en la URL):
+Este demo se publica **bajo subcarpeta** en `mis-frameworks-spa.antonydev.tech`. La raíz del subdominio queda reservada para un `index.html` de hub (otro despliegue).
 
 | Entorno | URL |
 |---|---|
-| Desarrollo | [http://localhost:9876/](http://localhost:9876/) |
-| Preview | [http://localhost:8765/](http://localhost:8765/) |
-| Producción | [https://mis-frameworks-spa.antonydev.tech/](https://mis-frameworks-spa.antonydev.tech/) |
+| Desarrollo | [http://localhost:9876/framework-spa-with-jquery-and-vanilla/](http://localhost:9876/framework-spa-with-jquery-and-vanilla/) |
+| Preview | [http://localhost:8765/framework-spa-with-jquery-and-vanilla/](http://localhost:8765/framework-spa-with-jquery-and-vanilla/) |
+| Producción | [https://mis-frameworks-spa.antonydev.tech/framework-spa-with-jquery-and-vanilla/](https://mis-frameworks-spa.antonydev.tech/framework-spa-with-jquery-and-vanilla/) |
 
 En `.env`:
 
 ```dotenv
-SITE_BASE=
+SITE_BASE=/framework-spa-with-jquery-and-vanilla
 ```
 
-Vacío significa `<base href="/">` y rutas como `/stack/jquery-page`. Si copias el framework como **plantilla bajo otra ruta** (por ejemplo un v5 en subcarpeta), usa `SITE_BASE=/mis-plugins-spa/mi-proyecto` sin barra final.
+El prefijo empieza por `/` y no lleva `/` final. Si copias el framework como **plantilla bajo otra ruta**, cambia `SITE_BASE` (por ejemplo `/mis-plugins-spa/mi-proyecto`).
 
 Ese prefijo se escribe una sola vez, en `.env`, como `SITE_BASE`. En Node lo resuelve `@antonydev/spa-server` (`packages/spa-server/src/site-base.js`); Gulp lo copia a `app/config/site-base.js` para el navegador. `src/config/site-base.js` es solo un reexport para `paths.js` en `src/`. En el navegador también sale de `<base href>`. `index.html` y `.htaccess` llevan el marcador `%SITE_BASE%`: el dev server lo sustituye al servir y `pnpm build` lo deja resuelto en `dist/`. Tras cambiar `SITE_BASE`, ejecuta `pnpm refresh` o `pnpm build`.
 
@@ -325,7 +325,7 @@ La base del curso, `jquery_escuelait_classicmodels`, no se usa aquí. En el VPS 
 
 `deploy.sh` está en `.gitignore` (IP y rutas del VPS) y no forma parte del repositorio. Hace tres pasos:
 
-1. `pnpm run build` (con `SITE_BASE=` en `.env`) y sube `dist/` a `/var/www/mis-frameworks-spa/`. El `rsync --delete` excluye `.env` para no borrarlo.
+1. `pnpm run build` (con `SITE_BASE=/framework-spa-with-jquery-and-vanilla` en `.env`) y sube `dist/` a `/var/www/mis-frameworks-spa.antonydev.tech/framework-spa-with-jquery-and-vanilla/`. El `rsync --delete` excluye `.env` para no borrarlo.
 2. `pnpm --filter jquery-node-api deploy .deploy-api --prod` arma el artefacto del API con sus `node_modules` ya resueltos desde el `pnpm-lock.yaml` del workspace, y lo sube a `/opt/jquery-node-api`. El VPS no ejecuta pnpm: recibe las mismas versiones que se probaron en local.
 3. Si existe `.env.production`, lo sube a esos directorios con el nombre `.env`, modo `640` y grupo `www-data`. Si el archivo no existe, avisa y deja el `.env` remoto como esté. Después reinicia `jquery-node`.
 

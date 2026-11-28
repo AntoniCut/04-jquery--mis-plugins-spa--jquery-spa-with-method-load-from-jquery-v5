@@ -1,6 +1,6 @@
 # infra/ — configuración del servidor de producción
 
-El runtime de desarrollo y preview vive en `packages/spa-server/` (`@antonydev/spa-server`). Esta carpeta describe el proceso Node que atiende `/api` en el VPS (con `SITE_BASE` vacío). Nada de `infra/` se ejecuta con `pnpm dev` ni con `pnpm preview`.
+El runtime de desarrollo y preview vive en `packages/spa-server/` (`@antonydev/spa-server`). Esta carpeta describe el proceso Node que atiende `{SITE_BASE}/api` en el VPS (este demo: `/framework-spa-with-jquery-and-vanilla/api/`). Nada de `infra/` se ejecuta con `pnpm dev` ni con `pnpm preview`.
 
 ```
 infra/
@@ -21,7 +21,7 @@ infra/
 
 ## Site file del dominio
 
-- `nginx/mis-frameworks-spa.antonydev.tech.conf` es el site file del framework en `mis-frameworks-spa.antonydev.tech` (`/var/www/mis-frameworks-spa`, `SITE_BASE` vacío).
+- `nginx/mis-frameworks-spa.antonydev.tech.conf` es el site file en `mis-frameworks-spa.antonydev.tech`: web root `/var/www/mis-frameworks-spa.antonydev.tech`, hub en `/` (index pendiente), SPA en `/framework-spa-with-jquery-and-vanilla/`.
 - El API Node va en `nginx/mis-frameworks-spa.antonydev.tech-api.conf`, copiado a `/etc/nginx/snippets/` e incluido en el server HTTPS.
 - `nginx/jquery.antonydev.tech.conf` sigue siendo el site de `jquery.antonydev.tech` (Astro, v4, udemy, escuelait); ya no sirve este framework bajo subcarpeta.
 - Se aplica a mano: backup del site file, copia del fragmento a `snippets/`, reemplazo del site file, `nginx -t` y `systemctl reload nginx`.
@@ -31,8 +31,8 @@ infra/
 - Código en `/opt/jquery-node-api`, fuera del web root.
 - `jquery-node.service` corre como `www-data`, `Restart=on-failure`, logs en `journalctl -u jquery-node`.
 - Escucha en `127.0.0.1:3200`. El puerto `3100` lo usa el API de `javascript.antonydev.tech` en el mismo VPS.
-- `nginx/mis-frameworks-spa.antonydev.tech-api.conf` hace `proxy_pass http://127.0.0.1:3200/` sobre `/api/`. La barra final quita el prefijo: `/api/health` llega al proceso como `/health`, `/api/tasks` como `/tasks` y `/api/mysql/query` como `/mysql/query`.
-- Las páginas piden `api/tasks` y `api/mysql/query` relativos al `<base href="/">`.
+- `nginx/mis-frameworks-spa.antonydev.tech-api.conf` hace `proxy_pass http://127.0.0.1:3200/` sobre `/framework-spa-with-jquery-and-vanilla/api/`.
+- Las páginas piden `api/tasks` y `api/mysql/query` relativos al `<base>` del demo.
 - El `.env` del API en producción es el mismo `.env.production` que usa PHP. Vive en `/opt/jquery-node-api/.env`, `root:www-data 640`. La plantilla versionada es `.env.production.example`. `api/.env.example` es solo la del paquete. Si no define `API_PORT`, el proceso usa `3200`.
 - `pnpm dev` monta los mismos routers en `/api` y lee el `.env` de la raíz (MySQL local en el `3307`).
 - `pnpm preview` no monta este router. Las páginas Node muestran el fallo en el DOM. PHP con MySQL sigue en `app/services/mysql/query.php`.
