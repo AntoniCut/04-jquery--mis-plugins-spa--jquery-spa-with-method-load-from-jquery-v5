@@ -18,7 +18,7 @@ Rama: `spec-06-vanilla-spa-core`. Entrega: una PR. Verificación: `node --check`
 
 - [x] T1 — S1 — inline — pendiente de commit del usuario
 - [x] T2 — S2 — inline — pendiente de commit del usuario
-- [ ] T3 — S3 — inline — pendiente
+- [x] T3 — S3 — inline — pendiente de commit del usuario
 - [ ] T4 — S4 — inline — pendiente
 - [ ] T5 — S5 — inline — pendiente
 - [ ] T6 — S6 — inline — pendiente
@@ -37,3 +37,4 @@ Rama: `spec-06-vanilla-spa-core`. Entrega: una PR. Verificación: `node --check`
 - L8 (2026-11-28, entrega): PR1 encadenada, base `main`; PR2 (`spec-07-selector-de-motor`) depende de esta rama. `size:exception` previsto por el tamaño del port.
 - L9 (2026-11-28, T1 verificado): `packages/vanilla-spa-core/package.json` creado como `@antonydev/vanilla-spa-core` (`type: module`, `private`, exports a `start.js` y `spa-loader-content-html.js`). `pnpm-workspace.yaml` incluye `packages/vanilla-spa-core`; la raíz declara `"@antonydev/vanilla-spa-core": "workspace:*"` en devDependencies; `jsconfig.json` incluye el paquete. Tipos base: `vanilla-spa-core-route.d.js`, `vanilla-spa-core-options.d.js`, `vanilla-spa-core-start.d.js` y `vanilla-spa-core-package.d.ts`. `pnpm install` → `Scope: all 7 workspace projects`, `+ @antonydev/vanilla-spa-core 0.0.0 <- packages/vanilla-spa-core`; `package.json`/`jsconfig.json` parsean como JSON. Falta el commit (lo hace el usuario).
 - L10 (2026-11-28, T2 verificado): `src/start.js` exporta `start()` y reexporta `spaLoaderContentHtml`; `start({ initSpa })` invoca el callback y `start(options)` delega en el motor. `src/spa-loader-content-html.js` normaliza `{ routeManifest, routeModulesBase, base }` con defaults vacíos y deja `init()` listo para el routing. `node --check` en ambos archivos y prueba Node: `initSpa llamado: true`; el motor informa `rutas en el manifiesto: 1`. Falta el commit (lo hace el usuario).
+- L11 (2026-11-28, T3 verificado): `spa-loader-content-html.js` suma `collapsePathnameSlashes`, `safeHistoryPathname`, `normalize`, `buildPathname`, `findManifestEntryByPath`, `findManifestEntryById`, `loadRouteModule` (caché + módulos rotos), `findNotFoundRoute`, `loadNotFoundRoute` e `init()` async con `history.replaceState`. `loadContent` queda como placeholder para T4. Prueba Node con módulos temporales en `/tmp/opencode/vanilla-t3`: home en `/` → `replaceState {id:"home",path:"/",routeFile:"route-home"}`; URL `/missing` → 404 + `replaceState {id:null,path:"/missing"}`; base `/app` y pathname `/app/home` → `replaceState {id:"home",path:"/app/home"}`. `node --check` OK. Falta el commit (lo hace el usuario).
