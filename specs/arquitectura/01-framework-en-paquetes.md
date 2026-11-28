@@ -25,18 +25,19 @@ El día que se publiquen en npm solo cambia esa versión.
 | `@antonydev/spa-build` | Tareas de `gulpfile.js` y motor de `generate-markdown-shiki.js` | Node, build |
 | `@antonydev/spa-loading-effect` | `packages/spa-loading-effect/src/` → `app/framework/spa-loading-effect/` | Navegador |
 | `@antonydev/jq-spa-core` | `packages/jq-spa-core/src/` (libs jQuery, loaders ESM, plugin SPA v5, `start()`) → `app/framework/jq-spa-core/` | Navegador |
+| `@antonydev/vanilla-spa-core` | `packages/vanilla-spa-core/src/` (motor SPA vanilla, sin jQuery, `start()` y `spaLoaderContentHtml()`) → `app/framework/vanilla-spa-core/` | Navegador |
 
-`spa-server`, `spa-build` y `spa-loading-effect` no dependen de jQuery y se diseñan para que JS-SPA-V5 los consuma igual.
+`spa-server`, `spa-build` y `spa-loading-effect` no dependen de jQuery y se diseñan para que JS-SPA-V5 los consuma igual. `jq-spa-core` y `vanilla-spa-core` son **motores excluyentes**: el proyecto elige uno en `spa.config.js` → `engine`.
 
 ## Qué queda en el proyecto
 
 | Carpeta | Dueño | Nota |
 |---|---|---|
-| `src/spa/spa.js` | Desarrollador | Solo opciones. Se las pasa a `start()` |
-| `src/main.js` | Desarrollador | Se reduce a importar `start()` y pasarle las opciones |
-| `src/routes/`, `src/pages/`, `src/pages-components/`, `src/components/`, `src/scss/`, `src/scripts/`, `src/services/` | Desarrollador | Contenido de la SPA |
+| `src/engines/<engine>/spa.js` | Desarrollador | Configuración del motor elegido. Se pasa a `start()` |
+| `src/engines/<engine>/main.js` | Desarrollador | Entrada del motor; importa `start()` y su `spa.js` |
+| `src/routes/`, `src/pages/`, `src/pages-components/`, `src/components/`, `src/scss/`, `src/scripts/`, `src/services/` | Desarrollador | Contenido de la SPA. `src/routes/` es compartido por ambos motores; `libs` es jQuery-only |
 | `src/assets/` | Desarrollador | Imágenes, fuentes y favicons. Sale de la raíz en SPEC 01 |
-| `src/plugins/` (p. ej. actions-navbars) | Desarrollador | Plugins de terceros; el core SPA vive en jq-spa-core |
+| `src/plugins/` (p. ej. actions-navbars) | Desarrollador | Plugins de terceros; el core SPA vive en el paquete del motor elegido |
 | `spa.config.js` | Desarrollador | Carpetas extra para Gulp y opciones de Shiki |
 | `.env` | Desarrollador | Puertos y `SITE_BASE`. No se mueven a `spa.config.js` |
 | `index.html` | Desarrollador | Shell con `<base href>` y el import map |
@@ -47,15 +48,18 @@ El día que se publiquen en npm solo cambia esa versión.
 
 El navegador no resuelve `node_modules` y el proyecto no usa bundler.
 
-1. `@antonydev/spa-build` copia los archivos de navegador de cada paquete a `app/framework/<paquete>/`.
-2. `index.html` declara un import map antes de cualquier `<script type="module">`.
-3. El código del desarrollador importa por nombre: `import { start } from '@antonydev/jq-spa-core'`.
+1. El proyecto elige `engine: 'jquery' | 'vanilla'` en `spa.config.js`.
+2. `@antonydev/spa-build` copia los archivos de navegador del **motor elegido** a `app/framework/<paquete>/` y su entrada a `app/engines/<engine>/`.
+3. `index.html` declara un import map antes de cualquier `<script type="module">`; los bloques `@engine:*` dejan solo el motor elegido.
+4. El código del desarrollador importa por nombre: `import { start } from '@antonydev/jq-spa-core'` o `from '@antonydev/vanilla-spa-core'`.
 
 Las URLs del import map son relativas al `<base href>`, así que siguen la regla de `SITE_BASE` sin hardcodear el prefijo.
 
 ## Reglas
 
 - El navegador solo lee `app/`. Todo estático, incluido `src/assets/`, se publica bajo `app/`.
+- En `app/` y `dist/` vive **un solo motor**: `jquery` o `vanilla`. El build no publica el otro.
+- `src/routes/` es compartido por ambos motores. `libs` es jQuery-only; en vanilla el desarrollador debe dejarlo vacío o ausente.
 - Ningún paquete lee opciones del proyecto por su cuenta. Las recibe por parámetro (`start(options)`) o desde `spa.config.js`.
 - Un paquete no importa archivos de `src/`.
 - El contrato del plugin (`jQuery.load()` y `.html()`) no cambia con el refactor.
@@ -70,7 +74,10 @@ Las URLs del import map son relativas al `<base href>`, así que siguen la regla
 | SPEC 03 — `@antonydev/spa-build` | Convertir `gulpfile.js` y el motor de Shiki en paquete configurable con `spa.config.js` |
 | SPEC 04 — `@antonydev/jq-spa-core` | Empaquetar jQuery, el plugin v5 y `start()`, y añadir el import map |
 | SPEC 05 — `@antonydev/spa-loading-effect` | Empaquetar el efecto de loading |
-| SPEC 06 — Documentación | Actualizar `AGENTS.md`, el README y la guía para crear un proyecto nuevo |
+| SPEC 06 — `@antonydev/vanilla-spa-core` | Extraer el motor SPA vanilla del plugin de JS-SPA-V5 |
+| SPEC 07 — Selector de motor | Elegir `jquery` o `vanilla` desde `spa.config.js` y publicar solo el elegido |
+| SPEC 08 — Librerías vanilla | Equivalente a `libs` para el motor vanilla (futura) |
+| SPEC 09 — Documentación | Actualizar `AGENTS.md`, el README y la guía para crear un proyecto nuevo |
 
 Cada spec se escribe con `/spec` cuando la anterior está implementada.
 La ejecución de cada spec se sigue con ODD en `odd/tasks/<spec>.md`, que referencia la spec en vez de copiarla.
@@ -84,13 +91,14 @@ La ejecución de cada spec se sigue con ODD en `odd/tasks/<spec>.md`, que refere
 - **Sí:** Gulp copia a `app/framework/<paquete>/` y un import map da los nombres. Mantiene el modelo sin bundler.
 - **No:** imports con rutas relativas a `app/framework/`. Atan el código del desarrollador a la ruta física.
 - **No:** bundler (esbuild o Vite) para resolver `node_modules`. Cambia el modelo de build del prototipo.
-- **Sí:** el arranque de `src/main.js` (modo módulo, fallback CDN, precarga de jQuery UI) pasa al core como `start()`.
-- **Sí:** cuatro paquetes. jQuery y el plugin van juntos porque el plugin no funciona sin jQuery.
-- **No:** separar `@antonydev/jquery-runtime` del core. No hay otro consumidor que lo pida.
-- **Sí:** un único `spa.config.js` en la raíz. Puertos y `SITE_BASE` siguen en `.env`.
-- **No:** campo `spa` en `package.json` ni un archivo de configuración por herramienta.
-- **Sí:** `api/`, `docker/` e `infra/` quedan como código del desarrollador.
-- **Sí:** las URLs de `src/assets/` pasan a `app/assets/`. Una sola regla: el navegador lee `app/`.
+- **Sí:** el arranque de la entrada del motor (modo módulo, fallback CDN, precarga de jQuery UI en jQuery; fetch y View Transitions en vanilla) pasa al core como `start()`.
+- **Sí:** cinco paquetes. jQuery y su plugin van juntos porque el plugin no funciona sin jQuery; el motor vanilla va separado.
+- **Sí:** dos motores excluyentes, `jquery` y `vanilla`. El proyecto elige uno en `spa.config.js` → `engine`.
+- **Sí:** plantillas por motor en `src/engines/<engine>/main.js` y `spa.js`; el build copia solo la elegida.
+- **Sí:** un shell con bloques `@engine:*`; dev/build dejan solo el motor elegido.
+- **No:** publicar ambos motores en `app/` o `dist/`.
+- **No:** un switch en runtime. Los motores no conviven.
+- **Diferido:** librerías vanilla (equivalente a `libs`) en una spec posterior.
 - **Diferido:** soporte de `.ts` en `src/scripts/`. Necesita una dependencia nueva y va en una spec posterior.
 
 ## Decisiones pendientes
@@ -104,6 +112,9 @@ La ejecución de cada spec se sigue con ODD en `odd/tasks/<spec>.md`, que refere
 | El import map no llega antes del primer módulo y el import por nombre falla | SPEC 04 lo coloca en `index.html` antes de `main.js` y añade un criterio de aceptación en consola |
 | `routeModulesBase` y las URLs de `paths.js` dejan de coincidir con `app/` | Cada spec verifica `pnpm dev` y `pnpm preview` navegando todas las rutas del manifiesto |
 | Divergencia con JS-SPA-V5 durante el piloto | Los paquetes compartidos no importan nada de jQuery. El port se registra en `workflow/` |
+| Publicar ambos motores en `app/` o `dist/` | Copia condicional por `engine`; verificación de `app/framework/` y `dist/app/framework/` |
+| Rutas compartidas con `libs` bajo vanilla | Se ignoran; `libs` documentado como jQuery-only; spec futura de librerías vanilla |
+| Cambiar `engine` en caliente | Reiniciar `pnpm dev`; documentado en README/AGENTS |
 
 ## Qué **no** entra en este refactor
 

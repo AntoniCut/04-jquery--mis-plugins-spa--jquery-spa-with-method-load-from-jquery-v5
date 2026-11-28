@@ -54,6 +54,7 @@
     "devDependencies": {
         "@antonydev/spa-loading-effect": "workspace:*",
         "@antonydev/jq-spa-core": "workspace:*",
+        "@antonydev/vanilla-spa-core": "workspace:*",
         "@antonydev/spa-build": "workspace:*",
         "@antonydev/spa-server": "workspace:*",
         "@types/gulp": "^4.0.18",

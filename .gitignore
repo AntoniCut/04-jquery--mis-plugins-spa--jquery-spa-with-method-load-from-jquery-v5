@@ -36,3 +36,6 @@ workflow/
 .engram/
 # Local AI runtime state
 .atl/
+
+# Playwright MCP (capturas y logs de verificación local)
+.playwright-mcp/

@@ -1,0 +1,17 @@
+{
+    "name": "@antonydev/vanilla-spa-core",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Motor SPA vanilla, sin jQuery, para el navegador (piloto del workspace)",
+    "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": "./src/start.js",
+        "./start.js": "./src/start.js",
+        "./spa-loader-content-html.js": "./src/spa-loader-content-html.js"
+    },
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "license": "ISC"
+}
