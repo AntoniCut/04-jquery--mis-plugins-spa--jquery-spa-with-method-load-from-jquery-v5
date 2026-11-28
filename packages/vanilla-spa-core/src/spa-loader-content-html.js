@@ -41,6 +41,18 @@ export const spaLoaderContentHtml = (options = {}) => {
     /** - `contador de re-evaluación de módulos que renderizan en su nivel superior` */
     let moduleReloadSeq = 0;
 
+    /** - `true si el navegador ya animó la navegación de historial` */
+    let hasUAVisualTransition = false;
+
+    /** - `true mientras hay una carga de ruta en curso` */
+    let isNavigating = false;
+
+    /** @type {AbortController|null} - `controller de la navegación activa` */
+    let activeNavigationAbort = null;
+
+    /** - `true mientras hay una View Transition en curso` */
+    let activeViewTransition = false;
+
 
 
     /*
@@ -181,11 +193,14 @@ export const spaLoaderContentHtml = (options = {}) => {
         /** - `base absoluta con barra inicial` */
         const absoluteBase = base.startsWith('/') ? base : `/${base}`;
 
+        /** - `pathname combinado sin doble barra cuando la base es la raíz` */
+        const combinedPathname = absoluteBase === '/' ? (trimmedPath || '/') : `${absoluteBase}${trimmedPath}`;
+
         //  -----  construir el pathname absoluto  -----
         try {
 
             //  -----  devolver el pathname seguro para history  -----
-            return safeHistoryPathname(new URL(absoluteBase + trimmedPath, window.location.origin).pathname);
+            return safeHistoryPathname(new URL(combinedPathname, window.location.origin).pathname);
 
         }
 
@@ -193,7 +208,7 @@ export const spaLoaderContentHtml = (options = {}) => {
         catch (error) {
 
             //  -----  fallback básico con la base y la ruta  -----
-            return safeHistoryPathname(absoluteBase + trimmedPath);
+            return safeHistoryPathname(combinedPathname);
 
         }
 
@@ -361,7 +376,7 @@ export const spaLoaderContentHtml = (options = {}) => {
         //  -----  si empieza por selector CSS, usar querySelector  -----
         if (/^[.#\[]/.test(raw))
             //  -----  resolver el selector CSS  -----
-            return document.querySelector(raw);
+            return /** @type {HTMLElement|null} */ (document.querySelector(raw));
 
         //  -----  si es un id pelado, usar getElementById  -----
         return document.getElementById(raw);
@@ -1040,7 +1055,7 @@ export const spaLoaderContentHtml = (options = {}) => {
     const addTitleHeaderFooter = (title) => {
 
         /** @type {HTMLElement|null} - `título del header` */
-        const headerTitle = document.querySelector('#layoutHeader #headerTitle');
+        const headerTitle = /** @type {HTMLElement|null} */ (document.querySelector('#layoutHeader #headerTitle'));
 
         //  -----  si existe el título del header, escribirlo  -----
         if (headerTitle)
@@ -1048,7 +1063,7 @@ export const spaLoaderContentHtml = (options = {}) => {
             headerTitle.textContent = title;
 
         /** @type {HTMLElement|null} - `título del footer` */
-        const footerTitle = document.querySelector('#layoutFooter #footerTitle');
+        const footerTitle = /** @type {HTMLElement|null} */ (document.querySelector('#layoutFooter #footerTitle'));
 
         //  -----  si existe el título del footer, escribirlo  -----
         if (footerTitle)
@@ -1064,7 +1079,7 @@ export const spaLoaderContentHtml = (options = {}) => {
      * -----  `loadStylesheetsByPage(styles)`  -----
      * ---------------------------------------------
      * - Carga las hojas de estilo de la ruta y elimina las anteriores.
-     * @param {VanillaSpaCoreRouteStyle[]|null} styles - Hojas de la ruta.
+     * @param {VanillaSpaCoreRouteStyle[]|null|undefined} styles - Hojas de la ruta.
      * @return {void}
      */
     const loadStylesheetsByPage = (styles) => {
@@ -1103,14 +1118,15 @@ export const spaLoaderContentHtml = (options = {}) => {
 
 
     /**
-     * ----------------------------------
-     * -----  `applyRouteMetaSync(route)`  -----
-     * ----------------------------------
-     * - Aplica los metadatos síncronos de la ruta.
+     * ------------------------------------------------
+     * -----  `applyRouteMetaSync(route, source)`  -----
+     * ------------------------------------------------
+     * - Aplica los metadatos síncronos de la ruta y empuja historial en un clic.
      * @param {VanillaSpaCoreRoute} route - Ruta actual.
+     * @param {'init'|'click'|'popstate'} [source='click'] - Origen de la navegación.
      * @return {void}
      */
-    const applyRouteMetaSync = (route) => {
+    const applyRouteMetaSync = (route, source = 'click') => {
 
         //  -----  actualizar el título de la pestaña  -----
         if (route.pageTitle)
@@ -1127,10 +1143,55 @@ export const spaLoaderContentHtml = (options = {}) => {
             //  -----  escribir el título en el layout  -----
             addTitleHeaderFooter(route.headerTitle);
 
-        //  -----  cargar las hojas de estilo de la ruta  -----
-        if (route.styles)
-            //  -----  actualizar los estilos  -----
-            loadStylesheetsByPage(route.styles);
+        //  -----  actualizar las hojas de estilo (quita las anteriores si no hay)  -----
+        loadStylesheetsByPage(route.styles);
+
+        /** - `nuevo pathname de la ruta` */
+        const newPathname = buildPathname(route.path || '');
+
+        /**
+         * - `Compara pathnames ignorando la barra final.`
+         * @param {string} pathname - Pathname a normalizar.
+         * @return {string} - Pathname sin barra final.
+         */
+        const stripTrailingSlash = (pathname) => {
+
+            /** - `pathname sin la barra final` */
+            const stripped = String(pathname || '').replace(/\/$/, '');
+
+            //  -----  devolver la raíz si queda vacío  -----
+            return stripped === '' ? '/' : stripped;
+
+        };
+
+        //  -----  solo un clic empuja historial; init y popstate no  -----
+        if (source === 'click' && stripTrailingSlash(safeHistoryPathname(window.location.pathname)) !== stripTrailingSlash(newPathname)) {
+
+            /** @type {VanillaSpaCoreRouteManifest|undefined} - `entrada del manifiesto` */
+            const manifestEntry = findManifestEntryById(route.id);
+
+            //  -----  empujar la nueva ruta al historial  -----
+            history.pushState(
+                {
+                    id: route.id,
+                    path: newPathname,
+                    routeFile: manifestEntry?.file || null,
+                    favicon: route.favicon || null,
+                },
+                '',
+                newPathname
+            );
+
+            //  -----  separar el aviso en consola  -----
+            console.log('\n');
+
+            //  -----  avisar de la navegación  -----
+            console.warn('navigate ==>', route.id, newPathname);
+
+            //  -----  separar el aviso en consola  -----
+            console.log('\n');
+
+        }
 
     };
 
@@ -1283,7 +1344,7 @@ export const spaLoaderContentHtml = (options = {}) => {
         const closeDuration = 360;
 
         /** @type {HTMLElement|null} - `contenedor del navbar` */
-        const navbar = document.querySelector('.navbar__container');
+        const navbar = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__container'));
 
         //  -----  si no hay navbar, lanzar error controlado  -----
         if (!navbar)
@@ -1291,7 +1352,7 @@ export const spaLoaderContentHtml = (options = {}) => {
             throw new Error('❌ No se encontró el elemento .navbar__container');
 
         /** @type {HTMLElement|null} - `botón de abrir menú` */
-        const btnOpen = document.querySelector('.navbar__btn-open');
+        const btnOpen = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__btn-open'));
 
         //  -----  si no hay botón de abrir, lanzar error controlado  -----
         if (!btnOpen)
@@ -1299,7 +1360,7 @@ export const spaLoaderContentHtml = (options = {}) => {
             throw new Error('❌ No se encontró el elemento .navbar__btn-open');
 
         /** @type {HTMLElement|null} - `botón de cerrar menú` */
-        const btnClose = document.querySelector('.navbar__btn-close');
+        const btnClose = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__btn-close'));
 
         //  -----  si no hay botón de cerrar, lanzar error controlado  -----
         if (!btnClose)
@@ -1397,7 +1458,7 @@ export const spaLoaderContentHtml = (options = {}) => {
             document.addEventListener('click', () => {
 
                 /** @type {HTMLElement|null} - `navbar actual` */
-                const currentNavbar = document.querySelector('.navbar__container');
+                const currentNavbar = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__container'));
 
                 //  -----  si la vista no tiene navbar, no hacer nada  -----
                 if (!currentNavbar)
@@ -1405,10 +1466,10 @@ export const spaLoaderContentHtml = (options = {}) => {
                     return;
 
                 /** @type {HTMLElement|null} - `botón de cerrar actual` */
-                const currentBtnClose = document.querySelector('.navbar__btn-close');
+                const currentBtnClose = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__btn-close'));
 
                 /** @type {HTMLElement|null} - `botón de abrir actual` */
-                const currentBtnOpen = document.querySelector('.navbar__btn-open');
+                const currentBtnOpen = /** @type {HTMLElement|null} */ (document.querySelector('.navbar__btn-open'));
 
                 //  -----  proteger el cierre del menú  -----
                 try {
@@ -1451,15 +1512,16 @@ export const spaLoaderContentHtml = (options = {}) => {
 
 
     /**
-     * ----------------------------------------------
-     * -----  `applyPreloadedContent(payload, route)`  -----
-     * ----------------------------------------------
+     * ---------------------------------------------------------
+     * -----  `applyPreloadedContent(payload, route, source)`  -----
+     * ---------------------------------------------------------
      * - Inyecta el HTML precargado en el DOM de forma síncrona.
      * @param {VanillaSpaCorePreloadPayload} payload - Contenido precargado.
      * @param {VanillaSpaCoreRoute} route - Ruta actual.
+     * @param {'init'|'click'|'popstate'} [source='click'] - Origen de la navegación.
      * @return {void}
      */
-    const applyPreloadedContent = (payload, route) => {
+    const applyPreloadedContent = (payload, route, source = 'click') => {
 
         //  -----  si la ruta no tiene components, avisar y salir  -----
         if (!route.components || Object.keys(route.components).length === 0) {
@@ -1468,7 +1530,7 @@ export const spaLoaderContentHtml = (options = {}) => {
             console.warn(`applyPreloadedContent: la ruta ${route.id} no tiene 'components'`);
 
             //  -----  aplicar los metadatos de la ruta  -----
-            applyRouteMetaSync(route);
+            applyRouteMetaSync(route, source);
 
             //  -----  salir sin inyectar  -----
             return;
@@ -1564,7 +1626,7 @@ export const spaLoaderContentHtml = (options = {}) => {
         }
 
         //  -----  aplicar los metadatos de la ruta  -----
-        applyRouteMetaSync(route);
+        applyRouteMetaSync(route, source);
 
     };
 
@@ -1844,37 +1906,119 @@ export const spaLoaderContentHtml = (options = {}) => {
 
 
     /**
-     * --------------------------------------
-     * -----  `loadContent(route)`  -----
-     * --------------------------------------
-     * - Precarga e inyecta el contenido de una ruta.
+     * ------------------------------------------------
+     * -----  `loadContent(route, source = 'click')`  -----
+     * ------------------------------------------------
+     * - Carga una ruta en 3 fases: precarga, mutación y scripts.
+     * - Aborta la navegación anterior y descarta la obsoleta.
      * @param {VanillaSpaCoreRoute} route - Ruta a cargar.
+     * @param {'init'|'click'|'popstate'} [source='click'] - Origen de la navegación.
      * @return {Promise<void>}
      */
-    const loadContent = async (route) => {
+    const loadContent = async (route, source = 'click') => {
 
-        //  -----  si la ruta no es válida, avisar y salir  -----
-        if (!route) {
+        //  -----  consumir el flag de transición visual del navegador  -----
+        const skipViewTransition = hasUAVisualTransition;
 
-            //  -----  avisar de que la ruta no es válida  -----
-            console.warn('loadContent: ruta inválida');
+        //  -----  resetear el flag para la siguiente navegación  -----
+        hasUAVisualTransition = false;
 
-            //  -----  salir sin cargar  -----
-            return;
+        //  -----  si hay una navegación en curso, abortarla  -----
+        if (isNavigating && activeNavigationAbort)
+            //  -----  abortar la navegación anterior  -----
+            activeNavigationAbort.abort();
 
-        }
+        /** @type {AbortController} - `controller de esta navegación` */
+        const controller = new AbortController();
 
-        //  -----  intentar precargar, inyectar y cargar scripts  -----
+        //  -----  marcar el controller como activo  -----
+        activeNavigationAbort = controller;
+
+        /** @type {AbortSignal} - `señal de esta navegación` */
+        const signal = controller.signal;
+
+        //  -----  marcar que hay una navegación en curso  -----
+        isNavigating = true;
+
+        //  -----  intentar cargar la ruta  -----
         try {
 
-            //  -----  precargar el HTML de la ruta  -----
-            const payload = await preloadRouteContent(route);
+            //  -----  validar la ruta  -----
+            if (!route)
+                //  -----  lanzar error por ruta inválida  -----
+                throw new Error('Ruta inválida');
 
-            //  -----  inyectar el contenido precargado  -----
-            applyPreloadedContent(payload, route);
+            //  -----  FASE 1: precargar el HTML de la ruta  -----
+            const payload = await preloadRouteContent(route, signal);
 
-            //  -----  cargar los scripts de la ruta  -----
-            await applyRouteMetaAsync(route);
+            //  -----  si la navegación fue abortada, descartar  -----
+            if (signal.aborted)
+                //  -----  salir sin mutar el DOM  -----
+                return;
+
+            /**
+             * ------------------------
+             * -----  `mutate()`  -----
+             * ------------------------
+             * - Aplica el contenido precargado de forma síncrona.
+             * @return {void}
+             */
+            const mutate = () => applyPreloadedContent(payload, route, source);
+
+            //  -----  FASE 2: mutar el DOM dentro de la View Transition  -----
+            if (document.startViewTransition && !activeViewTransition && !skipViewTransition) {
+
+                //  -----  marcar la transición como activa  -----
+                activeViewTransition = true;
+
+                /** - `View Transition de esta navegación` */
+                const viewTransition = document.startViewTransition(() => mutate());
+
+                //  -----  esperar solo a que el DOM quede mutado  -----
+                await viewTransition.updateCallbackDone.catch(() => {
+
+                    //  -----  ignorar el rechazo de la transición  -----
+                    return undefined;
+
+                });
+
+                //  -----  liberar la transición cuando termine la animación  -----
+                viewTransition.finished
+                    .catch(() => {
+
+                        //  -----  ignorar el rechazo de la animación  -----
+                        return undefined;
+
+                    })
+                    .finally(() => {
+
+                        //  -----  permitir la próxima transición  -----
+                        activeViewTransition = false;
+
+                    });
+
+            }
+
+            //  -----  sin View Transitions, mutar directamente  -----
+            else {
+
+                //  -----  aplicar el contenido  -----
+                mutate();
+
+            }
+
+            //  -----  si la navegación fue abortada, descartar la fase 3  -----
+            if (signal.aborted)
+                //  -----  salir sin cargar scripts  -----
+                return;
+
+            //  -----  FASE 3: cargar scripts con el DOM ya mutado  -----
+            await applyRouteMetaAsync(route, signal);
+
+            //  -----  si la navegación quedó obsoleta, no notificar  -----
+            if (signal.aborted)
+                //  -----  salir sin notificar  -----
+                return;
 
             //  -----  notificar que la ruta terminó de renderizarse  -----
             notifyRouteLoaded(route);
@@ -1884,11 +2028,38 @@ export const spaLoaderContentHtml = (options = {}) => {
 
         }
 
-        //  -----  si la carga falla, notificar sin romper el flujo  -----
+        //  -----  si la carga falla  -----
         catch (error) {
 
+            //  -----  si es un aborto intencional, no notificar error  -----
+            if (error instanceof DOMException && error.name === 'AbortError') {
+
+                //  -----  avisar de la navegación abortada  -----
+                console.info(`⏭️ Navegación abortada por una nueva navegación: ${route?.id || '(sin id)'}`);
+
+                //  -----  salir sin notificar  -----
+                return;
+
+            }
+
             //  -----  notificar el error de carga  -----
-            notifyRouteLoadError(route, error, 'loadContent');
+            notifyRouteLoadError(route, error, source);
+
+        }
+
+        //  -----  liberar el estado si esta sigue siendo la navegación activa  -----
+        finally {
+
+            //  -----  comparar identidad para no pisar una navegación nueva  -----
+            if (activeNavigationAbort === controller) {
+
+                //  -----  liberar el flag de navegación  -----
+                isNavigating = false;
+
+                //  -----  limpiar el controller activo  -----
+                activeNavigationAbort = null;
+
+            }
 
         }
 
@@ -1935,10 +2106,229 @@ export const spaLoaderContentHtml = (options = {}) => {
         }
 
         //  -----  cargar el contenido de la 404  -----
-        await loadContent(route404);
+        await loadContent(route404, source);
 
         //  -----  devolver la ruta 404 cargada  -----
         return route404;
+
+    };
+
+
+
+    /**
+     * -----------------------------------
+     * -----  `setupEventListeners()`  -----
+     * -----------------------------------
+     * - Configura los clics en enlaces internos y la navegación atrás/adelante.
+     * @return {void}
+     */
+    const setupEventListeners = () => {
+
+        //  -----  click en enlaces internos  -----
+        document.addEventListener('click', (event) => {
+
+            /** @type {Element|null} - `elemento clicado` */
+            const target = event.target instanceof Element ? event.target : null;
+
+            //  -----  si no hay elemento, salir  -----
+            if (!target)
+                //  -----  no hay enlace que resolver  -----
+                return;
+
+            /** @type {HTMLAnchorElement|null} - `enlace con data-id o data-route` */
+            const link = /** @type {HTMLAnchorElement|null} */ (target.closest('a[data-id], a[data-route]'));
+
+            //  -----  si el clic no es sobre un enlace interno, salir  -----
+            if (!link)
+                //  -----  dejar el comportamiento nativo  -----
+                return;
+
+            //  -----  respetar modificadores, botón y defaultPrevented  -----
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+                //  -----  dejar que el navegador abra el enlace  -----
+                return;
+
+            //  -----  cancelar la navegación nativa  -----
+            event.preventDefault();
+
+            /** - `archivo de ruta desde data-route` */
+            const routeFile = link.dataset.route;
+
+            /** - `id de ruta desde data-id` */
+            const routeId = link.dataset.id;
+
+            //  -----  si hay data-route, importar por archivo  -----
+            if (routeFile) {
+
+                //  -----  importar y cargar la ruta  -----
+                loadRouteModule(String(routeFile))
+                    .then((route) => {
+
+                        //  -----  si la ruta existe, cargarla  -----
+                        if (route)
+                            //  -----  cargar la ruta del enlace  -----
+                            loadContent(route, 'click');
+
+                        //  -----  si no existe, cargar la 404  -----
+                        else
+                            //  -----  cargar la 404  -----
+                            loadNotFoundRoute('click');
+
+                    })
+                    .catch(() => {
+
+                        //  -----  si el import falla, cargar la 404  -----
+                        loadNotFoundRoute('click');
+
+                    });
+
+                //  -----  salir tras la carga por data-route  -----
+                return;
+
+            }
+
+            //  -----  si hay data-id, buscar en el manifiesto  -----
+            if (routeId) {
+
+                /** @type {VanillaSpaCoreRouteManifest|undefined} - `entrada del manifiesto` */
+                const entry = findManifestEntryById(String(routeId));
+
+                //  -----  si la entrada existe, importar su archivo  -----
+                if (entry) {
+
+                    //  -----  importar y cargar la ruta  -----
+                    loadRouteModule(entry.file)
+                        .then((route) => {
+
+                            //  -----  si la ruta existe, cargarla  -----
+                            if (route)
+                                //  -----  cargar la ruta del manifiesto  -----
+                                loadContent(route, 'click');
+
+                            //  -----  si no existe, cargar la 404  -----
+                            else
+                                //  -----  cargar la 404  -----
+                                loadNotFoundRoute('click');
+
+                        })
+                        .catch(() => {
+
+                            //  -----  si el import falla, cargar la 404  -----
+                            loadNotFoundRoute('click');
+
+                        });
+
+                }
+
+                //  -----  si el id no está en el manifiesto, cargar la 404  -----
+                else {
+
+                    //  -----  cargar la 404  -----
+                    loadNotFoundRoute('click');
+
+                }
+
+                //  -----  salir tras resolver el data-id  -----
+                return;
+
+            }
+
+            //  -----  enlace interno sin ruta resoluble: cargar la 404  -----
+            loadNotFoundRoute('click');
+
+        });
+
+
+
+        //  -----  navegación atrás/adelante  -----
+        window.addEventListener('popstate', (event) => {
+
+            //  -----  detectar si el navegador ya animó la transición  -----
+            hasUAVisualTransition = /** @type {PopStateEvent & { hasUAVisualTransition?: boolean }} */ (event).hasUAVisualTransition === true;
+
+            /** @type {{ routeFile?: string, path?: string, favicon?: string }|null} - `estado del historial` */
+            const state = /** @type {any} */ (event.state);
+
+            //  -----  actualizar el favicon de inmediato si el state lo trae  -----
+            if (state?.favicon)
+                //  -----  cambiar el favicon  -----
+                updateFavicon(state.favicon);
+
+            /** - `archivo de ruta guardado en el historial` */
+            const routeFile = state?.routeFile;
+
+            /** - `path del state o pathname actual` */
+            const raw = state?.path ?? window.location.pathname;
+
+            //  -----  si el state trae routeFile, importar directo  -----
+            if (routeFile) {
+
+                //  -----  importar y cargar la ruta  -----
+                loadRouteModule(String(routeFile))
+                    .then((route) => {
+
+                        //  -----  si la ruta existe, cargarla  -----
+                        if (route)
+                            //  -----  cargar la ruta del historial  -----
+                            loadContent(route, 'popstate');
+
+                        //  -----  si no existe, cargar la 404  -----
+                        else
+                            //  -----  cargar la 404  -----
+                            loadNotFoundRoute('popstate');
+
+                    })
+                    .catch(() => {
+
+                        //  -----  si el import falla, cargar la 404  -----
+                        loadNotFoundRoute('popstate');
+
+                    });
+
+                //  -----  salir tras la carga por routeFile  -----
+                return;
+
+            }
+
+            /** @type {VanillaSpaCoreRouteManifest|undefined} - `entrada del manifiesto` */
+            const entry = findManifestEntryByPath(raw);
+
+            //  -----  si la url está en el manifiesto, cargarla  -----
+            if (entry) {
+
+                //  -----  importar y cargar la ruta  -----
+                loadRouteModule(entry.file)
+                    .then((route) => {
+
+                        //  -----  si la ruta existe, cargarla  -----
+                        if (route)
+                            //  -----  cargar la ruta del historial  -----
+                            loadContent(route, 'popstate');
+
+                        //  -----  si no existe, cargar la 404  -----
+                        else
+                            //  -----  cargar la 404  -----
+                            loadNotFoundRoute('popstate');
+
+                    })
+                    .catch(() => {
+
+                        //  -----  si el import falla, cargar la 404  -----
+                        loadNotFoundRoute('popstate');
+
+                    });
+
+            }
+
+            //  -----  si la url no está en el manifiesto, cargar la 404  -----
+            else {
+
+                //  -----  cargar la 404  -----
+                loadNotFoundRoute('popstate');
+
+            }
+
+        });
 
     };
 
@@ -1970,6 +2360,9 @@ export const spaLoaderContentHtml = (options = {}) => {
         //  -----  separar el aviso en consola  -----
         console.log('\n');
 
+        //  -----  configurar click y popstate antes de la carga inicial  -----
+        setupEventListeners();
+
         /** - `pathname actual del navegador, normalizado para history` */
         const initialPath = safeHistoryPathname(window.location.pathname);
 
@@ -1987,8 +2380,8 @@ export const spaLoaderContentHtml = (options = {}) => {
 
                 //  -----  si el módulo existe, cargar su contenido  -----
                 if (route)
-                    //  -----  volcar la ruta inicial  -----
-                    await loadContent(route);
+                    //  -----  arrancar la carga inicial sin bloquear el replaceState  -----
+                    loadContent(route, 'init');
 
                 //  -----  si el módulo no existe, cargar la 404  -----
                 else
