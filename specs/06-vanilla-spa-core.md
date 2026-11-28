@@ -1,6 +1,6 @@
 # SPEC 06 — `@antonydev/vanilla-spa-core`
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 04 implementada (`specs/04-jq-spa-core.md`), SPEC 05 implementada (`specs/05-spa-loading-effect.md`)
 > **Referencia:** plugin `spa-loader-content-html` v5 de JS-SPA-V5 (`spa-loader-content-html-v5/src/plugins/spa-loader-content-html/v5/spa-loader-content-html.js`) y `workflow/2026-11-28-js-spa-v5-pendiente.md`
 > **Fecha:** 2026-11-28
@@ -102,22 +102,40 @@ Cada paso deja el paquete sintácticamente válido y el fixture avanzando.
 
 ## Criterios de aceptación
 
-- [ ] `packages/vanilla-spa-core/` existe y `pnpm install` lo resuelve como workspace.
-- [ ] `spaLoaderContentHtml(options)` y `start({ initSpa })` funcionan según el contrato.
-- [ ] `node --check` termina con código 0 en los JS del paquete.
-- [ ] `rg 'innerHTML' packages/vanilla-spa-core` no encuentra asignaciones en el código (solo texto de docs si aplica).
-- [ ] `rg 'jquery|@antonydev/jq-spa-core|javascript-node-api|api/' packages/vanilla-spa-core` no encuentra imports ni dependencias.
-- [ ] El fixture carga la ruta inicial y pinta `components`, `pagesComponents` y `MarkdownShikiHtml`.
-- [ ] Click `a[data-id]` navega sin recargar, actualiza URL, título, favicon, header/footer y estilos.
-- [ ] Click `a[data-route]` navega por archivo de ruta.
-- [ ] Back/forward carga la ruta correcta sin `pushState` duplicado.
-- [ ] Ruta desconocida carga la 404.
-- [ ] `spa:route-loaded`, `spa:first-route-loaded` y `spa:route-load-error` emiten el detalle esperado.
-- [ ] Clics rápidos abortan la navegación anterior sin errores no capturados.
-- [ ] Una ruta con `components` en formato `#id` y otra con id pelado funcionan.
-- [ ] Una ruta con `scripts` `type: 'module'` y otra con `isModule: true` funcionan.
-- [ ] Una ruta con `libs` no rompe el motor vanilla (se ignora).
-- [ ] `git diff` no toca `api/`, `.deploy-api/`, `infra/` ni el deploy.
+- [x] `packages/vanilla-spa-core/` existe y `pnpm install` lo resuelve como workspace.
+- [x] `spaLoaderContentHtml(options)` y `start({ initSpa })` funcionan según el contrato.
+- [x] `node --check` termina con código 0 en los JS del paquete.
+- [x] `rg 'innerHTML' packages/vanilla-spa-core` no encuentra asignaciones en el código (solo texto de docs si aplica).
+- [x] `rg 'jquery|@antonydev/jq-spa-core|javascript-node-api|api/' packages/vanilla-spa-core` no encuentra imports ni dependencias.
+- [x] El fixture carga la ruta inicial y pinta `components`, `pagesComponents` y `MarkdownShikiHtml`.
+- [x] Click `a[data-id]` navega sin recargar, actualiza URL, título, favicon, header/footer y estilos.
+- [x] Click `a[data-route]` navega por archivo de ruta.
+- [x] Back/forward carga la ruta correcta sin `pushState` duplicado.
+- [x] Ruta desconocida carga la 404.
+- [x] `spa:route-loaded`, `spa:first-route-loaded` y `spa:route-load-error` emiten el detalle esperado.
+- [x] Clics rápidos abortan la navegación anterior sin errores no capturados.
+- [x] Una ruta con `components` en formato `#id` y otra con id pelado funcionan.
+- [x] Una ruta con `scripts` `type: 'module'` y otra con `isModule: true` funcionan.
+- [x] Una ruta con `libs` no rompe el motor vanilla (se ignora).
+- [x] `git diff` no toca `api/`, `.deploy-api/`, `infra/` ni el deploy.
+
+## Verificación (2026-11-28)
+
+| Comprobación | Resultado |
+|---|---|
+| `node --check` del motor y del fixture | OK |
+| `pnpm build` | OK; 59 bloques Shiki; demo jQuery sin cambios |
+| `pnpm install` | `Scope: all 7 workspace projects`; `@antonydev/vanilla-spa-core` linkeado |
+| `node packages/vanilla-spa-core/test/server.js` | fixture en `http://127.0.0.1:4173/test/fixture/` |
+| Home | header/footer, page component, Shiki, imagen relativa reescrita a `/test/fixture/assets/logo.svg`, scripts clásico + módulo + `isModule`, `route-loaded` + `first-route-loaded`, 1 View Transition |
+| Click `data-id` About | `/test/fixture/about`, state `{id:"about", path:"/test/fixture/about", routeFile:"route-about"}`, título/header, estilo de home eliminado |
+| Back | `/test/fixture`, state home, `classicRuns=2`, `moduleRuns=2`, estilo de home restaurado |
+| Click `data-route` About | `/test/fixture/about`, state about |
+| Slow + About a 100 ms | queda About, `#slowPage` ausente, `⏭️ Navegación abortada por una nueva navegación: slow` |
+| 404 en `/test/fixture/missing` | `#notFound`, título 404, URL intacta |
+| Navbar | abre/cierra, body overflow y clic fuera |
+| `rg 'innerHTML'` / `rg 'jquery|@antonydev/jq-spa-core|javascript-node-api|api/'` | sin coincidencias |
+| Consola | 0 errores |
 
 ## Decisiones
 

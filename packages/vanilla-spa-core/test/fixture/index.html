@@ -1,0 +1,52 @@
+<!--
+    *  ------------------------------------------------------------------------------------  *
+    *  -----  index.html  --  /packages/vanilla-spa-core/test/fixture/index.html  -----  *
+    *  ------------------------------------------------------------------------------------  *
+-->
+
+
+<!DOCTYPE html>
+<html lang="es">
+
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--  -----  base del fixture: el servidor lo sirve bajo /test/fixture/  -----  -->
+    <base href="/test/fixture/">
+
+    <title>vanilla-spa-core fixture</title>
+
+    <!--  -----  favicon del fixture para evitar el 404 por defecto  -----  -->
+    <link rel="icon" href="/test/fixture/assets/logo.svg" type="image/svg+xml">
+
+    <!--  -----  estilos mínimos para probar el navbar  -----  -->
+    <style>
+        .navbar__btn-open, .navbar__btn-close { display: block; margin: 4px; }
+        .navbar__container { background: #eee; }
+    </style>
+
+</head>
+
+
+<body>
+
+    <!--  -----  regiones que rellena el motor  -----  -->
+    <header id="layoutHeader"></header>
+    <main id="layoutMain"></main>
+    <footer id="layoutFooter"></footer>
+
+    <!--  -----  navbar vanilla  -----  -->
+    <nav class="navbar__container" id="fixtureNavbar"><a href="#">Menu</a></nav>
+    <button class="navbar__btn-open" type="button">Abrir</button>
+    <button class="navbar__btn-close" type="button">Cerrar</button>
+
+    <!--  -----  entrada del fixture  -----  -->
+    <script type="module" src="main.js"></script>
+
+</body>
+
+
+</html>
