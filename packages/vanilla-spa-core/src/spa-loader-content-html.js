@@ -870,6 +870,586 @@ export const spaLoaderContentHtml = (options = {}) => {
 
 
 
+    /** - `clave de cache-busting estable durante toda la sesión para el favicon` */
+    const faviconSessionKey = Date.now();
+
+
+
+    /*
+        *  ---------------------------  *
+        *  -----  EVENTOS spa:*  -----  *
+        *  ---------------------------  *
+    */
+
+
+    /**
+     * ------------------------------------
+     * -----  `notifyRouteLoaded(route)`  -----
+     * ------------------------------------
+     * - Emite `spa:route-loaded` y, la primera vez, `spa:first-route-loaded`.
+     * @param {VanillaSpaCoreRoute} route - Ruta que terminó de renderizarse.
+     * @return {void}
+     */
+    const notifyRouteLoaded = (route) => {
+
+        //  -----  emitir el evento de ruta cargada  -----
+        document.dispatchEvent(
+            new CustomEvent('spa:route-loaded', {
+                detail: {
+                    route: {
+                        id: route?.id || null,
+                        path: route?.path || window.location.pathname,
+                    },
+                },
+            })
+        );
+
+        //  -----  si es la primera ruta de la sesión  -----
+        if (!window.__spaFirstRouteLoaded) {
+
+            //  -----  marcar la primera ruta como cargada  -----
+            window.__spaFirstRouteLoaded = true;
+
+            //  -----  emitir el evento de primera ruta  -----
+            document.dispatchEvent(new CustomEvent('spa:first-route-loaded'));
+
+        }
+
+    };
+
+
+
+    /**
+     * ------------------------------------------------------
+     * -----  `notifyRouteLoadError(route, error, source)`  -----
+     * ------------------------------------------------------
+     * - Emite `spa:route-load-error` y desbloquea el loader inicial si hace falta.
+     * @param {VanillaSpaCoreRoute|undefined} route - Ruta que falló.
+     * @param {unknown} error - Error de la carga.
+     * @param {string} source - Origen del fallo.
+     * @return {void}
+     */
+    const notifyRouteLoadError = (route, error, source) => {
+
+        //  -----  registrar el error en consola  -----
+        console.error('Error cargando ruta SPA:', error);
+
+        //  -----  emitir el evento de error  -----
+        document.dispatchEvent(
+            new CustomEvent('spa:route-load-error', {
+                detail: {
+                    id: route?.id || null,
+                    path: route?.path || window.location.pathname,
+                    source,
+                    message: error instanceof Error ? error.message : String(error || 'Error desconocido'),
+                },
+            })
+        );
+
+        //  -----  si aún no se cargó la primera ruta  -----
+        if (!window.__spaFirstRouteLoaded) {
+
+            //  -----  marcar la primera ruta como resuelta  -----
+            window.__spaFirstRouteLoaded = true;
+
+            //  -----  emitir el evento para soltar el loader  -----
+            document.dispatchEvent(new CustomEvent('spa:first-route-loaded'));
+
+        }
+
+    };
+
+
+
+    /*
+        *  ----------------------------------------  *
+        *  -----  Metadatos de la ruta  ----------  *
+        *  ----------------------------------------  *
+    */
+
+
+    /**
+     * --------------------------------------
+     * -----  `updateFavicon(favicon)`  -----
+     * --------------------------------------
+     * - Actualiza el favicon del documento sin parpadeo.
+     * @param {string} favicon - URL del favicon.
+     * @return {void}
+     */
+    const updateFavicon = (favicon) => {
+
+        /** - `URL absoluta del favicon` */
+        const newAbsolute = new URL(favicon, document.baseURI).href;
+
+        /** - `URL del favicon con cache-busting` */
+        const newHref = `${favicon}?v=${faviconSessionKey}`;
+
+        /** @type {HTMLLinkElement|null} - `favicon existente` */
+        const existing = /** @type {HTMLLinkElement|null} */ (document.querySelector('link[rel~="icon"]'));
+
+        //  -----  si ya existe un favicon, actualizarlo in-place  -----
+        if (existing) {
+
+            //  -----  si el archivo es el mismo, no hacer nada  -----
+            if (existing.href.split('?')[0] === newAbsolute)
+                //  -----  salir sin parpadeo  -----
+                return;
+
+            //  -----  actualizar el href sin quitar el nodo  -----
+            existing.href = newHref;
+
+            //  -----  eliminar favicons duplicados  -----
+            document.querySelectorAll('link[rel~="icon"]').forEach((link) => {
+
+                //  -----  conservar solo el favicon actualizado  -----
+                if (link !== existing)
+                    //  -----  quitar el duplicado  -----
+                    link.remove();
+
+            });
+
+            //  -----  salir tras actualizar  -----
+            return;
+
+        }
+
+        //  -----  crear el favicon si no existe  -----
+        /** @type {HTMLLinkElement} - `nuevo favicon` */
+        const link = document.createElement('link');
+
+        //  -----  configurar el favicon  -----
+        link.rel = 'icon';
+        link.type = 'image/x-icon';
+        link.href = newHref;
+
+        //  -----  añadirlo al head  -----
+        document.head.appendChild(link);
+
+    };
+
+
+
+    /**
+     * -------------------------------------------
+     * -----  `addTitleHeaderFooter(title)`  -----
+     * -------------------------------------------
+     * - Escribe el título en el header y el footer del layout.
+     * @param {string} title - Título de la ruta.
+     * @return {void}
+     */
+    const addTitleHeaderFooter = (title) => {
+
+        /** @type {HTMLElement|null} - `título del header` */
+        const headerTitle = document.querySelector('#layoutHeader #headerTitle');
+
+        //  -----  si existe el título del header, escribirlo  -----
+        if (headerTitle)
+            //  -----  escribir el texto  -----
+            headerTitle.textContent = title;
+
+        /** @type {HTMLElement|null} - `título del footer` */
+        const footerTitle = document.querySelector('#layoutFooter #footerTitle');
+
+        //  -----  si existe el título del footer, escribirlo  -----
+        if (footerTitle)
+            //  -----  escribir el texto  -----
+            footerTitle.textContent = title;
+
+    };
+
+
+
+    /**
+     * ---------------------------------------------
+     * -----  `loadStylesheetsByPage(styles)`  -----
+     * ---------------------------------------------
+     * - Carga las hojas de estilo de la ruta y elimina las anteriores.
+     * @param {VanillaSpaCoreRouteStyle[]|null} styles - Hojas de la ruta.
+     * @return {void}
+     */
+    const loadStylesheetsByPage = (styles) => {
+
+        //  -----  eliminar las hojas de la ruta anterior  -----
+        document.querySelectorAll('link[data-page-style="true"]').forEach((link) => link.remove());
+
+        //  -----  si no hay estilos, salir  -----
+        if (!styles || !Array.isArray(styles))
+            //  -----  no hay hojas que cargar  -----
+            return;
+
+        //  -----  insertar las nuevas hojas  -----
+        for (const style of styles) {
+
+            //  -----  si la entrada no tiene href, omitirla  -----
+            if (!style || !style.href)
+                //  -----  pasar a la siguiente hoja  -----
+                continue;
+
+            /** @type {HTMLLinkElement} - `nueva hoja de estilo` */
+            const link = document.createElement('link');
+
+            //  -----  configurar la hoja con cache-busting  -----
+            link.rel = 'stylesheet';
+            link.href = `${style.href}?t=${sessionAssetKey}`;
+            link.dataset.pageStyle = 'true';
+
+            //  -----  añadirla al head  -----
+            document.head.appendChild(link);
+
+        }
+
+    };
+
+
+
+    /**
+     * ----------------------------------
+     * -----  `applyRouteMetaSync(route)`  -----
+     * ----------------------------------
+     * - Aplica los metadatos síncronos de la ruta.
+     * @param {VanillaSpaCoreRoute} route - Ruta actual.
+     * @return {void}
+     */
+    const applyRouteMetaSync = (route) => {
+
+        //  -----  actualizar el título de la pestaña  -----
+        if (route.pageTitle)
+            //  -----  escribir el título  -----
+            document.title = route.pageTitle;
+
+        //  -----  actualizar el favicon  -----
+        if (route.favicon)
+            //  -----  cambiar el favicon  -----
+            updateFavicon(route.favicon);
+
+        //  -----  actualizar el header y el footer  -----
+        if (route.headerTitle)
+            //  -----  escribir el título en el layout  -----
+            addTitleHeaderFooter(route.headerTitle);
+
+        //  -----  cargar las hojas de estilo de la ruta  -----
+        if (route.styles)
+            //  -----  actualizar los estilos  -----
+            loadStylesheetsByPage(route.styles);
+
+    };
+
+
+
+    /*
+        *  -------------------------------------  *
+        *  -----  Navbar y animaciones  -----  *
+        *  -------------------------------------  *
+    */
+
+
+    /**
+     * ------------------------------------------------
+     * -----  `slideDown(element, duration = 300)`  -----
+     * ------------------------------------------------
+     * - Despliega un elemento con una animación de margen.
+     * @param {HTMLElement} element - Elemento a mostrar.
+     * @param {number} [duration=300] - Duración en milisegundos.
+     * @return {void}
+     */
+    const slideDown = (element, duration = 300) => {
+
+        //  -----  si el elemento ya es visible, no hacer nada  -----
+        if (window.getComputedStyle(element).display !== 'none')
+            //  -----  salir  -----
+            return;
+
+        //  -----  restaurar el display para calcular la altura  -----
+        element.style.removeProperty('display');
+
+        /** - `display calculado del elemento` */
+        let display = window.getComputedStyle(element).display;
+
+        //  -----  si el display es none, usar flex  -----
+        if (display === 'none')
+            //  -----  usar flex como display visible  -----
+            display = 'flex';
+
+        //  -----  preparar la animación de entrada  -----
+        element.style.display = display;
+        element.style.marginTop = '-100%';
+        element.style.transitionProperty = 'margin-top';
+        element.style.transitionDuration = `${duration}ms`;
+        element.style.transitionTimingFunction = 'cubic-bezier(0.22, 1, 0.36, 1)';
+        element.style.willChange = 'margin-top';
+
+        //  -----  forzar reflow antes de animar  -----
+        element.offsetHeight;
+
+        //  -----  animar el margen a cero  -----
+        requestAnimationFrame(() => {
+
+            //  -----  llevar el margen a su posición final  -----
+            element.style.marginTop = '0';
+
+        });
+
+        //  -----  limpiar los estilos de transición al terminar  -----
+        setTimeout(() => {
+
+            //  -----  quitar la duración  -----
+            element.style.removeProperty('transition-duration');
+
+            //  -----  quitar la propiedad animada  -----
+            element.style.removeProperty('transition-property');
+
+            //  -----  quitar la función de timing  -----
+            element.style.removeProperty('transition-timing-function');
+
+            //  -----  quitar will-change  -----
+            element.style.removeProperty('will-change');
+
+        }, duration);
+
+    };
+
+
+
+    /**
+     * ----------------------------------------------
+     * -----  `slideUp(element, duration = 300)`  -----
+     * ----------------------------------------------
+     * - Oculta un elemento con una animación de margen.
+     * @param {HTMLElement} element - Elemento a ocultar.
+     * @param {number} [duration=300] - Duración en milisegundos.
+     * @return {void}
+     */
+    const slideUp = (element, duration = 300) => {
+
+        //  -----  si el elemento ya está oculto, no hacer nada  -----
+        if (window.getComputedStyle(element).display === 'none')
+            //  -----  salir  -----
+            return;
+
+        //  -----  preparar la animación de salida  -----
+        element.style.transitionProperty = 'margin-top';
+        element.style.transitionDuration = `${duration}ms`;
+        element.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 1, 1)';
+        element.style.willChange = 'margin-top';
+
+        //  -----  forzar reflow antes de animar  -----
+        element.offsetHeight;
+
+        //  -----  animar el margen fuera de la vista  -----
+        requestAnimationFrame(() => {
+
+            //  -----  llevar el margen a -100%  -----
+            element.style.marginTop = '-100%';
+
+        });
+
+        //  -----  ocultar y limpiar los estilos al terminar  -----
+        setTimeout(() => {
+
+            //  -----  ocultar el elemento  -----
+            element.style.display = 'none';
+
+            //  -----  quitar la duración  -----
+            element.style.removeProperty('transition-duration');
+
+            //  -----  quitar la propiedad animada  -----
+            element.style.removeProperty('transition-property');
+
+            //  -----  quitar la función de timing  -----
+            element.style.removeProperty('transition-timing-function');
+
+            //  -----  quitar will-change  -----
+            element.style.removeProperty('will-change');
+
+        }, duration);
+
+    };
+
+
+
+    /**
+     * -------------------------------
+     * -----  `actionsNavbar()`  -----
+     * -------------------------------
+     * - Abre y cierra el menú del navbar y lo cierra al hacer clic fuera.
+     * @return {void}
+     */
+    const actionsNavbar = () => {
+
+        /** - `duración de la apertura del menú` */
+        const openDuration = 560;
+
+        /** - `duración del cierre del menú` */
+        const closeDuration = 360;
+
+        /** @type {HTMLElement|null} - `contenedor del navbar` */
+        const navbar = document.querySelector('.navbar__container');
+
+        //  -----  si no hay navbar, lanzar error controlado  -----
+        if (!navbar)
+            //  -----  avisar de que falta el navbar  -----
+            throw new Error('❌ No se encontró el elemento .navbar__container');
+
+        /** @type {HTMLElement|null} - `botón de abrir menú` */
+        const btnOpen = document.querySelector('.navbar__btn-open');
+
+        //  -----  si no hay botón de abrir, lanzar error controlado  -----
+        if (!btnOpen)
+            //  -----  avisar de que falta el botón  -----
+            throw new Error('❌ No se encontró el elemento .navbar__btn-open');
+
+        /** @type {HTMLElement|null} - `botón de cerrar menú` */
+        const btnClose = document.querySelector('.navbar__btn-close');
+
+        //  -----  si no hay botón de cerrar, lanzar error controlado  -----
+        if (!btnClose)
+            //  -----  avisar de que falta el botón  -----
+            throw new Error('❌ No se encontró el elemento .navbar__btn-close');
+
+        //  -----  estado inicial  -----
+        navbar.style.display = 'none';
+        btnClose.style.display = 'none';
+
+
+
+        /**
+         * -------------------------------
+         * -----  `lockBodyScroll()`  -----
+         * -------------------------------
+         * - Bloquea el scroll del body con el menú abierto.
+         * @return {void}
+         */
+        const lockBodyScroll = () => {
+
+            //  -----  bloquear el scroll  -----
+            document.body.style.overflow = 'hidden';
+
+        };
+
+
+
+        /**
+         * ---------------------------------
+         * -----  `unlockBodyScroll()`  -----
+         * ---------------------------------
+         * - Restaura el scroll del body.
+         * @return {void}
+         */
+        const unlockBodyScroll = () => {
+
+            //  -----  quitar el bloqueo  -----
+            document.body.style.removeProperty('overflow');
+
+        };
+
+        /** @type {HTMLElement} - `botón de abrir clonado` */
+        const newBtnOpen = /** @type {HTMLElement} */ (btnOpen.cloneNode(true));
+
+        //  -----  reemplazar el botón para limpiar listeners previos  -----
+        btnOpen.parentNode?.replaceChild(newBtnOpen, btnOpen);
+
+        /** @type {HTMLElement} - `botón de cerrar clonado` */
+        const newBtnClose = /** @type {HTMLElement} */ (btnClose.cloneNode(true));
+
+        //  -----  reemplazar el botón para limpiar listeners previos  -----
+        btnClose.parentNode?.replaceChild(newBtnClose, btnClose);
+
+        //  -----  abrir el menú  -----
+        newBtnOpen.addEventListener('click', (event) => {
+
+            //  -----  evitar que el clic cierre el menú  -----
+            event.stopPropagation();
+
+            //  -----  ocultar abrir y mostrar cerrar  -----
+            newBtnOpen.style.display = 'none';
+            newBtnClose.style.display = 'flex';
+
+            //  -----  bloquear el scroll  -----
+            lockBodyScroll();
+
+            //  -----  desplegar el navbar  -----
+            slideDown(navbar, openDuration);
+
+        });
+
+        //  -----  cerrar el menú  -----
+        newBtnClose.addEventListener('click', (event) => {
+
+            //  -----  evitar que el clic cierre el menú  -----
+            event.stopPropagation();
+
+            //  -----  ocultar cerrar y mostrar abrir  -----
+            newBtnClose.style.display = 'none';
+            newBtnOpen.style.display = 'flex';
+
+            //  -----  plegar el navbar  -----
+            slideUp(navbar, closeDuration);
+
+            //  -----  desbloquear el scroll  -----
+            unlockBodyScroll();
+
+        });
+
+        //  -----  cerrar el menú al hacer clic fuera, una sola vez  -----
+        if (!document.body.dataset._spaClickBound) {
+
+            //  -----  listener global de cierre  -----
+            document.addEventListener('click', () => {
+
+                /** @type {HTMLElement|null} - `navbar actual` */
+                const currentNavbar = document.querySelector('.navbar__container');
+
+                //  -----  si la vista no tiene navbar, no hacer nada  -----
+                if (!currentNavbar)
+                    //  -----  salir  -----
+                    return;
+
+                /** @type {HTMLElement|null} - `botón de cerrar actual` */
+                const currentBtnClose = document.querySelector('.navbar__btn-close');
+
+                /** @type {HTMLElement|null} - `botón de abrir actual` */
+                const currentBtnOpen = document.querySelector('.navbar__btn-open');
+
+                //  -----  proteger el cierre del menú  -----
+                try {
+
+                    //  -----  plegar el navbar  -----
+                    slideUp(currentNavbar, closeDuration);
+
+                    //  -----  ocultar cerrar si existe  -----
+                    if (currentBtnClose)
+                        //  -----  ocultar el botón  -----
+                        currentBtnClose.style.display = 'none';
+
+                    //  -----  mostrar abrir si existe  -----
+                    if (currentBtnOpen)
+                        //  -----  mostrar el botón  -----
+                        currentBtnOpen.style.display = 'flex';
+
+                    //  -----  desbloquear el scroll  -----
+                    unlockBodyScroll();
+
+                }
+
+                //  -----  si el cierre falla, avisar sin romper  -----
+                catch (error) {
+
+                    //  -----  registrar el fallo  -----
+                    console.warn('⚠️ No se pudo cerrar el menú al hacer clic fuera:', error);
+
+                }
+
+            });
+
+            //  -----  marcar el listener como instalado  -----
+            document.body.dataset._spaClickBound = '1';
+
+        }
+
+    };
+
+
+
     /**
      * ----------------------------------------------
      * -----  `applyPreloadedContent(payload, route)`  -----
@@ -886,6 +1466,9 @@ export const spaLoaderContentHtml = (options = {}) => {
 
             //  -----  avisar de que no hay components  -----
             console.warn(`applyPreloadedContent: la ruta ${route.id} no tiene 'components'`);
+
+            //  -----  aplicar los metadatos de la ruta  -----
+            applyRouteMetaSync(route);
 
             //  -----  salir sin inyectar  -----
             return;
@@ -914,6 +1497,22 @@ export const spaLoaderContentHtml = (options = {}) => {
 
             //  -----  volcar el fragmento del componente  -----
             item.el.replaceChildren(item.fragment);
+
+        }
+
+        //  -----  inicializar las acciones del navbar  -----
+        try {
+
+            //  -----  enlazar abrir, cerrar y clic fuera  -----
+            actionsNavbar();
+
+        }
+
+        //  -----  si el navbar no está en la vista, seguir  -----
+        catch (error) {
+
+            //  -----  avisar de que el navbar no se pudo iniciar  -----
+            console.warn('actionsNavbar falló (probablemente falta .navbar__container en la vista):', error);
 
         }
 
@@ -963,6 +1562,9 @@ export const spaLoaderContentHtml = (options = {}) => {
             container.replaceChildren(fragment);
 
         }
+
+        //  -----  aplicar los metadatos de la ruta  -----
+        applyRouteMetaSync(route);
 
     };
 
@@ -1262,17 +1864,33 @@ export const spaLoaderContentHtml = (options = {}) => {
 
         }
 
-        //  -----  precargar el HTML de la ruta  -----
-        const payload = await preloadRouteContent(route);
+        //  -----  intentar precargar, inyectar y cargar scripts  -----
+        try {
 
-        //  -----  inyectar el contenido precargado  -----
-        applyPreloadedContent(payload, route);
+            //  -----  precargar el HTML de la ruta  -----
+            const payload = await preloadRouteContent(route);
 
-        //  -----  cargar los scripts de la ruta  -----
-        await applyRouteMetaAsync(route);
+            //  -----  inyectar el contenido precargado  -----
+            applyPreloadedContent(payload, route);
 
-        //  -----  avisar que la ruta quedó inyectada  -----
-        console.log('-----  ruta lista:', route.id, '-----');
+            //  -----  cargar los scripts de la ruta  -----
+            await applyRouteMetaAsync(route);
+
+            //  -----  notificar que la ruta terminó de renderizarse  -----
+            notifyRouteLoaded(route);
+
+            //  -----  avisar que la ruta quedó inyectada  -----
+            console.log('-----  ruta lista:', route.id, '-----');
+
+        }
+
+        //  -----  si la carga falla, notificar sin romper el flujo  -----
+        catch (error) {
+
+            //  -----  notificar el error de carga  -----
+            notifyRouteLoadError(route, error, 'loadContent');
+
+        }
 
     };
 
@@ -1405,6 +2023,9 @@ export const spaLoaderContentHtml = (options = {}) => {
 
                 //  -----  registrar el error de la ruta inicial  -----
                 console.error('Error cargando ruta inicial', error);
+
+                //  -----  notificar el error de la ruta inicial  -----
+                notifyRouteLoadError(undefined, error, 'init');
 
                 //  -----  cargar la ruta 404  -----
                 await loadNotFoundRoute('init');
