@@ -72,6 +72,9 @@ importers:
       '@antonydev/spa-server':
         specifier: workspace:*
         version: link:packages/spa-server
+      '@antonydev/vanilla-spa-core':
+        specifier: workspace:*
+        version: link:packages/vanilla-spa-core
       '@types/gulp':
         specifier: ^4.0.18
         version: 4.0.18
@@ -163,6 +166,8 @@ importers:
       express:
         specifier: 'catalog:'
         version: 5.2.1(supports-color@8.1.1)
+
+  packages/vanilla-spa-core: {}
 
 packages:
 

@@ -16,7 +16,7 @@ Rama: `spec-06-vanilla-spa-core`. Entrega: una PR. Verificación: `node --check`
 
 ## Tasks
 
-- [ ] T1 — S1 — inline — pendiente
+- [x] T1 — S1 — inline — pendiente de commit del usuario
 - [ ] T2 — S2 — inline — pendiente
 - [ ] T3 — S3 — inline — pendiente
 - [ ] T4 — S4 — inline — pendiente
@@ -35,3 +35,4 @@ Rama: `spec-06-vanilla-spa-core`. Entrega: una PR. Verificación: `node --check`
 - L6 (2026-11-28, decisión): sin `innerHTML`; se usa `DOMParser` + `DocumentFragment` + `replaceChildren`/`textContent`.
 - L7 (2026-11-28, decisión): `components` acepta `#selector` o id pelado; `scripts` acepta `type: 'module'` e `isModule: true`.
 - L8 (2026-11-28, entrega): PR1 encadenada, base `main`; PR2 (`spec-07-selector-de-motor`) depende de esta rama. `size:exception` previsto por el tamaño del port.
+- L9 (2026-11-28, T1 verificado): `packages/vanilla-spa-core/package.json` creado como `@antonydev/vanilla-spa-core` (`type: module`, `private`, exports a `start.js` y `spa-loader-content-html.js`). `pnpm-workspace.yaml` incluye `packages/vanilla-spa-core`; la raíz declara `"@antonydev/vanilla-spa-core": "workspace:*"` en devDependencies; `jsconfig.json` incluye el paquete. Tipos base: `vanilla-spa-core-route.d.js`, `vanilla-spa-core-options.d.js`, `vanilla-spa-core-start.d.js` y `vanilla-spa-core-package.d.ts`. `pnpm install` → `Scope: all 7 workspace projects`, `+ @antonydev/vanilla-spa-core 0.0.0 <- packages/vanilla-spa-core`; `package.json`/`jsconfig.json` parsean como JSON. Falta el commit (lo hace el usuario).
