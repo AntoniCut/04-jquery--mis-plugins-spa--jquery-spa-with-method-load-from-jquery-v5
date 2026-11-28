@@ -35,6 +35,12 @@ export const spaLoaderContentHtml = (options = {}) => {
     /** @type {Set<string>} - `módulos de ruta cuyo import() falló` */
     const brokenRouteModules = new Set();
 
+    /** - `clave de cache-busting estable durante toda la sesión` */
+    const sessionAssetKey = Date.now();
+
+    /** - `contador de re-evaluación de módulos que renderizan en su nivel superior` */
+    let moduleReloadSeq = 0;
+
 
 
     /*
@@ -962,6 +968,279 @@ export const spaLoaderContentHtml = (options = {}) => {
 
 
 
+    /*
+        *  ---------------------  *
+        *  -----  SCRIPTS  -----  *
+        *  ---------------------  *
+    */
+
+
+    /**
+     * ------------------------------------------------------
+     * -----  `scriptSrcMatches(loadedSrc, targetSrc)`  -----
+     * ------------------------------------------------------
+     * - Compara dos URLs de script ignorando la querystring.
+     * @param {string} loadedSrc - URL absoluta del script en el DOM.
+     * @param {string} targetSrc - URL del script de la ruta.
+     * @return {boolean} - `true si coinciden`.
+     */
+    const scriptSrcMatches = (loadedSrc, targetSrc) => {
+
+        /** - `URL cargada sin querystring` */
+        const loaded = String(loadedSrc || '').split('?')[0];
+
+        /** - `URL objetivo sin querystring` */
+        const target = String(targetSrc || '').split('?')[0];
+
+        //  -----  comparar por sufijo o inclusión  -----
+        return loaded.endsWith(target) || loaded.includes(target);
+
+    };
+
+
+
+    /**
+     * -----------------------------------
+     * -----  `isScriptLoaded(src)`  -----
+     * -----------------------------------
+     * - Comprueba si un script ya está cargado en el documento.
+     * @param {string} src - URL del script.
+     * @return {boolean} - `true si ya está cargado`.
+     */
+    const isScriptLoaded = (src) => {
+
+        //  -----  proteger la comprobación  -----
+        try {
+
+            /** @type {HTMLScriptElement[]} - `scripts del documento` */
+            const scripts = Array.from(document.scripts);
+
+            //  -----  buscar una coincidencia sin querystring  -----
+            return scripts.some((script) => script.src && scriptSrcMatches(script.src, src));
+
+        }
+
+        //  -----  si la comprobación falla, tratarlo como no cargado  -----
+        catch (error) {
+
+            //  -----  devolver false  -----
+            return false;
+
+        }
+
+    };
+
+
+
+    /**
+     * ----------------------------------------
+     * -----  `removeLoadedScripts(src)`  -----
+     * ----------------------------------------
+     * - Elimina del DOM los `<script>` que coinciden con la URL.
+     * @param {string} src - URL del script.
+     * @return {void}
+     */
+    const removeLoadedScripts = (src) => {
+
+        //  -----  proteger la eliminación  -----
+        try {
+
+            //  -----  eliminar los scripts que coinciden  -----
+            Array.from(document.scripts)
+                .filter((script) => script.src && scriptSrcMatches(script.src, src))
+                .forEach((script) => script.remove());
+
+        }
+
+        //  -----  ignorar errores de eliminación  -----
+        catch (error) {
+
+            //  -----  no romper el flujo global  -----
+            return;
+
+        }
+
+    };
+
+
+
+    /**
+     * --------------------------------
+     * -----  `loadScripts(script)`  -----
+     * --------------------------------
+     * - Carga un script de la ruta como clásico o como módulo ES6.
+     * - Acepta `type: 'module'` y el alias `isModule: true` de la referencia.
+     * @param {VanillaSpaCoreRouteScript} script - Script de la ruta.
+     * @return {Promise<void>}
+     */
+    const loadScripts = async (script) => {
+
+        /** - `URL del script` */
+        const src = script?.src;
+
+        /** - `true si el script es un módulo ES6` */
+        const isModule = script?.type === 'module' || script?.isModule === true;
+
+        /** - `función exportada a ejecutar tras importar el módulo` */
+        const exportFunctionName = script?.exportFunctionName || null;
+
+        //  -----  sin src no hay script que cargar  -----
+        if (!src)
+            //  -----  salir  -----
+            return;
+
+        //  -----  scripts clásicos: re-ejecutar al volver a la ruta  -----
+        if (!isModule && isScriptLoaded(src)) {
+
+            //  -----  quitar el script anterior  -----
+            removeLoadedScripts(src);
+
+            //  -----  avisar de la re-ejecución  -----
+            console.log(`🔄 Script clásico re-ejecutado: ${src}`);
+
+        }
+
+        //  -----  módulos ya cargados: no reimportar sin necesidad  -----
+        else if (isModule && isScriptLoaded(src)) {
+
+            //  -----  avisar de que ya está cargado  -----
+            console.log(`🔁 Script ya cargado: ${src}`);
+
+            //  -----  salir  -----
+            return;
+
+        }
+
+        /** - `URL con cache-busting estable por sesión` */
+        const urlWithCacheBypass = `${src}?v=${sessionAssetKey}`;
+
+        //  -----  cargar como módulo ES6  -----
+        if (isModule) {
+
+            //  -----  URL estable si hay función de montaje; única si renderiza en top-level  -----
+            const moduleUrl = exportFunctionName
+                ? `${src}?v=${sessionAssetKey}`
+                : `${src}?m=${sessionAssetKey}.${++moduleReloadSeq}`;
+
+            //  -----  importar el módulo  -----
+            try {
+
+                /** @type {Record<string, unknown>} - `módulo importado` */
+                const module = await import(moduleUrl);
+
+                //  -----  avisar de la importación  -----
+                console.log(`✅ Módulo importado: ${moduleUrl}`);
+
+                //  -----  si hay función exportada, ejecutarla  -----
+                if (exportFunctionName) {
+
+                    /** - `función exportada del módulo` */
+                    const exported = module[exportFunctionName];
+
+                    //  -----  si la exportación es una función, ejecutarla  -----
+                    if (typeof exported === 'function')
+                        //  -----  ejecutar el montaje del módulo  -----
+                        exported();
+
+                }
+
+            }
+
+            //  -----  si el import falla, reportarlo sin romper el flujo  -----
+            catch (error) {
+
+                //  -----  registrar el error del módulo  -----
+                console.error(`❌ Error cargando el módulo: ${src}`, error);
+
+            }
+
+            //  -----  salir de la carga de módulo  -----
+            return;
+
+        }
+
+        //  -----  cargar como script clásico  -----
+        await new Promise((resolve) => {
+
+            /** @type {HTMLScriptElement} - `elemento script` */
+            const scriptElement = document.createElement('script');
+
+            //  -----  configurar la URL con cache-busting  -----
+            scriptElement.src = urlWithCacheBypass;
+
+            //  -----  cargar de forma asíncrona  -----
+            scriptElement.async = true;
+
+            //  -----  resolver cuando el script termine de cargar  -----
+            scriptElement.onload = () => {
+
+                //  -----  avisar de la carga  -----
+                console.log(`✅ Script cargado: ${urlWithCacheBypass}`);
+
+                //  -----  resolver la promesa  -----
+                resolve(undefined);
+
+            };
+
+            //  -----  resolver con error para no bloquear el loader  -----
+            scriptElement.onerror = (error) => {
+
+                //  -----  registrar el error  -----
+                console.error(`❌ Error al cargar: ${urlWithCacheBypass}`, error);
+
+                //  -----  resolver igualmente  -----
+                resolve(undefined);
+
+            };
+
+            //  -----  añadir el script al head  -----
+            document.head.appendChild(scriptElement);
+
+        });
+
+    };
+
+
+
+    /**
+     * ----------------------------------------------
+     * -----  `applyRouteMetaAsync(route, signal)`  -----
+     * ----------------------------------------------
+     * - Carga los scripts de la ruta en orden después de inyectar el DOM.
+     * - `route.libs` es jQuery-only; el motor vanilla lo ignora (spec futura).
+     * @param {VanillaSpaCoreRoute} route - Ruta actual.
+     * @param {AbortSignal} [signal] - Señal de la navegación.
+     * @return {Promise<void>}
+     */
+    const applyRouteMetaAsync = async (route, signal) => {
+
+        //  -----  si la ruta no declara scripts, salir  -----
+        if (!route.scripts)
+            //  -----  no hay scripts que cargar  -----
+            return;
+
+        //  -----  cargar cada script de forma secuencial  -----
+        for (const script of route.scripts) {
+
+            //  -----  si la navegación fue abortada, detener la carga  -----
+            if (signal?.aborted)
+                //  -----  lanzar el aborto  -----
+                throw new DOMException('Navegación abortada por una navegación más nueva', 'AbortError');
+
+            //  -----  cargar el script de la ruta  -----
+            await loadScripts(script);
+
+        }
+
+        //  -----  comprobar si la navegación quedó obsoleta tras el último script  -----
+        if (signal?.aborted)
+            //  -----  lanzar el aborto  -----
+            throw new DOMException('Navegación abortada por una navegación más nueva', 'AbortError');
+
+    };
+
+
+
     /**
      * --------------------------------------
      * -----  `loadContent(route)`  -----
@@ -988,6 +1267,9 @@ export const spaLoaderContentHtml = (options = {}) => {
 
         //  -----  inyectar el contenido precargado  -----
         applyPreloadedContent(payload, route);
+
+        //  -----  cargar los scripts de la ruta  -----
+        await applyRouteMetaAsync(route);
 
         //  -----  avisar que la ruta quedó inyectada  -----
         console.log('-----  ruta lista:', route.id, '-----');
