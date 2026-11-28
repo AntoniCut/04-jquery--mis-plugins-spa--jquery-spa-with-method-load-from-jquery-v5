@@ -1,5 +1,5 @@
 {
-    "name": "framework-spa-with-jquery-and-vanilla-js-ts",
+    "name": "framework-spa-with-jquery-and-vanilla",
     "version": "1.0.0",
     "description": "Monorepo framework SPA: sitios con plugin jQuery o vanilla JS/TS sobre paquetes compartidos",
     "main": "index.js",
@@ -37,11 +37,13 @@
         "test": "Marcador: aún no hay tests."
     },
     "keywords": [
-        "spa framework",
+        "framework SPA",
         "jquery spa",
-        "vanilla javascript",
-        "jquery",
-        "jqueryui"
+        "vanilla javascript / TypeScript",
+        "jQuery",
+        "jUuery UI",
+        "JavaScript",
+        "TypeScript"
     ],
     "author": "Antonio Francisco Cutillas García",
     "license": "ISC",
